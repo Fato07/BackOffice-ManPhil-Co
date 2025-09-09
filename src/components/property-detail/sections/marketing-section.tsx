@@ -68,7 +68,7 @@ export function MarketingSection({ property }: MarketingSectionProps) {
   const form = useForm<z.input<typeof marketingSchema>>({
     resolver: zodResolver(marketingSchema),
     defaultValues: {
-      marketingContent: marketingContent || { en: {
+      marketingContent: (marketingContent as any) || { en: {
         title: property.name || "",
         tagline: "",
         shortDescription: "",

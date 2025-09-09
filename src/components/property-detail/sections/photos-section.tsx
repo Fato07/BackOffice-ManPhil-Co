@@ -153,7 +153,7 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
   useEffect(() => {
     if (uploadPhotosMutation.data?.photos) {
       const newPhotoIds = new Set(uploadPhotosMutation.data.photos.map((p: Photo) => p.id))
-      setRecentlyUploadedIds(newPhotoIds)
+      setRecentlyUploadedIds(newPhotoIds as Set<string>)
       
       // Remove the success indicator after animation completes
       const timer = setTimeout(() => {

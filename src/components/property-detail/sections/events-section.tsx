@@ -84,7 +84,7 @@ export function EventsSection({ property }: EventsSectionProps) {
   const updateProperty = useUpdateProperty()
 
   // Get event details from JSON field (Prisma handles JSON automatically)
-  const existingEventDetails = property.eventsDetails || {}
+  const existingEventDetails = (property.eventsDetails as any) || {}
 
   const form = useForm<z.input<typeof eventsSchema>>({
     resolver: zodResolver(eventsSchema),

@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/db"
 import { z } from "zod"
 import { createClient } from "@supabase/supabase-js"
+import { StorageApiError } from "@supabase/storage-js"
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -134,7 +135,7 @@ export async function POST(
         let errorDetails = uploadError.message
         
         // Check for specific error types
-        if (uploadError.message?.includes("bucket") || uploadError.statusCode === '404') {
+        if (uploadError.message?.includes("bucket") || (uploadError instanceof StorageApiError && uploadError.statusCode === '404')) {
           errorDetails = `Storage bucket "resources" not found. Please create it in your Supabase dashboard.`
         } else if (uploadError.message?.includes("size")) {
           errorDetails = "File is too large. Maximum file size is 10MB."

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/db"
 import { createClient } from "@supabase/supabase-js"
+import { StorageApiError } from "@supabase/storage-js"
 import { z } from "zod"
 import { Photo } from "@/generated/prisma"
 
@@ -102,7 +103,7 @@ export async function POST(
         errors.push(errorMsg)
         
         // Check if it's a bucket not found error
-        if (error.message?.includes("bucket") || error.statusCode === '404') {
+        if (error.message?.includes("bucket") || (error instanceof StorageApiError && error.statusCode === '404')) {
           errors.push(`Storage bucket "${BUCKET_NAME}" not found. Please create it in Supabase.`)
         }
         continue
