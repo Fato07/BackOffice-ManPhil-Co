@@ -17,6 +17,8 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Permission } from "@/types/auth"
 
 interface PhotosSectionProps {
   propertyId: string
@@ -41,12 +43,14 @@ function SortablePhotoCard({
   photo, 
   onEdit, 
   onDelete,
-  isRecentlyUploaded 
+  isRecentlyUploaded,
+  canEdit
 }: { 
   photo: Photo; 
   onEdit: () => void; 
   onDelete: () => void;
   isRecentlyUploaded?: boolean;
+  canEdit?: boolean;
 }) {
   const {
     attributes,
@@ -99,24 +103,26 @@ function SortablePhotoCard({
             </div>
             
             {/* Action buttons with glass effect */}
-            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-y-2 group-hover:translate-y-0 flex gap-2">
-              <Button 
-                size="icon" 
-                variant="secondary" 
-                onClick={onEdit}
-                className="bg-white/90 backdrop-blur-md hover:bg-white shadow-xl border-0 transition-all duration-300 hover:scale-110"
-              >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-              <Button 
-                size="icon" 
-                variant="secondary" 
-                onClick={onDelete}
-                className="bg-white/90 backdrop-blur-md hover:bg-white shadow-xl border-0 transition-all duration-300 hover:scale-110 hover:bg-red-50 hover:text-red-600"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
+            {canEdit !== false && (
+              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-y-2 group-hover:translate-y-0 flex gap-2">
+                <Button 
+                  size="icon" 
+                  variant="secondary" 
+                  onClick={onEdit}
+                  className="bg-white/90 backdrop-blur-md hover:bg-white shadow-xl border-0 transition-all duration-300 hover:scale-110"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+                <Button 
+                  size="icon" 
+                  variant="secondary" 
+                  onClick={onDelete}
+                  className="bg-white/90 backdrop-blur-md hover:bg-white shadow-xl border-0 transition-all duration-300 hover:scale-110 hover:bg-red-50 hover:text-red-600"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
         
@@ -137,6 +143,8 @@ function SortablePhotoCard({
 }
 
 export function PhotosSection({ propertyId }: PhotosSectionProps) {
+  const { hasPermission } = usePermissions()
+  const canEdit = hasPermission(Permission.PROPERTY_EDIT)
   const [selectedCategory, setSelectedCategory] = useState("ALL")
   const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null)
   const [deletingPhoto, setDeletingPhoto] = useState<Photo | null>(null)
@@ -253,36 +261,40 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-semibold">Photos ({photos.length})</h2>
-        <Button size="sm" className="relative">
-          <Upload className="h-4 w-4 mr-2" />
-          Upload Photos
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handleFileUpload}
-            className="absolute inset-0 opacity-0 cursor-pointer"
-          />
-        </Button>
+        {canEdit && (
+          <Button size="sm" className="relative">
+            <Upload className="h-4 w-4 mr-2" />
+            Upload Photos
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+            />
+          </Button>
+        )}
       </div>
 
       {/* Upload Drop Zone */}
-      <div
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        className={`mb-6 border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-          isDragging ? "border-primary bg-primary/5" : "border-gray-300"
-        }`}
-      >
-        <ImageIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-        <p className="text-sm text-gray-600">
-          Drag and drop photos here, or click the upload button
-        </p>
-        <p className="text-xs text-gray-500 mt-2">
-          Supports JPEG, PNG, WebP up to 10MB each
-        </p>
-      </div>
+      {canEdit && (
+        <div
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          className={`mb-6 border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+            isDragging ? "border-primary bg-primary/5" : "border-gray-300"
+          }`}
+        >
+          <ImageIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+          <p className="text-sm text-gray-600">
+            Drag and drop photos here, or click the upload button
+          </p>
+          <p className="text-xs text-gray-500 mt-2">
+            Supports JPEG, PNG, WebP up to 10MB each
+          </p>
+        </div>
+      )}
 
       {/* Category Filter */}
       <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
@@ -326,6 +338,7 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
                   onEdit={() => setEditingPhoto(photo)}
                   onDelete={() => setDeletingPhoto(photo)}
                   isRecentlyUploaded={recentlyUploadedIds.has(photo.id)}
+                  canEdit={canEdit}
                 />
               ))}
             </div>

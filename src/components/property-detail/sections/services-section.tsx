@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useUpdateProperty } from "@/hooks/use-properties"
 import { PropertyWithRelations } from "@/types/property"
 import { toast } from "sonner"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Permission } from "@/types/auth"
 import { Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -75,6 +77,8 @@ interface ServicesSectionProps {
 export function ServicesSection({ property }: ServicesSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
   const updateProperty = useUpdateProperty()
+  const { hasPermission } = usePermissions()
+  const canEdit = hasPermission(Permission.PROPERTY_EDIT)
 
   // Parse services from JSON field
   const servicesData = property.services as any || {}
@@ -244,6 +248,7 @@ export function ServicesSection({ property }: ServicesSectionProps) {
       onSave={form.handleSubmit(handleSave)}
       onCancel={handleCancel}
       isSaving={updateProperty.isPending}
+      canEdit={canEdit}
     >
       <div className="space-y-8">
         {/* Transport Services */}

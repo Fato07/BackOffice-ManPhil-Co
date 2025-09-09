@@ -9,6 +9,8 @@ import {
   updatePropertyContentSchema,
   updatePropertyEventsSchema
 } from "@/lib/validations"
+import { requirePermission, getUserRole, getCurrentUserId } from "@/lib/auth"
+import { Permission } from "@/types/auth"
 
 // GET /api/properties/[id] - Get a single property
 export async function GET(
@@ -72,6 +74,36 @@ export async function PUT(
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Check permission to edit properties
+    try {
+      await requirePermission(Permission.PROPERTY_EDIT)
+    } catch (error) {
+      // Log denied attempt
+      const userRole = await getUserRole()
+      const currentUserId = await getCurrentUserId()
+      
+      if (currentUserId) {
+        await prisma.auditLog.create({
+          data: {
+            userId: currentUserId,
+            action: "update_denied",
+            entityType: "property",
+            entityId: id,
+            changes: {
+              reason: "insufficient_permissions",
+              role: userRole,
+              requiredPermission: Permission.PROPERTY_EDIT,
+            },
+          },
+        })
+      }
+      
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to edit properties" },
+        { status: 403 }
+      )
     }
 
     const { id } = await params
@@ -158,6 +190,36 @@ export async function PATCH(
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Check permission to edit properties
+    try {
+      await requirePermission(Permission.PROPERTY_EDIT)
+    } catch (error) {
+      // Log denied attempt
+      const userRole = await getUserRole()
+      const currentUserId = await getCurrentUserId()
+      
+      if (currentUserId) {
+        await prisma.auditLog.create({
+          data: {
+            userId: currentUserId,
+            action: "update_denied",
+            entityType: "property",
+            entityId: id,
+            changes: {
+              reason: "insufficient_permissions",
+              role: userRole,
+              requiredPermission: Permission.PROPERTY_EDIT,
+            },
+          },
+        })
+      }
+      
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to edit properties" },
+        { status: 403 }
+      )
     }
 
     const body = await req.json()
@@ -278,6 +340,36 @@ export async function DELETE(
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Check permission to delete properties (using PROPERTY_EDIT permission)
+    try {
+      await requirePermission(Permission.PROPERTY_EDIT)
+    } catch (error) {
+      // Log denied attempt
+      const userRole = await getUserRole()
+      const currentUserId = await getCurrentUserId()
+      
+      if (currentUserId) {
+        await prisma.auditLog.create({
+          data: {
+            userId: currentUserId,
+            action: "delete_denied",
+            entityType: "property",
+            entityId: id,
+            changes: {
+              reason: "insufficient_permissions",
+              role: userRole,
+              requiredPermission: Permission.PROPERTY_EDIT,
+            },
+          },
+        })
+      }
+      
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to delete properties" },
+        { status: 403 }
+      )
     }
 
     const { id } = await params

@@ -15,13 +15,17 @@ import { InternalSection } from "@/components/property-detail/sections/internal-
 import { MarketingSection } from "@/components/property-detail/sections/marketing-section"
 import { PhotosSection } from "@/components/property-detail/sections/photos-section"
 import { LinksSection } from "@/components/property-detail/sections/links-section"
+import { ContactsSection } from "@/components/property-detail/sections/contacts-section"
 import { RoomBuilder } from "@/components/property-detail/sections/room-builder"
 import { CommandPalette } from "@/components/property-detail/command-palette"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
-import { Command } from "lucide-react"
+import { Command, Home, Info, MapPin, FileText, Thermometer, Calendar, Wrench, AlertCircle, Shield, Megaphone, Camera, Link, DoorOpen, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { PropertyWithRelations } from "@/types"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Permission } from "@/types/auth"
+import { Section } from "@/components/property-detail/property-navigation"
 
 interface PropertyDetailsWrapperProps {
   property: PropertyWithRelations
@@ -32,22 +36,41 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
   const [navigationExpanded, setNavigationExpanded] = useState(true)
   const [navigatorSections, setNavigatorSections] = useState<{ id: string; label: string; element?: HTMLElement | null }[]>([])
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const { canViewSection } = usePermissions()
 
-  const sections = [
-    { id: "promote", label: "Promote", component: PromoteSection },
-    { id: "info", label: "House Information", component: HouseInfoSection },
-    { id: "location", label: "Location", component: LocationSection },
-    { id: "further-info", label: "Further Information", component: FurtherInfoSection },
-    { id: "heating", label: "Heating & AC", component: HeatingSection },
-    { id: "events", label: "Events", component: EventsSection },
-    { id: "services", label: "Services", component: ServicesSection },
-    { id: "good-to-know", label: "Good to Know", component: GoodToKnowSection },
-    { id: "internal", label: "Internal", component: InternalSection },
-    { id: "marketing", label: "Automatic Offer", component: MarketingSection },
-    { id: "photos", label: "Photos", component: PhotosSection },
-    { id: "links", label: "Links & Resources", component: LinksSection },
-    { id: "rooms", label: "Rooms", component: RoomBuilder },
+  const allSections = [
+    { id: "promote", label: "Promote", component: PromoteSection, icon: Home, description: "Visibility and positioning" },
+    { id: "info", label: "House Information", component: HouseInfoSection, icon: Info, description: "Basic property details" },
+    { id: "location", label: "Location", component: LocationSection, icon: MapPin, description: "Address and coordinates" },
+    { id: "further-info", label: "Further Information", component: FurtherInfoSection, icon: FileText, description: "Additional details" },
+    { id: "heating", label: "Heating & AC", component: HeatingSection, icon: Thermometer, description: "Climate control systems" },
+    { id: "events", label: "Events", component: EventsSection, icon: Calendar, description: "Special events and activities" },
+    { id: "services", label: "Services", component: ServicesSection, icon: Wrench, description: "Available amenities" },
+    { id: "good-to-know", label: "Good to Know", component: GoodToKnowSection, icon: AlertCircle, description: "Important information" },
+    { id: "internal", label: "Internal", component: InternalSection, icon: Shield, description: "Private notes and data", permission: Permission.INTERNAL_VIEW, isInternal: true },
+    { id: "contacts", label: "Linked Contacts", component: ContactsSection, icon: Users, description: "Property contacts and service providers", permission: Permission.CONTACTS_VIEW },
+    { id: "marketing", label: "Automatic Offer", component: MarketingSection, icon: Megaphone, description: "Marketing content" },
+    { id: "photos", label: "Photos", component: PhotosSection, icon: Camera, description: "Property images" },
+    { id: "links", label: "Links & Resources", component: LinksSection, icon: Link, description: "External resources" },
+    { id: "rooms", label: "Rooms", component: RoomBuilder, icon: DoorOpen, description: "Room configuration" },
   ]
+
+  // Filter sections based on user permissions
+  const sections = allSections.filter(section => {
+    if (section.permission) {
+      return canViewSection(section.id);
+    }
+    return true;
+  })
+
+  // Create navigation sections with the necessary properties for PropertyNavigation
+  const navigationSections: Section[] = sections.map(section => ({
+    id: section.id,
+    label: section.label,
+    icon: section.icon,
+    description: section.description,
+    isInternal: section.isInternal,
+  }))
 
   const handleSectionChange = (sectionId: string) => {
     setCurrentSection(sectionId)
@@ -70,6 +93,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
     services: !!property.services,
     "good-to-know": !!property.goodToKnow,
     internal: !!property.internalComment || !!property.warning,
+    contacts: (property.contacts?.length ?? 0) > 0,
     marketing: !!property.automaticOffer,
     photos: (property.photos?.length ?? 0) > 0,
     links: (property.resources?.length ?? 0) > 0,
@@ -101,6 +125,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
         onSectionChange={handleSectionChange}
         completionStatus={completionStatus}
         onExpandChange={setNavigationExpanded}
+        sections={navigationSections}
       />
 
       {/* Main Content - flex-1 automatically adjusts */}
@@ -218,6 +243,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
                             {section.id === "services" && "Available services and amenities"}
                             {section.id === "good-to-know" && "Important guest information"}
                             {section.id === "internal" && "Private notes and configuration"}
+                            {section.id === "contacts" && "Property contacts and service providers"}
                             {section.id === "marketing" && "Marketing content and offers"}
                             {section.id === "photos" && "Property images and galleries"}
                             {section.id === "links" && "External links and resources"}
@@ -259,6 +285,8 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
                             return <GoodToKnowSection property={property} />
                           case "internal":
                             return <InternalSection property={property} />
+                          case "contacts":
+                            return <ContactsSection property={property} />
                           case "marketing":
                             return <MarketingSection property={property} />
                           case "photos":

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/db"
 import { z } from "zod"
+import { requirePermission } from "@/lib/auth"
+import { Permission } from "@/types/auth"
 
 const createRoomSchema = z.object({
   propertyId: z.string(),
@@ -25,6 +27,16 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Check permission to edit properties
+    try {
+      await requirePermission(Permission.PROPERTY_EDIT)
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to add rooms" },
+        { status: 403 }
+      )
     }
 
     const body = await request.json()

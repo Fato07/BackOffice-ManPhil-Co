@@ -1,5 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { UserRole, Permission, ROLE_PERMISSIONS } from "@/types/auth";
 
 /**
  * Get the current authenticated user
@@ -44,22 +45,101 @@ export async function requireAuth() {
 }
 
 /**
+ * Get the current user's role
+ * @returns The user's role or null
+ */
+export async function getUserRole(): Promise<UserRole | null> {
+  try {
+    const user = await currentUser();
+    if (!user) return null;
+    
+    const role = user.publicMetadata?.role as UserRole | undefined;
+    return role || UserRole.VIEWER; // Default to VIEWER if no role set
+  } catch (error) {
+    console.error("Error getting user role:", error);
+    return null;
+  }
+}
+
+/**
  * Check if the current user has a specific role
  * @param role - The role to check for
  * @returns True if the user has the role, false otherwise
  */
-export async function hasRole(role: string): Promise<boolean> {
+export async function hasRole(role: string | UserRole): Promise<boolean> {
   try {
-    const user = await currentUser();
-    
-    if (!user) return false;
-    
-    // Check if user has the role in their public metadata
-    const userRole = user.publicMetadata?.role as string | undefined;
+    const userRole = await getUserRole();
     return userRole === role;
   } catch (error) {
     console.error("Error checking user role:", error);
     return false;
+  }
+}
+
+/**
+ * Check if the current user has a specific permission
+ * @param permission - The permission to check
+ * @returns True if the user has the permission, false otherwise
+ */
+export async function hasPermission(permission: Permission | string): Promise<boolean> {
+  try {
+    const role = await getUserRole();
+    if (!role) return false;
+    
+    const rolePermissions = ROLE_PERMISSIONS[role];
+    return rolePermissions.includes(permission as Permission);
+  } catch (error) {
+    console.error("Error checking permission:", error);
+    return false;
+  }
+}
+
+/**
+ * Require a specific permission for an operation
+ * @param permission - The permission required
+ * @throws Error if the user doesn't have the permission
+ */
+export async function requirePermission(permission: Permission | string) {
+  const hasAccess = await hasPermission(permission);
+  if (!hasAccess) {
+    throw new Error('Insufficient permissions');
+  }
+  return true;
+}
+
+/**
+ * Check if user can access a specific section
+ * @param section - The section to check access for
+ * @returns True if the user can access the section, false otherwise
+ */
+export async function canAccessSection(section: string): Promise<boolean> {
+  const sectionPermissions: Record<string, Permission> = {
+    'internal': Permission.INTERNAL_VIEW,
+    'financial': Permission.FINANCIAL_VIEW,
+    'owner': Permission.OWNER_VIEW,
+    'contacts': Permission.CONTACTS_VIEW,
+    'vendor': Permission.VENDOR_VIEW,
+  };
+  
+  const permission = sectionPermissions[section];
+  if (!permission) return true; // If no specific permission needed, allow access
+  
+  return hasPermission(permission);
+}
+
+/**
+ * Get all permissions for the current user
+ * @returns Array of permissions
+ */
+export async function getUserPermissions(): Promise<Permission[]> {
+  try {
+    const role = await getUserRole();
+    if (!role) return [];
+    
+    return ROLE_PERMISSIONS[role];
+  } catch (error) {
+    console.error("Error getting user permissions:", error);
+    return [];
   }
 }
 

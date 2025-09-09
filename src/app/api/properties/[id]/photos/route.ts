@@ -5,6 +5,8 @@ import { createClient } from "@supabase/supabase-js"
 import { StorageApiError } from "@supabase/storage-js"
 import { z } from "zod"
 import { Photo } from "@/generated/prisma"
+import { requirePermission } from "@/lib/auth"
+import { Permission } from "@/types/auth"
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,6 +26,16 @@ export async function POST(
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Check permission to edit properties
+    try {
+      await requirePermission(Permission.PROPERTY_EDIT)
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to upload photos" },
+        { status: 403 }
+      )
     }
 
     const { id } = await context.params

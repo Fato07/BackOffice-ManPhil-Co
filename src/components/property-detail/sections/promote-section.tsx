@@ -13,6 +13,8 @@ import { useUpdateProperty } from "@/hooks/use-properties"
 import { z } from "zod"
 import { toast } from "sonner"
 import { Checkbox } from "@/components/ui/checkbox"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Permission } from "@/types/auth"
 
 type PromotionFormData = z.infer<typeof updatePropertyPromotionSchema>
 
@@ -31,6 +33,8 @@ interface PromoteSectionProps {
 
 export function PromoteSection({ property }: PromoteSectionProps) {
   const updateProperty = useUpdateProperty()
+  const { hasPermission } = usePermissions()
+  const canEdit = hasPermission(Permission.PROPERTY_EDIT)
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState(property)
   
@@ -118,6 +122,7 @@ export function PromoteSection({ property }: PromoteSectionProps) {
       onSave={handleSave}
       onCancel={handleCancel}
       isSaving={updateProperty.isPending}
+      canEdit={canEdit}
     >
       {isEditing ? (
         <div className="space-y-4">

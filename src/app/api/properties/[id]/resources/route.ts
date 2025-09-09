@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db"
 import { z } from "zod"
 import { createClient } from "@supabase/supabase-js"
 import { StorageApiError } from "@supabase/storage-js"
+import { requirePermission } from "@/lib/auth"
+import { Permission } from "@/types/auth"
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -69,6 +71,16 @@ export async function POST(
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Check permission to edit properties
+    try {
+      await requirePermission(Permission.PROPERTY_EDIT)
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to add resources" },
+        { status: 403 }
+      )
     }
 
     const { id: propertyId } = await params

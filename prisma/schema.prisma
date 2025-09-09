@@ -227,6 +227,22 @@ model AuditLog {
   @@index([createdAt])
 }
 
+model SensitiveDataAccess {
+  id         String   @id @default(cuid())
+  userId     String
+  userRole   String
+  action     String   // 'view', 'edit'
+  dataType   String   // 'owner', 'financial', 'contacts', 'internal'
+  propertyId String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  
+  @@index([userId])
+  @@index([propertyId])
+  @@index([dataType])
+  @@index([createdAt])
+}
+
 enum PropertyStatus {
   PUBLISHED
   HIDDEN

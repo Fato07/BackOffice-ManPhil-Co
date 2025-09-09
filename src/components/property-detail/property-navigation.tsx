@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 
-interface Section {
+export interface Section {
   id: string
   label: string
   icon: React.ElementType
@@ -31,28 +31,13 @@ interface Section {
   isInternal?: boolean
 }
 
-const sections: Section[] = [
-  { id: "promote", label: "Promote", icon: Home, description: "Visibility and positioning" },
-  { id: "info", label: "House Information", icon: Info, description: "Basic property details" },
-  { id: "location", label: "Location", icon: MapPin, description: "Address and coordinates" },
-  { id: "further-info", label: "Further Information", icon: FileText, description: "Additional details" },
-  { id: "heating", label: "Heating & AC", icon: Thermometer, description: "Climate control systems" },
-  { id: "events", label: "Events", icon: Calendar, description: "Special events and activities" },
-  { id: "services", label: "Services", icon: Wrench, description: "Available amenities" },
-  { id: "good-to-know", label: "Good to Know", icon: AlertCircle, description: "Important information" },
-  { id: "internal", label: "Internal", icon: Shield, description: "Private notes and data", isInternal: true },
-  { id: "marketing", label: "Automatic Offer", icon: Megaphone, description: "Marketing content" },
-  { id: "photos", label: "Photos", icon: Camera, description: "Property images" },
-  { id: "links", label: "Links & Resources", icon: Link, description: "External resources" },
-  { id: "rooms", label: "Rooms", icon: DoorOpen, description: "Room configuration" },
-]
-
 interface PropertyNavigationProps {
   propertyId: string
   currentSection: string
   onSectionChange: (sectionId: string) => void
   completionStatus?: Record<string, boolean>
   onExpandChange?: (isExpanded: boolean) => void
+  sections: Section[]
 }
 
 export function PropertyNavigation({
@@ -61,14 +46,20 @@ export function PropertyNavigation({
   onSectionChange,
   completionStatus = {},
   onExpandChange,
+  sections,
 }: PropertyNavigationProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const [activeGroup, setActiveGroup] = useState<"essential" | "details" | "content">("essential")
 
+  // Group sections dynamically based on the provided sections
+  const essentialCount = Math.min(4, sections.length)
+  const detailsCount = Math.min(5, Math.max(0, sections.length - 4))
+  const contentStart = essentialCount + detailsCount
+
   const sectionGroups = {
-    essential: sections.slice(0, 4),
-    details: sections.slice(4, 9),
-    content: sections.slice(9),
+    essential: sections.slice(0, essentialCount),
+    details: sections.slice(essentialCount, essentialCount + detailsCount),
+    content: sections.slice(contentStart),
   }
 
   const groupLabels = {

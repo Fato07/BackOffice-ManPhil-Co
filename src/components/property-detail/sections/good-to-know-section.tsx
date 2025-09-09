@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { useUpdateProperty } from "@/hooks/use-properties"
 import { PropertyWithRelations } from "@/types/property"
 import { toast } from "sonner"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Permission } from "@/types/auth"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const goodToKnowSchema = z.object({
@@ -66,6 +68,8 @@ const TextSection = ({
 export function GoodToKnowSection({ property }: GoodToKnowSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
   const updateProperty = useUpdateProperty()
+  const { hasPermission } = usePermissions()
+  const canEdit = hasPermission(Permission.PROPERTY_EDIT)
 
   // Parse goodToKnow field from JSON - memoized to prevent re-parsing on every render
   const goodToKnowData = useMemo(() => {
@@ -124,6 +128,7 @@ export function GoodToKnowSection({ property }: GoodToKnowSectionProps) {
       onSave={form.handleSubmit(handleSave)}
       onCancel={handleCancel}
       isSaving={updateProperty.isPending}
+      canEdit={canEdit}
     >
       <div className="space-y-6">
         <p className="text-sm text-muted-foreground">

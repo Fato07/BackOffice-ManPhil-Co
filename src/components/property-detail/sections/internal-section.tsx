@@ -16,6 +16,9 @@ import { PropertyWithRelations } from "@/types/property"
 import { toast } from "sonner"
 import { Plus, Trash2, Shield, User, Key, Wrench, Users, DollarSign, ClipboardList } from "lucide-react"
 import { format } from "date-fns"
+import { usePermissions } from "@/hooks/use-permissions"
+import { ProtectedSection } from "@/components/auth/protected-section"
+import { Permission } from "@/types/auth"
 
 const internalSchema = z.object({
   internalNotes: z.string().optional(),
@@ -70,6 +73,7 @@ interface InternalSectionProps {
 export function InternalSection({ property }: InternalSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
   const updateProperty = useUpdateProperty()
+  const { hasPermission, canEditSection } = usePermissions()
 
   // Parse internal details from JSON stored in internalComment - memoized to prevent re-parsing
   const parsedInternal = useMemo(() => {
@@ -147,11 +151,12 @@ export function InternalSection({ property }: InternalSectionProps) {
     <PropertySection
       title="Internal Information"
       isEditing={isEditing}
-      onEdit={() => setIsEditing(true)}
+      onEdit={() => canEditSection('internal') && setIsEditing(true)}
       onSave={form.handleSubmit(handleSave)}
       onCancel={handleCancel}
       isSaving={updateProperty.isPending}
       className="border-amber-200 bg-amber-50/30"
+      showEditButton={canEditSection('internal')}
     >
       <div className="mb-4">
         <div className="flex items-center gap-2 p-3 bg-amber-100 rounded-lg border border-amber-300">
@@ -176,46 +181,48 @@ export function InternalSection({ property }: InternalSectionProps) {
         </div>
 
         {/* Owner Information */}
-        <div>
-          <h3 className="text-base font-semibold mb-4">Owner Information</h3>
-          <div className="space-y-4">
-            <div>
-              <Label>Owner preferences</Label>
-              <Textarea
-                className="mt-2"
-                disabled={!isEditing}
-                {...form.register("internalDetails.owner.preferences")}
-                placeholder="Owner preferences and requirements..."
-              />
-            </div>
-            <div>
-              <Label>Special instructions</Label>
-              <Textarea
-                className="mt-2"
-                disabled={!isEditing}
-                {...form.register("internalDetails.owner.specialInstructions")}
-                placeholder="Special instructions from the owner..."
-              />
-            </div>
-            <div>
-              <Label>Contact preference</Label>
-              <Select
-                disabled={!isEditing}
-                value={form.watch("internalDetails.owner.contactPreference")}
-                onValueChange={(value) => form.setValue("internalDetails.owner.contactPreference", value as any)}
-              >
-                <SelectTrigger className="mt-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="email">Email</SelectItem>
-                  <SelectItem value="phone">Phone</SelectItem>
-                  <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                </SelectContent>
-              </Select>
+        <ProtectedSection permission={Permission.OWNER_VIEW}>
+          <div>
+            <h3 className="text-base font-semibold mb-4">Owner Information</h3>
+            <div className="space-y-4">
+              <div>
+                <Label>Owner preferences</Label>
+                <Textarea
+                  className="mt-2"
+                  disabled={!isEditing || !hasPermission(Permission.OWNER_EDIT)}
+                  {...form.register("internalDetails.owner.preferences")}
+                  placeholder="Owner preferences and requirements..."
+                />
+              </div>
+              <div>
+                <Label>Special instructions</Label>
+                <Textarea
+                  className="mt-2"
+                  disabled={!isEditing || !hasPermission(Permission.OWNER_EDIT)}
+                  {...form.register("internalDetails.owner.specialInstructions")}
+                  placeholder="Special instructions from the owner..."
+                />
+              </div>
+              <div>
+                <Label>Contact preference</Label>
+                <Select
+                  disabled={!isEditing || !hasPermission(Permission.OWNER_EDIT)}
+                  value={form.watch("internalDetails.owner.contactPreference")}
+                  onValueChange={(value) => form.setValue("internalDetails.owner.contactPreference", value as any)}
+                >
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="phone">Phone</SelectItem>
+                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
-        </div>
+        </ProtectedSection>
 
         {/* Access Information */}
         <div>
@@ -393,38 +400,40 @@ export function InternalSection({ property }: InternalSectionProps) {
         </div>
 
         {/* Financial Information */}
-        <div>
-          <h3 className="text-base font-semibold mb-4">Financial Information</h3>
-          <div className="space-y-4">
-            <div>
-              <Label>Commission structure</Label>
-              <Textarea
-                className="mt-2"
-                disabled={!isEditing}
-                {...form.register("internalDetails.financial.commissionStructure")}
-                placeholder="Commission rates and structure..."
-              />
-            </div>
-            <div>
-              <Label>Pricing notes</Label>
-              <Textarea
-                className="mt-2"
-                disabled={!isEditing}
-                {...form.register("internalDetails.financial.pricingNotes")}
-                placeholder="Special pricing considerations..."
-              />
-            </div>
-            <div>
-              <Label>Payout details</Label>
-              <Textarea
-                className="mt-2"
-                disabled={!isEditing}
-                {...form.register("internalDetails.financial.payoutDetails")}
-                placeholder="Owner payout information..."
-              />
+        <ProtectedSection permission={Permission.FINANCIAL_VIEW}>
+          <div>
+            <h3 className="text-base font-semibold mb-4">Financial Information</h3>
+            <div className="space-y-4">
+              <div>
+                <Label>Commission structure</Label>
+                <Textarea
+                  className="mt-2"
+                  disabled={!isEditing || !hasPermission(Permission.FINANCIAL_EDIT)}
+                  {...form.register("internalDetails.financial.commissionStructure")}
+                  placeholder="Commission rates and structure..."
+                />
+              </div>
+              <div>
+                <Label>Pricing notes</Label>
+                <Textarea
+                  className="mt-2"
+                  disabled={!isEditing || !hasPermission(Permission.FINANCIAL_EDIT)}
+                  {...form.register("internalDetails.financial.pricingNotes")}
+                  placeholder="Special pricing considerations..."
+                />
+              </div>
+              <div>
+                <Label>Payout details</Label>
+                <Textarea
+                  className="mt-2"
+                  disabled={!isEditing || !hasPermission(Permission.FINANCIAL_EDIT)}
+                  {...form.register("internalDetails.financial.payoutDetails")}
+                  placeholder="Owner payout information..."
+                />
+              </div>
             </div>
           </div>
-        </div>
+        </ProtectedSection>
 
         {/* Operational Procedures */}
         <div>

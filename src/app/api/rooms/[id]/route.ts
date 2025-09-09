@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/db"
 import { z } from "zod"
+import { requirePermission } from "@/lib/auth"
+import { Permission } from "@/types/auth"
 
 const updateRoomSchema = z.object({
   name: z.string().min(1).optional(),
@@ -68,6 +70,16 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Check permission to edit properties
+    try {
+      await requirePermission(Permission.PROPERTY_EDIT)
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to update rooms" },
+        { status: 403 }
+      )
+    }
+
     const { id } = await context.params
     const body = await request.json()
     const data = updateRoomSchema.parse(body)
@@ -121,6 +133,16 @@ export async function DELETE(
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Check permission to edit properties
+    try {
+      await requirePermission(Permission.PROPERTY_EDIT)
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to delete rooms" },
+        { status: 403 }
+      )
     }
 
     const { id } = await context.params

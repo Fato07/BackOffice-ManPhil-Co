@@ -42,6 +42,8 @@ import {
 } from "@/hooks/use-resources"
 import { Resource } from "@/generated/prisma"
 import { toast } from "sonner"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Permission } from "@/types/auth"
 
 interface LinksSectionProps {
   propertyId: string
@@ -62,6 +64,8 @@ function getResourceIcon(type: string) {
 }
 
 export function LinksSection({ propertyId }: LinksSectionProps) {
+  const { hasPermission } = usePermissions()
+  const canEdit = hasPermission(Permission.PROPERTY_EDIT)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingResource, setEditingResource] = useState<Resource | null>(null)
   const [deletingResource, setDeletingResource] = useState<Resource | null>(null)
@@ -198,29 +202,33 @@ export function LinksSection({ propertyId }: LinksSectionProps) {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-semibold">Links and Resources</h2>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Resource
-        </Button>
+        {canEdit && (
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Resource
+          </Button>
+        )}
       </div>
 
       {/* Drag and Drop Zone */}
-      <div
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        className={`mb-6 border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-          isDragging ? "border-primary bg-primary/5" : "border-gray-300"
-        }`}
-      >
-        <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-        <p className="text-sm text-gray-600">
-          Drag and drop files here, or click the button above
-        </p>
-        <p className="text-xs text-gray-500 mt-2">
-          Supports PDF, DOC, DOCX, images, and more (max 10MB)
-        </p>
-      </div>
+      {canEdit && (
+        <div
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          className={`mb-6 border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+            isDragging ? "border-primary bg-primary/5" : "border-gray-300"
+          }`}
+        >
+          <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+          <p className="text-sm text-gray-600">
+            Drag and drop files here, or click the button above
+          </p>
+          <p className="text-xs text-gray-500 mt-2">
+            Supports PDF, DOC, DOCX, images, and more (max 10MB)
+          </p>
+        </div>
+      )}
 
       {/* Resources List */}
       {isLoading ? (
@@ -305,27 +313,31 @@ export function LinksSection({ propertyId }: LinksSectionProps) {
                           >
                             <Download className="h-4 w-4" />
                           </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => {
-                              setEditForm({
-                                type: resource.type,
-                                name: resource.name,
-                              })
-                              setEditingResource(resource)
-                            }}
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="text-red-600"
-                            onClick={() => setDeletingResource(resource)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {canEdit && (
+                            <>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => {
+                                  setEditForm({
+                                    type: resource.type,
+                                    name: resource.name,
+                                  })
+                                  setEditingResource(resource)
+                                }}
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="text-red-600"
+                                onClick={() => setDeletingResource(resource)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}
