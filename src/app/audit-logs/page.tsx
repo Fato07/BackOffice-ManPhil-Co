@@ -1,76 +1,57 @@
-"use client"
-
-import { useState } from "react"
+import { Suspense } from "react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { AuditLogTable } from "@/components/audit-logs/audit-log-table"
-import { AuditLogFiltersComponent } from "@/components/audit-logs/audit-log-filters"
-import { useAuditLogs, AuditLogFilters } from "@/hooks/use-audit-logs"
+import { AuditLogsContent } from "@/components/audit-logs/audit-logs-content"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Activity } from "lucide-react"
-import { useSearchParams } from "next/navigation"
+import { Skeleton } from "@/components/ui/skeleton"
+
+function AuditLogsLoading() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-96 mt-2" />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-4 w-64 mt-2" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <div className="grid grid-cols-3 gap-4">
+              <Skeleton className="h-10" />
+              <Skeleton className="h-10" />
+              <Skeleton className="h-10" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-4 w-48 mt-2" />
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="p-4 space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
 
 export default function AuditLogsPage() {
-  const searchParams = useSearchParams()
-  
-  // Parse initial filters from URL
-  const initialFilters: AuditLogFilters = {
-    entityType: searchParams.get("entityType") || undefined,
-    entityId: searchParams.get("entityId") || undefined,
-    action: searchParams.get("action") || undefined,
-    userId: searchParams.get("userId") || undefined,
-  }
-  
-  const [filters, setFilters] = useState<AuditLogFilters>(initialFilters)
-  const [page, setPage] = useState(1)
-  
-  const { data, isLoading } = useAuditLogs(filters, page)
-
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <Activity className="h-6 w-6" />
-            Audit Trail
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            View all changes and activities across your properties
-          </p>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Filters</CardTitle>
-            <CardDescription>
-              Filter audit logs by entity type, action, date range, and more
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <AuditLogFiltersComponent
-              filters={filters}
-              onFiltersChange={setFilters}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Activity Log</CardTitle>
-            <CardDescription>
-              {data?.total || 0} total activities found
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <AuditLogTable
-              logs={data?.data || []}
-              isLoading={isLoading}
-              page={page}
-              totalPages={data?.totalPages || 1}
-              onPageChange={setPage}
-            />
-          </CardContent>
-        </Card>
-      </div>
+      <Suspense fallback={<AuditLogsLoading />}>
+        <AuditLogsContent />
+      </Suspense>
     </DashboardLayout>
   )
 }
