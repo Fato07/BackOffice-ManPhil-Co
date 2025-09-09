@@ -1,0 +1,261 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Destination {
+  id         String     @id @default(cuid())
+  name       String
+  country    String
+  region     String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  properties Property[]
+
+  @@index([name])
+}
+
+model Property {
+  id                    String                @id @default(cuid())
+  name                  String
+  originalName          String?
+  status                PropertyStatus        @default(ONBOARDING)
+  destinationId         String
+  numberOfRooms         Int                   @default(0)
+  numberOfBathrooms     Int                   @default(0)
+  maxGuests             Int                   @default(0)
+  propertySize          Float?
+  address               String?
+  postcode              String?
+  city                  String?
+  latitude              Float?
+  longitude             Float?
+  additionalDetails     String?
+  licenseType           LicenseType           @default(NOT_APPLICABLE)
+  conciergeServiceOffer ConciergeServiceOffer @default(ESSENTIAL)
+  categories            String[]
+  operatedByExternal    String?
+  exclusivity           Boolean               @default(false)
+  position              Int?
+  segment               String?
+  iconicCollection      Boolean               @default(false)
+  onboardingFees        Boolean               @default(false)
+  onlineReservation     Boolean               @default(true)
+  flexibleCancellation  Boolean               @default(false)
+  neighborhood          String?
+  setting               String?
+  specialAttention      String?
+  locatedInCity         Boolean               @default(false)
+  beachAccess           Boolean               @default(false)
+  beachAccessibility    String?
+  beachTravelTime       String?
+  privateBeachAccess    Boolean               @default(false)
+  skiSlopes             Boolean               @default(false)
+  shops                 Boolean               @default(false)
+  restaurants           Boolean               @default(false)
+  touristCenter         Boolean               @default(false)
+  golfCourse            Boolean               @default(false)
+  accessibility         Json?
+  policies              Json?
+  arrivalDeparture      Json?
+  staff                 Json?
+  heatingAC             Json?
+  eventsAllowed         Boolean               @default(false)
+  eventsCapacity        Int?
+  eventsDetails         Json?
+  services              Json?
+  goodToKnow            String?
+  internalComment       String?
+  warning               String?
+  automaticOffer        Json?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  bookings              Booking[]
+  marketingContent      MarketingContent[]
+  photos                Photo[]
+  prices                PriceRange[]
+  destination           Destination           @relation(fields: [destinationId], references: [id])
+  contacts              PropertyContact[]
+  resources             Resource[]
+  rooms                 Room[]
+
+  @@index([status])
+  @@index([destinationId])
+  @@index([name])
+}
+
+model Room {
+  id          String   @id @default(cuid())
+  propertyId  String
+  name        String
+  type        String
+  groupName   String?
+  position    Int      @default(0)
+  generalInfo Json?
+  view        String?
+  equipment   Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([position])
+}
+
+model PropertyContact {
+  id         String      @id @default(cuid())
+  propertyId String
+  type       ContactType
+  name       String
+  email      String?
+  phone      String?
+  notes      String?
+  isApproved Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  property   Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([type])
+}
+
+model Booking {
+  id             String      @id @default(cuid())
+  propertyId     String
+  type           BookingType
+  startDate      DateTime
+  endDate        DateTime
+  guestName      String?
+  guestEmail     String?
+  guestPhone     String?
+  numberOfGuests Int?
+  notes          String?
+  externalId     String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  property       Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([startDate, endDate])
+  @@index([type])
+}
+
+model PriceRange {
+  id          String   @id @default(cuid())
+  propertyId  String
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  nightlyRate Float
+  weeklyRate  Float?
+  monthlyRate Float?
+  minimumStay Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([startDate, endDate])
+}
+
+model Resource {
+  id         String   @id @default(cuid())
+  propertyId String
+  type       String
+  name       String
+  url        String
+  uploadedBy String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([type])
+}
+
+model Photo {
+  id         String   @id @default(cuid())
+  propertyId String
+  url        String
+  caption    String?
+  position   Int      @default(0)
+  roomId     String?
+  isMain     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  category   String   @default("OTHER")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([position])
+}
+
+model MarketingContent {
+  id             String   @id @default(cuid())
+  propertyId     String
+  language       String
+  title          String
+  description    String
+  amenities      String[]
+  highlights     String[]
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  property       Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, language])
+  @@index([propertyId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  action     String
+  entityType String
+  entityId   String
+  changes    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+enum PropertyStatus {
+  PUBLISHED
+  HIDDEN
+  ONBOARDING
+}
+
+enum LicenseType {
+  NOT_APPLICABLE
+  TYPE_1
+  TYPE_2
+}
+
+enum ConciergeServiceOffer {
+  ESSENTIAL
+  PREMIUM
+  LUXURY
+}
+
+enum ContactType {
+  OWNER
+  AGENCY
+  STAFF
+  MAINTENANCE
+  EMERGENCY
+}
+
+enum BookingType {
+  CONFIRMED
+  TENTATIVE
+  BLOCKED
+  MAINTENANCE
+}
