@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/providers/query-provider";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const playfair = Playfair_Display({ 
+  subsets: ["latin"], 
+  variable: "--font-playfair",
+  weight: ["400", "500", "600", "700", "800", "900"]
+});
 
 export const metadata: Metadata = {
   title: "ManPhil&Co Property Management",
@@ -29,7 +34,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className={inter.className} suppressHydrationWarning>
+        <body className={`${inter.variable} ${playfair.variable} ${inter.className}`} suppressHydrationWarning>
           <QueryProvider>
             {children}
             <Toaster />

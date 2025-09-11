@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { UserRole } from './types/auth';
 
-const isProtectedRoute = createRouteMatcher(['/', '/houses(.*)', '/api(.*)']);
+const isProtectedRoute = createRouteMatcher(['/', '/houses(.*)', '/api(.*)', '/profile(.*)', '/settings(.*)', '/destinations(.*)', '/places(.*)', '/contacts(.*)', '/finance(.*)', '/requests(.*)', '/legals(.*)', '/audit-logs(.*)']);
 const isPublicRoute = createRouteMatcher(['/landing', '/sign-in(.*)', '/sign-up(.*)']);
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 const isSensitiveApiRoute = createRouteMatcher([

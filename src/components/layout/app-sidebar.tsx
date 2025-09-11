@@ -9,6 +9,8 @@ import {
   FileText,
   Scale,
   Activity,
+  User,
+  Settings,
 } from "lucide-react"
 import {
   Sidebar,
@@ -67,6 +69,19 @@ const menuItems = [
   },
 ]
 
+const profileItems = [
+  {
+    title: "Profile",
+    icon: User,
+    href: "/profile",
+  },
+  {
+    title: "Settings",
+    icon: Settings,
+    href: "/settings",
+  },
+]
+
 export function AppSidebar() {
   const pathname = usePathname()
 
@@ -88,6 +103,31 @@ export function AppSidebar() {
             <SidebarMenu>
               {menuItems.map((item) => {
                 const isActive = pathname.startsWith(item.href)
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={isActive}
+                      className={isActive ? "bg-[#B5985A] text-white hover:bg-[#B5985A]/90" : ""}
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="mr-2 h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupLabel>Account</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {profileItems.map((item) => {
+                const isActive = pathname === item.href
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton 
