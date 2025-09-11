@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/table"
 import { DataTablePagination } from "./data-table-pagination"
 import { DataTableToolbar } from "./data-table-toolbar"
+import { motion } from "framer-motion"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -100,11 +101,15 @@ export function DataTable<TData, TValue>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
+                <motion.tr
                   key={row.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: row.index * 0.02 }}
+                  whileHover={{ backgroundColor: "rgba(0, 0, 0, 0.02)", x: 2 }}
                   data-state={row.getIsSelected() && "selected"}
                   onClick={() => onRowClick?.(row.original)}
-                  className={onRowClick ? "cursor-pointer" : ""}
+                  className={`border-b transition-colors ${onRowClick ? "cursor-pointer hover:bg-gray-50/50" : ""}`}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -114,7 +119,7 @@ export function DataTable<TData, TValue>({
                       )}
                     </TableCell>
                   ))}
-                </TableRow>
+                </motion.tr>
               ))
             ) : (
               <TableRow>

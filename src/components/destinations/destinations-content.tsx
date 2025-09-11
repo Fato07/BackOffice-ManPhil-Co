@@ -1,0 +1,148 @@
+"use client"
+
+import { useState } from "react"
+import { DestinationsMap } from "./map/destinations-map"
+import { MapControls } from "./map/map-controls"
+import { DestinationSidebar } from "./ui/destination-sidebar"
+import { ViewToggle } from "./views/view-toggle"
+import { ListView } from "./views/list-view"
+import { StatsWidget } from "./ui/stats-widget"
+import { CreateDestinationDialog } from "./dialogs/create-destination-dialog"
+import { MapSkeleton } from "./map/map-skeleton"
+import { motion, AnimatePresence } from "framer-motion"
+import { useDestinations, DestinationWithCount } from "@/hooks/use-destinations"
+
+export type ViewMode = "map" | "list"
+
+const MAP_STYLES = {
+  dark: "mapbox://styles/mapbox/dark-v11",
+  satellite: "mapbox://styles/mapbox/satellite-streets-v12",
+}
+
+export function DestinationsContent() {
+  const [viewMode, setViewMode] = useState<ViewMode>("map")
+  const [selectedDestination, setSelectedDestination] = useState<DestinationWithCount | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [mapRef, setMapRef] = useState<any>(null)
+  const [mapStyle, setMapStyle] = useState(MAP_STYLES.dark)
+  const { data, isLoading } = useDestinations()
+
+  const handleDestinationSelect = (destination: DestinationWithCount) => {
+    setSelectedDestination(destination)
+    setSidebarOpen(true)
+  }
+
+  const handleLocationSearch = (coords: { longitude: number; latitude: number; name: string }) => {
+    if (mapRef && viewMode === "map") {
+      mapRef.flyTo({
+        center: [coords.longitude, coords.latitude],
+        zoom: 10,
+        duration: 2000
+      })
+    }
+  }
+
+  return (
+    <div className="relative h-[calc(100vh-4rem)] overflow-hidden bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+      <AnimatePresence mode="wait">
+        {isLoading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="h-full"
+          >
+            <MapSkeleton />
+          </motion.div>
+        ) : viewMode === "map" ? (
+          <motion.div
+            key="map"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="h-full"
+          >
+            <DestinationsMap
+              destinations={data?.destinations || []}
+              onDestinationSelect={handleDestinationSelect}
+              selectedDestination={selectedDestination}
+              onMapRef={setMapRef}
+              mapStyle={mapStyle}
+              onStyleChange={setMapStyle}
+            />
+          </motion.div>
+        ) : null}
+        
+        {viewMode === "list" && (
+          <motion.div
+            key="list"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="h-full overflow-auto p-6"
+          >
+            <ListView
+              destinations={data?.destinations || []}
+              onDestinationSelect={handleDestinationSelect}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Controls - Mobile responsive */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="absolute top-4 left-4 right-4 sm:left-4 sm:right-auto z-10"
+      >
+        <MapControls 
+          onLocationSearch={handleLocationSearch}
+          mapStyle={mapStyle}
+          onStyleChange={setMapStyle}
+        />
+      </motion.div>
+
+      {/* View Toggle - Hidden on mobile */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="absolute top-4 left-1/2 -translate-x-1/2 z-10 hidden sm:block"
+      >
+        <ViewToggle currentView={viewMode} onViewChange={setViewMode} />
+      </motion.div>
+
+      {/* Stats Widget - Responsive */}
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.2 }}
+        className="absolute bottom-24 right-4 sm:top-4 sm:bottom-auto z-10"
+      >
+        <StatsWidget destinations={data?.destinations || []} />
+      </motion.div>
+
+      {/* Add Destination Button */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.3 }}
+        className="absolute bottom-20 right-8 z-10"
+      >
+        <CreateDestinationDialog />
+      </motion.div>
+
+      {/* Destination Details Sidebar */}
+      <AnimatePresence>
+        {sidebarOpen && selectedDestination && (
+          <DestinationSidebar
+            destination={selectedDestination}
+            isOpen={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}

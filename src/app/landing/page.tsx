@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Home, Shield, Clock, BarChart } from "lucide-react";
+import Image from "next/image";
 
 export default function LandingPage() {
   return (
@@ -11,7 +12,14 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">ManPhil&Co</h1>
+              <Image 
+                src="/Logo Manphil&Co.svg"
+                alt="ManPhil&Co Logo"
+                width={150}
+                height={84}
+                className="h-10 w-auto"
+                priority
+              />
             </div>
             
             <div className="flex items-center gap-4">

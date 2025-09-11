@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/sidebar"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import Image from "next/image"
 
 const menuItems = [
   {
@@ -73,8 +74,15 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xl font-semibold text-primary mb-4">
-            ManPhil&Co
+          <SidebarGroupLabel className="mb-4 px-2">
+            <Image 
+              src="/Logo Manphil&Co.svg"
+              alt="ManPhil&Co Logo"
+              width={180}
+              height={100}
+              className="w-full h-auto"
+              priority
+            />
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>

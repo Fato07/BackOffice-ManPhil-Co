@@ -4,7 +4,9 @@
       "mcp__shadcn__list_items_in_registries",
       "Bash(npx shadcn@latest add:*)",
       "mcp__firecrawl__firecrawl_scrape",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "mcp__firecrawl__firecrawl_scrape",
+      "mcp__brave-search__brave_web_search"
     ]
   },
   "enableAllProjectMcpServers": true,

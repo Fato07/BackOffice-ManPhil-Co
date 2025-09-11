@@ -76,6 +76,9 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Extract id early for use in audit logs
+    const { id } = await params
+
     // Check permission to edit properties
     try {
       await requirePermission(Permission.PROPERTY_EDIT)
@@ -106,7 +109,6 @@ export async function PUT(
       )
     }
 
-    const { id } = await params
     const body = await req.json()
 
     // Check if property exists
@@ -342,6 +344,9 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Extract id early for use in audit logs
+    const { id } = await params
+
     // Check permission to delete properties (using PROPERTY_EDIT permission)
     try {
       await requirePermission(Permission.PROPERTY_EDIT)
@@ -371,8 +376,6 @@ export async function DELETE(
         { status: 403 }
       )
     }
-
-    const { id } = await params
 
     // Check if property exists
     const existingProperty = await prisma.property.findUnique({

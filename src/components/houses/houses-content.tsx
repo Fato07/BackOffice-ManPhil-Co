@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { useDebounce } from "@/hooks/use-debounce"
+import { motion } from "framer-motion"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -319,18 +320,24 @@ export function HousesContent() {
           <div className="text-sm text-gray-500">
             <Skeleton className="h-4 w-24" />
           </div>
-          <div className="border rounded-lg">
+          <div className="border rounded-lg overflow-hidden">
             <div className="p-4 space-y-4">
               {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center space-x-4">
-                  <Skeleton className="h-12 w-12" />
+                <motion.div 
+                  key={i} 
+                  className="flex items-center space-x-4"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: i * 0.05 }}
+                >
+                  <Skeleton className="h-12 w-12 rounded-lg" />
                   <div className="space-y-2 flex-1">
                     <Skeleton className="h-4 w-[250px]" />
                     <Skeleton className="h-4 w-[200px]" />
                   </div>
                   <Skeleton className="h-8 w-[100px]" />
                   <Skeleton className="h-8 w-8" />
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>

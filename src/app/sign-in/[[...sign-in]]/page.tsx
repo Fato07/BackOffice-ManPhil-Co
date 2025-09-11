@@ -1,10 +1,18 @@
 import { SignIn } from "@clerk/nextjs";
+import Image from "next/image";
 
 export default function SignInPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">ManPhil&Co</h1>
+        <Image 
+          src="/Logo Manphil&Co.svg"
+          alt="ManPhil&Co Logo"
+          width={250}
+          height={140}
+          className="mx-auto mb-4"
+          priority
+        />
         <p className="text-lg text-gray-600">Property Management System</p>
       </div>
       

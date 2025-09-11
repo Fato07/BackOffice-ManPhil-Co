@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/db"
 
-// GET /api/destinations - Get all destinations for dropdown
+// GET /api/destinations - Get all destinations with optional filtering
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth()
@@ -10,16 +10,39 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const searchParams = req.nextUrl.searchParams
+    const search = searchParams.get('search')
+    const country = searchParams.get('country')
+    const withCoordinates = searchParams.get('withCoordinates') === 'true'
+
+    const where: any = {}
+    
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { country: { contains: search, mode: 'insensitive' } },
+        { region: { contains: search, mode: 'insensitive' } },
+      ]
+    }
+    
+    if (country && country !== 'all') {
+      where.country = country
+    }
+    
+    if (withCoordinates) {
+      where.AND = [
+        { latitude: { not: null } },
+        { longitude: { not: null } }
+      ]
+    }
+
     const destinations = await prisma.destination.findMany({
+      where,
       orderBy: [
         { country: 'asc' },
         { name: 'asc' }
       ],
-      select: {
-        id: true,
-        name: true,
-        country: true,
-        region: true,
+      include: {
         _count: {
           select: {
             properties: true
@@ -38,6 +61,8 @@ export async function GET(req: NextRequest) {
         id: dest.id,
         name: dest.name,
         region: dest.region,
+        latitude: dest.latitude,
+        longitude: dest.longitude,
         propertyCount: dest._count.properties,
         label: dest.region ? `${dest.name}, ${dest.region}` : dest.name,
       })
@@ -66,7 +91,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { name, country, region } = body
+    const { name, country, region, latitude, longitude } = body
 
     if (!name || !country) {
       return NextResponse.json(
@@ -80,7 +105,16 @@ export async function POST(req: NextRequest) {
         name,
         country,
         region,
+        latitude: latitude ? parseFloat(latitude) : undefined,
+        longitude: longitude ? parseFloat(longitude) : undefined,
       },
+      include: {
+        _count: {
+          select: {
+            properties: true
+          }
+        }
+      }
     })
 
     return NextResponse.json(destination, { status: 201 })

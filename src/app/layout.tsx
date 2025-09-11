@@ -10,6 +10,15 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "ManPhil&Co Property Management",
   description: "Back office system for managing luxury vacation rental properties",
+  icons: {
+    icon: '/icon.svg',
+  },
+  openGraph: {
+    title: "ManPhil&Co Property Management",
+    description: "Back office system for managing luxury vacation rental properties",
+    siteName: "ManPhil&Co",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
