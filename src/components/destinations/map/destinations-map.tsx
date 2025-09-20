@@ -4,10 +4,7 @@ import { useRef, useState, useEffect, useMemo } from "react"
 import Map, { 
   Marker, 
   Popup, 
-  NavigationControl, 
   ScaleControl,
-  FullscreenControl,
-  GeolocateControl,
   MapRef,
   Source,
   Layer
@@ -18,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Destination } from "@/generated/prisma"
 import { MapPin } from "lucide-react"
 import Supercluster from "supercluster"
+import type { ViewMode } from "../map/map-controls"
 
 interface DestinationWithCount extends Destination {
   _count?: {
@@ -32,12 +30,20 @@ interface DestinationsMapProps {
   onMapRef?: (map: MapRef | null) => void
   mapStyle: string
   onStyleChange: (style: string) => void
+  viewMode?: ViewMode
+  onViewModeChange?: (mode: ViewMode) => void
+  onMapReady?: (controls: MapControls) => void
+}
+
+export interface MapControls {
+  zoomIn: () => void
+  zoomOut: () => void
+  resetView: () => void
+  toggleFullscreen: () => void
 }
 
 // Mapbox styles
 const MAP_STYLES = {
-  dark: "mapbox://styles/mapbox/dark-v11",
-  satellite: "mapbox://styles/mapbox/satellite-streets-v12",
   light: "mapbox://styles/mapbox/light-v11",
   streets: "mapbox://styles/mapbox/streets-v12"
 }
@@ -69,7 +75,10 @@ export function DestinationsMap({
   selectedDestination,
   onMapRef,
   mapStyle,
-  onStyleChange
+  onStyleChange,
+  viewMode = "3D",
+  onViewModeChange,
+  onMapReady
 }: DestinationsMapProps) {
   const mapRef = useRef<MapRef>(null)
   const [popupInfo, setPopupInfo] = useState<DestinationWithCount | null>(null)
@@ -77,10 +86,50 @@ export function DestinationsMap({
     longitude: 2.3522,
     latitude: 48.8566,
     zoom: 5,
-    pitch: 45, // Always 3D
+    pitch: viewMode === "3D" ? 45 : 0,
     bearing: 0
   })
   const [isMobile, setIsMobile] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+
+  // Map control functions
+  const mapControls: MapControls = {
+    zoomIn: () => {
+      const currentZoom = mapRef.current?.getZoom() || 5
+      mapRef.current?.flyTo({
+        zoom: Math.min(currentZoom + 1, 18),
+        duration: 300
+      })
+    },
+    zoomOut: () => {
+      const currentZoom = mapRef.current?.getZoom() || 5
+      mapRef.current?.flyTo({
+        zoom: Math.max(currentZoom - 1, 2),
+        duration: 300
+      })
+    },
+    resetView: () => {
+      mapRef.current?.flyTo({
+        center: [2.3522, 48.8566],
+        zoom: 5,
+        pitch: viewMode === "3D" ? 45 : 0,
+        bearing: 0,
+        duration: 1000
+      })
+    },
+    toggleFullscreen: () => {
+      if (!document.fullscreenElement) {
+        const mapContainer = mapRef.current?.getContainer()?.parentElement
+        if (mapContainer) {
+          mapContainer.requestFullscreen()
+          setIsFullscreen(true)
+        }
+      } else {
+        document.exitFullscreen()
+        setIsFullscreen(false)
+      }
+    }
+  }
 
   // Handle responsive behavior
   useEffect(() => {
@@ -89,6 +138,38 @@ export function DestinationsMap({
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  // Handle view mode changes
+  useEffect(() => {
+    const map = mapRef.current?.getMap()
+    if (!map) return
+
+    if (viewMode === "2D") {
+      // Transition to 2D mode
+      mapRef.current?.flyTo({
+        pitch: 0,
+        bearing: 0,
+        duration: 1000
+      })
+      
+      // Remove 3D features after transition
+      setTimeout(() => {
+        remove3DFeatures(map)
+      }, 1100)
+    } else {
+      // Transition to 3D mode
+      mapRef.current?.flyTo({
+        pitch: 45,
+        bearing: -20,
+        duration: 1000
+      })
+      
+      // Add 3D features after transition starts
+      setTimeout(() => {
+        add3DFeatures(map)
+      }, 500)
+    }
+  }, [viewMode])
 
   // Create clusters using Supercluster
   const { clusters, supercluster } = useMemo(() => {
@@ -137,23 +218,23 @@ export function DestinationsMap({
       mapRef.current?.flyTo({
         center: [selectedDestination.longitude, selectedDestination.latitude],
         zoom: 12,
-        pitch: 60,
-        bearing: -20,
+        pitch: viewMode === "3D" ? 60 : 0,
+        bearing: viewMode === "3D" ? -20 : 0,
         duration: 2000
       })
     }
-  }, [selectedDestination])
+  }, [selectedDestination, viewMode])
 
   // Re-apply 3D features when map style changes
   useEffect(() => {
     const map = mapRef.current?.getMap()
-    if (map && map.isStyleLoaded()) {
+    if (map && map.isStyleLoaded() && viewMode === "3D") {
       // Wait a bit for the new style to fully load
       setTimeout(() => {
         add3DFeatures(map)
       }, 100)
     }
-  }, [mapStyle])
+  }, [mapStyle, viewMode])
 
   const handleMarkerClick = (destination: DestinationWithCount) => {
     setPopupInfo(destination)
@@ -180,13 +261,21 @@ export function DestinationsMap({
       onMapRef(mapRef.current)
     }
 
-    // Wait for style to load before adding 3D features
-    if (map.isStyleLoaded()) {
-      add3DFeatures(map)
-    } else {
-      map.once('style.load', () => {
+    // Expose map controls to parent
+    if (onMapReady) {
+      onMapReady(mapControls)
+    }
+
+    // Only add 3D features if in 3D mode
+    if (viewMode === "3D") {
+      // Wait for style to load before adding 3D features
+      if (map.isStyleLoaded()) {
         add3DFeatures(map)
-      })
+      } else {
+        map.once('style.load', () => {
+          add3DFeatures(map)
+        })
+      }
     }
   }
 
@@ -262,6 +351,23 @@ export function DestinationsMap({
     }
   }
 
+  const remove3DFeatures = (map: any) => {
+    try {
+      // Remove terrain
+      map.setTerrain(null)
+      
+      // Remove fog
+      map.setFog(null)
+      
+      // Remove 3D buildings layer
+      if (map.getLayer('add-3d-buildings')) {
+        map.removeLayer('add-3d-buildings')
+      }
+    } catch (error) {
+      console.error('Error removing 3D features:', error)
+    }
+  }
+
   return (
     <div className="relative h-full w-full">
       <Map
@@ -271,7 +377,7 @@ export function DestinationsMap({
           longitude: 2.3522,
           latitude: 48.8566,
           zoom: 5,
-          pitch: 45,
+          pitch: viewMode === "3D" ? 45 : 0,
           bearing: 0
         }}
         {...viewState}
@@ -281,34 +387,14 @@ export function DestinationsMap({
         maxZoom={18}
         minZoom={2}
         onLoad={onMapLoad}
+        maxPitch={viewMode === "3D" ? 85 : 0}
       >
-        {/* Navigation controls - mobile optimized */}
-        <NavigationControl 
-          position="bottom-right" 
-          style={{ 
-            marginBottom: isMobile ? 80 : 100, 
-            marginRight: isMobile ? 8 : 16 
-          }} 
-        />
+        {/* Scale control only - minimal and unobtrusive */}
         <ScaleControl 
           position="bottom-left" 
           style={{ 
-            marginBottom: 30, 
+            marginBottom: 20, 
             marginLeft: isMobile ? 8 : 16 
-          }} 
-        />
-        <FullscreenControl 
-          position="bottom-right" 
-          style={{ 
-            marginBottom: isMobile ? 140 : 160, 
-            marginRight: isMobile ? 8 : 16 
-          }} 
-        />
-        <GeolocateControl 
-          position="bottom-right" 
-          style={{ 
-            marginBottom: isMobile ? 200 : 220, 
-            marginRight: isMobile ? 8 : 16 
           }} 
         />
 

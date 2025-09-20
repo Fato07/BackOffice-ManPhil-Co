@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/db"
 import { createClient } from "@supabase/supabase-js"
+import { requirePermission } from "@/lib/auth"
+import { Permission } from "@/types/auth"
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,22 +23,50 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Check permission to edit properties
+    try {
+      await requirePermission(Permission.PROPERTY_EDIT)
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to update photos" },
+        { status: 403 }
+      )
+    }
+
     const { id } = await context.params
     const body = await request.json()
 
     const photo = await prisma.photo.findUnique({
-      where: { id }
+      where: { id },
+      include: { property: true }
     })
 
     if (!photo) {
       return NextResponse.json({ error: "Photo not found" }, { status: 404 })
     }
 
+    // If setting this photo as main, unset all other photos for this property
+    if (body.isMain === true && !photo.isMain) {
+      await prisma.photo.updateMany({
+        where: {
+          propertyId: photo.propertyId,
+          id: { not: id },
+          isMain: true
+        },
+        data: { isMain: false }
+      })
+    }
+
+    // Update the photo with all provided fields
+    const updateData: any = {}
+    if (body.caption !== undefined) updateData.caption = body.caption
+    if (body.altText !== undefined) updateData.altText = body.altText
+    if (body.category !== undefined) updateData.category = body.category
+    if (body.isMain !== undefined) updateData.isMain = body.isMain
+
     const updatedPhoto = await prisma.photo.update({
       where: { id },
-      data: {
-        caption: body.caption,
-      }
+      data: updateData
     })
 
     await prisma.auditLog.create({
@@ -68,6 +98,16 @@ export async function DELETE(
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Check permission to edit properties
+    try {
+      await requirePermission(Permission.PROPERTY_EDIT)
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to delete photos" },
+        { status: 403 }
+      )
     }
 
     const { id } = await context.params

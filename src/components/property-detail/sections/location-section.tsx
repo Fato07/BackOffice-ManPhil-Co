@@ -170,6 +170,8 @@ export function LocationSection({ property }: LocationSectionProps) {
         )}
       </PropertySection>
 
+      <div className="mb-6" />
+
       <PropertySection
         title="Nearby"
         isEditing={isEditingNearby}

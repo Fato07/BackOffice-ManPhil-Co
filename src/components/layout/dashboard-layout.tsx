@@ -7,9 +7,12 @@ import { UserButton } from "@clerk/nextjs"
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-background px-4 py-2 rounded-md shadow-lg">
+        Skip to main content
+      </a>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <main className="flex-1 flex flex-col">
+        <main id="main-content" className="flex-1 flex flex-col">
           <div className="flex h-14 items-center justify-between border-b px-4 sticky top-0 z-40 bg-white">
             <SidebarTrigger />
             <UserButton 

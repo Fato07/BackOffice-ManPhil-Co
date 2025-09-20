@@ -30,6 +30,21 @@ export enum Permission {
   // Vendor permissions
   VENDOR_VIEW = 'vendor:view',
   VENDOR_EDIT = 'vendor:edit',
+  
+  // Equipment request permissions
+  EQUIPMENT_REQUEST_VIEW = 'equipment_request:view',
+  EQUIPMENT_REQUEST_VIEW_INTERNAL = 'equipment_request:view_internal',
+  EQUIPMENT_REQUEST_CREATE = 'equipment_request:create',
+  EQUIPMENT_REQUEST_EDIT = 'equipment_request:edit',
+  EQUIPMENT_REQUEST_EDIT_INTERNAL = 'equipment_request:edit_internal',
+  EQUIPMENT_REQUEST_APPROVE = 'equipment_request:approve',
+  EQUIPMENT_REQUEST_DELETE = 'equipment_request:delete',
+  
+  // Legal document permissions
+  LEGAL_DOCUMENT_VIEW = 'legal_document:view',
+  LEGAL_DOCUMENT_CREATE = 'legal_document:create',
+  LEGAL_DOCUMENT_EDIT = 'legal_document:edit',
+  LEGAL_DOCUMENT_DELETE = 'legal_document:delete',
 }
 
 export interface RolePermissionMap {
@@ -54,6 +69,17 @@ export const ROLE_PERMISSIONS: RolePermissionMap = {
     Permission.OWNER_EDIT,
     Permission.VENDOR_VIEW,
     Permission.VENDOR_EDIT,
+    Permission.EQUIPMENT_REQUEST_VIEW,
+    Permission.EQUIPMENT_REQUEST_VIEW_INTERNAL,
+    Permission.EQUIPMENT_REQUEST_CREATE,
+    Permission.EQUIPMENT_REQUEST_EDIT,
+    Permission.EQUIPMENT_REQUEST_EDIT_INTERNAL,
+    Permission.EQUIPMENT_REQUEST_APPROVE,
+    Permission.EQUIPMENT_REQUEST_DELETE,
+    Permission.LEGAL_DOCUMENT_VIEW,
+    Permission.LEGAL_DOCUMENT_CREATE,
+    Permission.LEGAL_DOCUMENT_EDIT,
+    Permission.LEGAL_DOCUMENT_DELETE,
   ],
   [UserRole.MANAGER]: [
     Permission.PROPERTY_VIEW,
@@ -64,13 +90,28 @@ export const ROLE_PERMISSIONS: RolePermissionMap = {
     Permission.CONTACTS_EDIT,
     Permission.VENDOR_VIEW,
     Permission.VENDOR_EDIT,
+    Permission.EQUIPMENT_REQUEST_VIEW,
+    Permission.EQUIPMENT_REQUEST_VIEW_INTERNAL,
+    Permission.EQUIPMENT_REQUEST_CREATE,
+    Permission.EQUIPMENT_REQUEST_EDIT,
+    Permission.EQUIPMENT_REQUEST_EDIT_INTERNAL,
+    Permission.EQUIPMENT_REQUEST_APPROVE,
+    Permission.LEGAL_DOCUMENT_VIEW,
+    Permission.LEGAL_DOCUMENT_CREATE,
+    Permission.LEGAL_DOCUMENT_EDIT,
+    Permission.LEGAL_DOCUMENT_DELETE,
   ],
   [UserRole.STAFF]: [
     Permission.PROPERTY_VIEW,
     Permission.PROPERTY_EDIT,
+    Permission.EQUIPMENT_REQUEST_VIEW,
+    Permission.EQUIPMENT_REQUEST_CREATE,
+    Permission.LEGAL_DOCUMENT_VIEW,
   ],
   [UserRole.VIEWER]: [
     Permission.PROPERTY_VIEW,
+    Permission.EQUIPMENT_REQUEST_VIEW,
+    Permission.LEGAL_DOCUMENT_VIEW,
   ],
 };
 

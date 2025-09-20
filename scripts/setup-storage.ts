@@ -16,43 +16,75 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function setupStorage() {
   try {
-    console.log('Setting up Supabase storage...')
+    console.log('Setting up Supabase storage buckets...')
 
-    // Create the property-photos bucket if it doesn't exist
-    const { data: buckets } = await supabase.storage.listBuckets()
-    
-    const bucketExists = buckets?.some(bucket => bucket.name === 'property-photos')
-    
-    if (!bucketExists) {
-      const { data, error } = await supabase.storage.createBucket('property-photos', {
-        public: true,
-        fileSizeLimit: 10485760, // 10MB
-        allowedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-      })
-
-      if (error) {
-        console.error('Error creating bucket:', error)
-        return
+    // Define buckets configuration
+    const bucketsConfig = [
+      {
+        name: 'property-photos',
+        config: {
+          public: true,
+          fileSizeLimit: 10485760, // 10MB
+          allowedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+        }
+      },
+      {
+        name: 'legal-documents',
+        config: {
+          public: true,
+          fileSizeLimit: 52428800, // 50MB
+          allowedMimeTypes: [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/jpeg',
+            'image/jpg',
+            'image/png',
+            'image/gif',
+            'image/webp'
+          ]
+        }
+      },
+      {
+        name: 'resources',
+        config: {
+          public: true,
+          fileSizeLimit: 52428800, // 50MB
+          allowedMimeTypes: [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'image/jpeg',
+            'image/jpg',
+            'image/png',
+            'image/gif',
+            'image/webp'
+          ]
+        }
       }
+    ]
 
-      console.log('✅ Created property-photos bucket')
-    } else {
-      console.log('✅ property-photos bucket already exists')
-    }
+    // Get existing buckets
+    const { data: existingBuckets } = await supabase.storage.listBuckets()
+    
+    // Create each bucket if it doesn't exist
+    for (const bucket of bucketsConfig) {
+      const bucketExists = existingBuckets?.some(b => b.name === bucket.name)
+      
+      if (!bucketExists) {
+        const { error } = await supabase.storage.createBucket(bucket.name, bucket.config)
 
-    // Set up storage policies
-    const { data: policies } = await supabase
-      .from('storage.policies')
-      .select('*')
-      .eq('bucket_id', 'property-photos')
+        if (error) {
+          console.error(`Error creating ${bucket.name} bucket:`, error)
+          continue
+        }
 
-    if (!policies || policies.length === 0) {
-      // Allow authenticated users to upload
-      await supabase.storage
-        .from('property-photos')
-        .createSignedUploadUrl('test')
-        
-      console.log('✅ Storage policies configured')
+        console.log(`✅ Created ${bucket.name} bucket`)
+      } else {
+        console.log(`✅ ${bucket.name} bucket already exists`)
+      }
     }
 
     console.log('✅ Storage setup complete!')

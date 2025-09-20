@@ -226,10 +226,6 @@ export async function PATCH(
 
     const body = await req.json()
 
-    // Log the incoming request data for debugging
-    console.log("PATCH request for property:", id)
-    console.log("Request body:", JSON.stringify(body, null, 2))
-
     // Check if property exists
     const existingProperty = await prisma.property.findUnique({
       where: { id },
@@ -256,8 +252,6 @@ export async function PATCH(
         updateData[key] = value
       }
     }
-    
-    console.log("Final update data:", JSON.stringify(updateData, null, 2))
     
     // For PATCH, we don't validate against schemas - we accept any valid fields
     // This allows for flexible partial updates from different sections

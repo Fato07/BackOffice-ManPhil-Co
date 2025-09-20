@@ -53,12 +53,19 @@ export async function POST(
     // Verify property exists and user has access
     const property = await prisma.property.findUnique({
       where: { id },
-      include: { photos: true }
+      include: { 
+        photos: true  // Get all photos to check if any exist
+      }
     })
 
     if (!property) {
       return NextResponse.json({ error: "Property not found" }, { status: 404 })
     }
+
+    // Check if property has ANY photos at all
+    const hasAnyPhotos = property.photos.length > 0
+    // Check if property has a main photo
+    const hasMainPhoto = property.photos.some(photo => photo.isMain)
 
     const formData = await request.formData()
     const files = formData.getAll("files") as File[]
@@ -129,11 +136,18 @@ export async function POST(
         .getPublicUrl(fileName)
 
       // Create photo record in database
+      // Set first photo as main if:
+      // 1. Property has no photos at all AND this is the first photo being uploaded in this batch
+      // 2. Property has photos but none are main AND this is the first photo being uploaded in this batch
+      const isFirstPhotoInBatch = uploadedPhotos.length === 0
+      const shouldBeMain = !hasMainPhoto && (!hasAnyPhotos || isFirstPhotoInBatch)
+      
       const photo: Photo = await prisma.photo.create({
         data: {
           propertyId: id,
           url: publicUrl,
-          position: property.photos.length + uploadedPhotos.length,
+          position: uploadedPhotos.length,
+          isMain: shouldBeMain,
         }
       })
 
@@ -141,6 +155,26 @@ export async function POST(
     }
 
     console.log(`[Photos Upload] Upload complete. Success: ${uploadedPhotos.length}, Failed: ${files.length - uploadedPhotos.length}`)
+
+    // Data integrity check: Ensure property has at least one main photo
+    if (uploadedPhotos.length > 0 && !hasMainPhoto) {
+      // Check again if any photo was marked as main during this upload
+      const uploadedMainPhoto = uploadedPhotos.some(photo => photo.isMain)
+      
+      if (!uploadedMainPhoto) {
+        // No main photo exists, set the first uploaded photo as main
+        console.log(`[Photos Upload] No main photo found after upload, setting first photo as main`)
+        
+        const firstPhoto = uploadedPhotos[0]
+        await prisma.photo.update({
+          where: { id: firstPhoto.id },
+          data: { isMain: true }
+        })
+        
+        // Update the photo in our response
+        firstPhoto.isMain = true
+      }
+    }
 
     // Log the upload
     if (uploadedPhotos.length > 0) {

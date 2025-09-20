@@ -85,13 +85,13 @@ export function PropertyNavigation({
   return (
     <div
       className={cn(
-        "bg-white border-r border-gray-200 transition-all duration-300 flex flex-col sticky top-14 h-[calc(100vh-3.5rem)] z-30",
+        "bg-white/90 backdrop-blur-xl border-r border-white/30 transition-all duration-300 flex flex-col sticky top-14 h-[calc(100vh-3.5rem)] z-30 shadow-xl",
         isExpanded ? "w-80" : "w-16"
       )}
     >
       {/* Header */}
       <div className={cn(
-        "border-b border-gray-200",
+        "border-b border-white/20",
         isExpanded ? "p-4" : "p-2"
       )}>
         <div className={cn(
@@ -140,7 +140,7 @@ export function PropertyNavigation({
       {/* Navigation Groups */}
       <div className="flex-1 overflow-y-auto">
         {Object.entries(sectionGroups).map(([groupKey, groupSections]) => (
-          <div key={groupKey} className="border-b border-gray-100 last:border-0">
+          <div key={groupKey} className="border-b border-white/10 last:border-0">
             {isExpanded ? (
               <>
                 <button

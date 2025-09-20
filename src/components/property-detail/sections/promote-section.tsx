@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, UseFormReturn } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { X, Check } from "lucide-react"
 import { PropertySection } from "../property-section"
@@ -31,12 +31,42 @@ interface PromoteSectionProps {
   }
 }
 
+// Define BooleanEditField outside the component to prevent recreation on every render
+const BooleanEditField = ({ 
+  label, 
+  field,
+  form 
+}: { 
+  label: string
+  field: keyof PromotionFormData
+  form: UseFormReturn<PromotionFormData>
+}) => (
+  <div className="flex items-center justify-between py-2">
+    <Label>{label}</Label>
+    <div className="flex gap-2 relative z-10">
+      <button
+        type="button"
+        onClick={() => form.setValue(field as any, false, { shouldValidate: true, shouldDirty: true })}
+        className={`p-1 rounded transition-colors ${!form.watch(field as any) ? 'bg-red-100' : 'hover:bg-gray-100'}`}
+      >
+        <X className="h-4 w-4 text-red-600" />
+      </button>
+      <button
+        type="button"
+        onClick={() => form.setValue(field as any, true, { shouldValidate: true, shouldDirty: true })}
+        className={`p-1 rounded transition-colors ${form.watch(field as any) ? 'bg-green-100' : 'hover:bg-gray-100'}`}
+      >
+        <Check className="h-4 w-4 text-green-600" />
+      </button>
+    </div>
+  </div>
+)
+
 export function PromoteSection({ property }: PromoteSectionProps) {
   const updateProperty = useUpdateProperty()
   const { hasPermission } = usePermissions()
   const canEdit = hasPermission(Permission.PROPERTY_EDIT)
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState(property)
   
   const form = useForm<PromotionFormData>({
     resolver: zodResolver(updatePropertyPromotionSchema),
@@ -86,34 +116,6 @@ export function PromoteSection({ property }: PromoteSectionProps) {
     </div>
   )
 
-  const BooleanEditField = ({ 
-    label, 
-    field 
-  }: { 
-    label: string
-    field: keyof PromotionFormData
-  }) => (
-    <div className="flex items-center justify-between py-2">
-      <Label>{label}</Label>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => form.setValue(field as any, false)}
-          className={`p-1 rounded ${!form.watch(field as any) ? 'bg-red-100' : 'hover:bg-gray-100'}`}
-        >
-          <X className="h-4 w-4 text-red-600" />
-        </button>
-        <button
-          type="button"
-          onClick={() => form.setValue(field as any, true)}
-          className={`p-1 rounded ${form.watch(field as any) ? 'bg-green-100' : 'hover:bg-gray-100'}`}
-        >
-          <Check className="h-4 w-4 text-green-600" />
-        </button>
-      </div>
-    </div>
-  )
-
   return (
     <PropertySection
       title="1. Promote"
@@ -126,7 +128,7 @@ export function PromoteSection({ property }: PromoteSectionProps) {
     >
       {isEditing ? (
         <div className="space-y-4">
-          <BooleanEditField label="Exclusivity" field="exclusivity" />
+          <BooleanEditField label="Exclusivity" field="exclusivity" form={form} />
           
           <div>
             <Label>Position</Label>
@@ -156,10 +158,10 @@ export function PromoteSection({ property }: PromoteSectionProps) {
             </Select>
           </div>
 
-          <BooleanEditField label="Iconic collection" field="iconicCollection" />
-          <BooleanEditField label="Onboarding fees" field="onboardingFees" />
-          <BooleanEditField label="Online reservation" field="onlineReservation" />
-          <BooleanEditField label="Flexible cancellation" field="flexibleCancellation" />
+          <BooleanEditField label="Iconic collection" field="iconicCollection" form={form} />
+          <BooleanEditField label="Onboarding fees" field="onboardingFees" form={form} />
+          <BooleanEditField label="Online reservation" field="onlineReservation" form={form} />
+          <BooleanEditField label="Flexible cancellation" field="flexibleCancellation" form={form} />
         </div>
       ) : (
         <div className="space-y-3">

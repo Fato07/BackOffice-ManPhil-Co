@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition, useOptimistic } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -18,16 +18,17 @@ import { Permission } from "@/types/auth"
 import { PropertyWithRelations } from "@/types/property"
 import { ContactType } from "@/generated/prisma"
 import { toast } from "sonner"
-import { Plus, Trash2, User, Building, Users, Wrench, AlertTriangle, Mail, Phone } from "lucide-react"
+import { updatePropertyContacts } from "@/actions/property-contacts"
+import { Plus, Trash2, User, Building, Users, Wrench, AlertTriangle, Mail, Phone, Loader2, UserCheck, CheckCircle, Shield, FileSignature } from "lucide-react"
 
 const contactSchema = z.object({
   contacts: z.array(z.object({
     id: z.string().optional(),
-    type: z.nativeEnum(ContactType),
-    name: z.string().min(1, "Name is required"),
-    email: z.string().email().optional().or(z.literal("")).nullable(),
-    phone: z.string().optional().nullable(),
-    notes: z.string().optional().nullable(),
+    type: z.nativeEnum(ContactType).describe("Please select a valid contact type"),
+    name: z.string().min(1, "Name is required").max(255, "Name too long"),
+    email: z.string().email({ message: "Please enter a valid email address" }).nullish(),
+    phone: z.string().max(50, "Phone number too long").nullish(),
+    notes: z.string().max(1000, "Notes too long").nullish(),
     isApproved: z.boolean().default(false),
   })).default([]),
 })
@@ -40,23 +41,38 @@ interface ContactsSectionProps {
 
 const contactTypeIcons = {
   [ContactType.OWNER]: User,
+  [ContactType.MANAGER]: UserCheck,
   [ContactType.AGENCY]: Building,
   [ContactType.STAFF]: Users,
   [ContactType.MAINTENANCE]: Wrench,
   [ContactType.EMERGENCY]: AlertTriangle,
+  [ContactType.CHECK_IN_MANAGER]: CheckCircle,
+  [ContactType.SECURITY_DEPOSIT_MANAGER]: Shield,
+  [ContactType.SIGNATORY]: FileSignature,
 }
 
 const contactTypeLabels = {
   [ContactType.OWNER]: "Owner",
+  [ContactType.MANAGER]: "Manager",
   [ContactType.AGENCY]: "Agency",
   [ContactType.STAFF]: "Staff",
   [ContactType.MAINTENANCE]: "Maintenance",
   [ContactType.EMERGENCY]: "Emergency",
+  [ContactType.CHECK_IN_MANAGER]: "Check-in Manager",
+  [ContactType.SECURITY_DEPOSIT_MANAGER]: "Security Deposit Manager",
+  [ContactType.SIGNATORY]: "Signatory",
 }
 
 export function ContactsSection({ property }: ContactsSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const { hasPermission, canEditSection } = usePermissions()
+  
+  // Optimistic state for contacts
+  const [optimisticContacts, setOptimisticContacts] = useOptimistic(
+    property.contacts || [],
+    (_, newContacts: any[]) => newContacts
+  )
 
   // Check if user has permission to view this section
   if (!hasPermission(Permission.CONTACTS_VIEW)) {
@@ -66,7 +82,7 @@ export function ContactsSection({ property }: ContactsSectionProps) {
   const form = useForm<z.input<typeof contactSchema>>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
-      contacts: property.contacts?.map(contact => ({
+      contacts: optimisticContacts?.map(contact => ({
         ...contact,
         email: contact.email ?? "",
         phone: contact.phone ?? "",
@@ -98,19 +114,55 @@ export function ContactsSection({ property }: ContactsSectionProps) {
   }
 
   const handleSave = async (data: z.input<typeof contactSchema>) => {
-    try {
-      // TODO: Implement save logic with API
-      console.log("Saving contacts:", data)
-      toast.success("Contacts updated successfully")
-      setIsEditing(false)
-    } catch (error) {
-      toast.error("Failed to update contacts")
-    }
+    // Optimistically update the UI
+    setOptimisticContacts(data.contacts || [])
+    setIsEditing(false)
+
+    startTransition(async () => {
+      try {
+        const result = await updatePropertyContacts({
+          propertyId: property.id,
+          contacts: (data.contacts || []).map(contact => ({
+            type: contact.type,
+            name: contact.name,
+            email: contact.email || null,
+            phone: contact.phone || null,
+            notes: contact.notes || null,
+            isApproved: contact.isApproved || false,
+          })),
+        })
+
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to update contacts')
+        }
+
+        toast.success("Contacts updated successfully")
+      } catch (error) {
+        // Revert optimistic update on error
+        setOptimisticContacts(property.contacts || [])
+        form.reset({
+          contacts: property.contacts?.map(contact => ({
+            ...contact,
+            email: contact.email ?? "",
+            phone: contact.phone ?? "",
+            notes: contact.notes ?? "",
+          })) || [],
+        })
+        setIsEditing(true)
+        
+        toast.error(error instanceof Error ? error.message : "Failed to update contacts")
+      }
+    })
   }
 
   const handleCancel = () => {
     form.reset({
-      contacts: property.contacts || [],
+      contacts: optimisticContacts?.map(contact => ({
+        ...contact,
+        email: contact.email ?? "",
+        phone: contact.phone ?? "",
+        notes: contact.notes ?? "",
+      })) || [],
     })
     setIsEditing(false)
   }
@@ -144,6 +196,7 @@ export function ContactsSection({ property }: ContactsSectionProps) {
         onCancel={handleCancel}
         showEditButton={canEditSection('contacts')}
         className="border-blue-200 bg-blue-50/30"
+        isSaving={isPending}
       >
         <div className="mb-4">
           <div className="flex items-center gap-2 p-3 bg-blue-100 rounded-lg border border-blue-300">

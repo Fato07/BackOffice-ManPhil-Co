@@ -55,26 +55,26 @@ export function HouseActions({ property }: HouseActionsProps) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
+          <Button variant="ghost" className="h-6 w-6 p-0">
             <span className="sr-only">Open menu</span>
-            <Edit className="h-4 w-4" />
+            <Edit className="h-3 w-3" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem onClick={handleEdit}>
-            <Edit className="mr-2 h-4 w-4" />
+            <Edit className="mr-2 h-3 w-3" />
             Edit property
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleToggleStatus}>
             {property.status === "PUBLISHED" ? (
               <>
-                <EyeOff className="mr-2 h-4 w-4" />
+                <EyeOff className="mr-2 h-3 w-3" />
                 Hide property
               </>
             ) : (
               <>
-                <Eye className="mr-2 h-4 w-4" />
+                <Eye className="mr-2 h-3 w-3" />
                 Publish property
               </>
             )}
@@ -84,7 +84,7 @@ export function HouseActions({ property }: HouseActionsProps) {
             onClick={() => setShowDeleteAlert(true)}
             className="text-red-600"
           >
-            <Trash2 className="mr-2 h-4 w-4" />
+            <Trash2 className="mr-2 h-3 w-3" />
             Delete property
           </DropdownMenuItem>
         </DropdownMenuContent>

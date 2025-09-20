@@ -6,16 +6,18 @@ import { requirePermission } from "@/lib/auth"
 import { Permission } from "@/types/auth"
 
 const updateRoomSchema = z.object({
-  name: z.string().min(1).optional(),
-  groupName: z.string().nullable().optional(),
-  type: z.enum(["INTERIOR", "OUTDOOR"]).optional(),
+  name: z.string().min(1, "Name is required").optional(),
+  groupName: z.string().nullish(),
+  type: z.enum(["INTERIOR", "OUTDOOR"], {
+    message: "Room type must be INTERIOR or OUTDOOR"
+  }).optional(),
   generalInfo: z.any().optional(),
-  view: z.string().nullable().optional(),
+  view: z.string().nullish(),
   equipment: z.array(z.object({
-    category: z.string(),
+    category: z.string().min(1, "Category is required"),
     items: z.array(z.object({
-      name: z.string(),
-      quantity: z.number().int().min(1),
+      name: z.string().min(1, "Item name is required"),
+      quantity: z.number().int().min(1, "Quantity must be at least 1"),
     })),
   })).optional(),
 })

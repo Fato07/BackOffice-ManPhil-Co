@@ -16,7 +16,7 @@ const supabase = createClient(
 const createResourceSchema = z.object({
   type: z.string().min(1, "Type is required"),
   name: z.string().min(1, "Name is required"),
-  url: z.string().url("Invalid URL").optional(),
+  url: z.string().url({ message: "Invalid URL" }).optional(),
   file: z.string().optional(), // Base64 encoded file
   fileName: z.string().optional(),
 })
@@ -143,7 +143,7 @@ export async function POST(
       if (uploadError) {
         console.error("[Resources Upload] Supabase upload error:", uploadError)
         
-        let errorMessage = "Failed to upload file"
+        const errorMessage = "Failed to upload file"
         let errorDetails = uploadError.message
         
         // Check for specific error types

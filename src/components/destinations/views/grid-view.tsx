@@ -66,11 +66,20 @@ export function GridView({ destinations, onDestinationSelect }: GridViewProps) {
                 )}
               </div>
 
-              {/* Image Placeholder */}
+              {/* Destination Image */}
               <div className="aspect-video rounded-lg bg-white/5 border border-white/10 overflow-hidden">
-                <div className="w-full h-full flex items-center justify-center">
-                  <Home className="h-8 w-8 text-gray-600" />
-                </div>
+                {destination.imageUrl ? (
+                  <img
+                    src={destination.imageUrl}
+                    alt={destination.imageAltText || `${destination.name} image`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Home className="h-8 w-8 text-gray-600" />
+                  </div>
+                )}
               </div>
 
               {/* Hover Effect */}

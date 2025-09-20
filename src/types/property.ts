@@ -11,7 +11,8 @@ import {
   PriceRange,
   Resource,
   Photo,
-  MarketingContent
+  MarketingContent,
+  AccessibilityType
 } from "@/generated/prisma"
 
 // Re-export Prisma types
@@ -50,6 +51,7 @@ export type PropertyListItem = Pick<Property,
   'updatedAt'
 > & {
   destination: Pick<Destination, 'id' | 'name' | 'country'>
+  photos?: Array<{ url: string; caption: string | null }>
 }
 
 // Form types
@@ -70,6 +72,7 @@ export type UpdatePropertyInput = Partial<Omit<Property,
 export type PropertyFilters = {
   status?: PropertyStatus | 'ALL'
   destinationId?: string
+  destinationIds?: string[]
   search?: string
   
   // Room and bathroom filters
@@ -83,6 +86,12 @@ export type PropertyFilters = {
   
   // Property type
   propertyType?: string
+  
+  // Property categories
+  categories?: string[]
+  
+  // Accessibility options
+  accessibilityOptions?: AccessibilityType[]
   
   // Amenities (boolean fields)
   amenities?: Array<'hasPool' | 'hasBeachAccess' | 'hasHotTub' | 'hasGym' | 'hasParking' | 'hasGarden'>

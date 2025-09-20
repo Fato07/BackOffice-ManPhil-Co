@@ -4,20 +4,23 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Destination {
-  id         String     @id @default(cuid())
-  name       String
-  country    String
-  region     String?
-  latitude   Float?
-  longitude  Float?
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  properties Property[]
+  id           String     @id @default(cuid())
+  name         String
+  country      String
+  region       String?
+  imageUrl     String?
+  imageAltText String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  latitude     Float?
+  longitude    Float?
+  properties   Property[]
 
   @@index([name])
 }
@@ -63,6 +66,7 @@ model Property {
   touristCenter         Boolean               @default(false)
   golfCourse            Boolean               @default(false)
   accessibility         Json?
+  accessibilityOptions  AccessibilityType[]
   policies              Json?
   arrivalDeparture      Json?
   staff                 Json?
@@ -83,8 +87,12 @@ model Property {
   prices                PriceRange[]
   destination           Destination           @relation(fields: [destinationId], references: [id])
   contacts              PropertyContact[]
+  contactProperties     ContactProperty[]
   resources             Resource[]
   rooms                 Room[]
+  activityProviders     ActivityProvider[]
+  equipmentRequests     EquipmentRequest[]
+  legalDocuments        LegalDocument[]
 
   @@index([status])
   @@index([destinationId])
@@ -95,7 +103,7 @@ model Room {
   id          String   @id @default(cuid())
   propertyId  String
   name        String
-  type        String
+  type        RoomType
   groupName   String?
   position    Int      @default(0)
   generalInfo Json?
@@ -104,6 +112,7 @@ model Room {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  equipmentRequests EquipmentRequest[]
 
   @@index([propertyId])
   @@index([position])
@@ -233,12 +242,12 @@ model SensitiveDataAccess {
   id         String   @id @default(cuid())
   userId     String
   userRole   String
-  action     String   // 'view', 'edit'
-  dataType   String   // 'owner', 'financial', 'contacts', 'internal'
+  action     String
+  dataType   String
   propertyId String
   metadata   Json?
   createdAt  DateTime @default(now())
-  
+
   @@index([userId])
   @@index([propertyId])
   @@index([dataType])
@@ -249,6 +258,7 @@ enum PropertyStatus {
   PUBLISHED
   HIDDEN
   ONBOARDING
+  OFFBOARDED
 }
 
 enum LicenseType {
@@ -265,10 +275,33 @@ enum ConciergeServiceOffer {
 
 enum ContactType {
   OWNER
+  MANAGER
   AGENCY
   STAFF
   MAINTENANCE
   EMERGENCY
+  CHECK_IN_MANAGER
+  SECURITY_DEPOSIT_MANAGER
+  SIGNATORY
+}
+
+enum GlobalContactCategory {
+  CLIENT
+  OWNER
+  PROVIDER
+  ORGANIZATION
+  OTHER
+}
+
+enum ContactPropertyRelationship {
+  OWNER
+  RENTER
+  MANAGER
+  STAFF
+  EMERGENCY
+  MAINTENANCE
+  AGENCY
+  OTHER
 }
 
 enum BookingType {
@@ -276,4 +309,388 @@ enum BookingType {
   TENTATIVE
   BLOCKED
   MAINTENANCE
+}
+
+model Contact {
+  id           String                    @id @default(cuid())
+  firstName    String
+  lastName     String
+  phone        String?
+  email        String?
+  language     String                    @default("English")
+  category     GlobalContactCategory
+  comments     String?
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  
+  // Relationships
+  contactProperties ContactProperty[]
+  
+  @@index([firstName, lastName])
+  @@index([email])
+  @@index([category])
+  @@unique([email])
+}
+
+model ContactProperty {
+  id           String                      @id @default(cuid())
+  contactId    String
+  propertyId   String
+  relationship ContactPropertyRelationship
+  createdAt    DateTime                    @default(now())
+  updatedAt    DateTime                    @updatedAt
+  
+  contact      Contact                     @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  property     Property                    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  @@unique([contactId, propertyId])
+  @@index([contactId])
+  @@index([propertyId])
+}
+
+model ActivityProvider {
+  id            String     @id @default(cuid())
+  name          String
+  type          String     // BAKERY, PHARMACY, RESTAURANTS, SUPERMARKET, MEDICAL, TRANSPORT, ENTERTAINMENT, SPORTS, OTHER
+  description   String?
+  address       String?
+  city          String?
+  country       String?
+  postalCode    String?
+  latitude      Float?
+  longitude     Float?
+  phone         String?
+  email         String?
+  website       String?
+  openingHours  String?
+  priceRange    String?
+  amenities     String[]
+  tags          String[]
+  rating        Float?
+  imageUrls     String[]
+  comments      String?
+  internalNotes String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  properties    Property[]
+  
+  @@index([name])
+  @@index([type])
+  @@index([city])
+}
+
+model EquipmentRequest {
+  id               String                   @id @default(cuid())
+  propertyId       String
+  roomId           String?
+  requestedBy      String
+  requestedByEmail String
+  status           EquipmentRequestStatus   @default(PENDING)
+  priority         EquipmentRequestPriority @default(MEDIUM)
+  items            Json                     // Array of requested items with quantities
+  reason           String?
+  notes            String?
+  internalNotes    String?
+  approvedBy       String?
+  approvedByEmail  String?
+  approvedAt       DateTime?
+  rejectedReason   String?
+  completedAt      DateTime?
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  
+  property         Property                 @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  room             Room?                    @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  
+  @@index([propertyId])
+  @@index([roomId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+}
+
+enum EquipmentRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ORDERED
+  DELIVERED
+  CANCELLED
+}
+
+enum EquipmentRequestPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model LegalDocument {
+  id              String                 @id @default(cuid())
+  name            String
+  description     String?
+  category        LegalDocumentCategory
+  subcategory     String?
+  status          LegalDocumentStatus    @default(ACTIVE)
+  propertyId      String?
+  property        Property?              @relation(fields: [propertyId], references: [id])
+  expiryDate      DateTime?
+  reminderDays    Int?
+  url             String                 // Supabase storage URL
+  fileSize        Int
+  mimeType        String
+  uploadedBy      String                 // Clerk user ID
+  uploadedAt      DateTime               @default(now())
+  lastAccessedAt  DateTime?
+  tags            String[]
+  metadata        Json?
+  versions        LegalDocumentVersion[]
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  
+  @@index([category])
+  @@index([propertyId])
+  @@index([status])
+  @@index([expiryDate])
+}
+
+model LegalDocumentVersion {
+  id            String         @id @default(cuid())
+  documentId    String
+  document      LegalDocument  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  url           String
+  fileSize      Int
+  uploadedBy    String
+  uploadedAt    DateTime       @default(now())
+  comment       String?
+  
+  @@unique([documentId, versionNumber])
+  @@index([documentId])
+}
+
+enum LegalDocumentCategory {
+  PROPERTY_DEED
+  LEASE_AGREEMENT
+  VENDOR_CONTRACT
+  INSURANCE_POLICY
+  PERMIT_LICENSE
+  TAX_DOCUMENT
+  COMPLIANCE_CERTIFICATE
+  OTHER
+}
+
+enum LegalDocumentStatus {
+  ACTIVE
+  EXPIRED
+  PENDING_RENEWAL
+  ARCHIVED
+}
+
+enum RoomType {
+  BADMINTON_COURT
+  BAR
+  BASKETBALL_COURT
+  BATHROOM
+  BEDROOM
+  BEDROOM_FOR_CHILDREN
+  BEDROOM_FOR_STAFF
+  BILLBOARD_ROOM
+  CIGAR_CELL
+  COLD_CHAMBER
+  CONFERENCE_ROOM
+  COURTYARD
+  COVERED_TERRACE
+  DINING_ROOM
+  DORMITORY
+  DRESSING_ROOM
+  FITNESS_ROOM
+  FOOTBALL_COURT
+  GAMING_ROOM
+  GARDEN
+  KITCHEN
+  LAUNDRY_ROOM
+  LIVING_ROOM
+  MASSAGE_ROOM
+  MEDITATION_ROOM
+  MOVIE_ROOM
+  MUSIC_ROOM
+  OFFICE_ROOM
+  PADEL_COURT
+  PETANQUE
+  POOL_AREA
+  POOLHOUSE
+  RELAXATION_ROOM
+  RESTROOM
+  ROOFTOP
+  SKIROOM
+  SLEEPING_SLUG
+  SMOKEHOUSE
+  SPA
+  SUITE
+  TENNIS_COURT
+  TERRACE
+  TV_ROOM
+  VIP
+  VERANDA
+  VOLLEYBALL_COURT
+  WINDOWLESS_BEDROOM
+  WINE_CELLAR
+}
+
+enum EquipmentType {
+  CEILING_FAN
+  SOFA
+  PUTTING_GREEN
+  WINE_CELLAR
+  DOUBLE_SUNBED
+  SODASTREAM
+  DISHWASHER
+  GAS_COOKER
+  INDUCTION_HOB
+  SKI_RACKS
+  SLEDGE
+  SHARED_TERRACE
+  SWING
+  TREE_HOUSE
+  SEESAW
+  CHESS_BOARD
+  BOARD_GAMES
+  DJ_SET
+  POPCORN_MACHINE
+  KITCHENETTE
+  TREADMILL
+  CYCLE
+  ROWING_MACHINE
+  DUMBBELLS
+  WAFFLE_MACHINE
+  FOUNTAIN
+  POND
+  FIRE_PIT
+  SINGLE_BASIN_SINK
+  DOUBLE_BASIN_SINK
+  MASSAGE_TABLE
+  OBSERVATORY
+  VEGETABLE_GARDEN
+  CROQUET
+  CRICKET_PITCH
+  PARASOL
+  VINEYARD
+  JACUZZI_BATHTUB
+  FIREPLACE
+  NORDIC_BATH
+  CHAIR
+  DVD_PLAYER
+  JACK_CABLE
+  WINE_GLASS
+  GRILL
+  TOILET
+  RACLETTE_MACHINE
+  FONDUE_MACHINE
+  SOUND_SYSTEM
+  MOORING
+  DOUBLE_BED
+  BEAN_TO_CUP_COFFEE_MACHINE
+  PIER
+  COFFEE_POD_MACHINE
+  BAR_EQUIPMENT
+  BATHTUB
+  OUTDOOR_SHOWER
+  HAMMOCK
+  SOLARIUM
+  CHILDREN_POOL
+  MAGNIFYING_MIRROR
+  TOILET_NOT_IN_BATHROOM
+  ACCESSIBLE_TOILETS
+  MICROWAVE_OVEN
+  PROFESSIONAL_OVEN
+  PIZZA_OVEN
+  SUNBED
+  DELI_SLICER
+  DOUBLE_BED_TWIN_BEDS
+  HAMMAM_SHOWER
+  TELEPHONE
+  STORAGE_CUPBOARD
+  DVD_LIBRARY
+  GAMING_CONSOLE
+  DARTS_SET
+  STEAMER
+  CHILDREN_GAMES
+  HEATED_BOOT_WARMER
+  REVERSIBLE_AIR_CONDITIONING
+  TOASTER
+  FILTER_COFFEE_MACHINE
+  KETTLE
+  JUICER
+  BLENDER_MIXER
+  DISHWASHER_EQUIPMENT
+  TURNTABLE
+  FITNESS_EQUIPMENT
+  SINGLE_BED
+  COMPUTER
+  PRINTER
+  SCANNER
+  SAUNA
+  TRAMPOLINE
+  SOFA_BED
+  AIR_CONDITIONING
+  JACUZZI
+  BARBECUE
+  HAMMAM
+  TABLE_FOOTBALL
+  TUMBLE_DRYER
+  KITCHEN_ISLAND
+  WASHING_MACHINE
+  RANGE_HOOD
+  TERRACE_EQUIPMENT
+  PING_PONG_TABLE
+  SWIMMING_POOL
+  SHOWER
+  IRON
+  IRONING_BOARD
+  DESK
+  BILLIARD_TABLE
+  FRIDGE
+  AMERICAN_FRIDGE
+  FREEZER
+  ICE_CUBE_MAKER
+  ICE_CREAM_SORBET_MACHINE
+  OVEN
+  WALK_IN_SHOWER
+  SANDWICH_MAKER
+  THERMOMIX
+  BEER_TAP
+  DEEP_FRYER
+  RICE_COOKER
+  GLOVE_DRYERS
+  BUNK_BEDS
+  COLD_WATER_BATH
+  SOFA_EQUIPMENT
+  CHILDREN_SLIDE
+  CHILDREN_PLAYHOUSE
+  COMBINED_GAS_INDUCTION_STOVE
+  TENT
+  BERBER_TENT
+  FAN
+  CHAMPAGNE_GLASS
+  ARMCHAIR
+  SMART_TV
+  FLAT_SCREEN_TV
+  TV
+  SOFA_BED_SINGLE
+  VIDEO_PROJECTOR
+  PIANO
+  SAFE
+  WALK_IN_CLOSET
+  FOOD_PROCESSOR
+  PERGOLA
+  HELIPAD
+  LIBRARY
+}
+
+enum AccessibilityType {
+  BY_CAR
+  SKI_IN_SKI_OUT
+  BY_FOOT
 }

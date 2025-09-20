@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react"
 import { motion } from "framer-motion"
-import { Search, Filter, SlidersHorizontal, Loader2 } from "lucide-react"
+import { Search, Filter, SlidersHorizontal, Loader2, Box, SquareStack } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,21 +14,27 @@ import { cn } from "@/lib/utils"
 import { useDebounce } from "@/hooks/use-debounce"
 import { toast } from "sonner"
 
+export type ViewMode = "2D" | "3D"
+
 interface MapControlsProps {
   onLocationSearch?: (coords: { longitude: number; latitude: number; name: string }) => void
   mapStyle: string
   onStyleChange: (style: string) => void
+  viewMode?: ViewMode
+  onViewModeChange?: (mode: ViewMode) => void
 }
 
 const MAP_STYLES = {
-  dark: "mapbox://styles/mapbox/dark-v11",
-  satellite: "mapbox://styles/mapbox/satellite-streets-v12",
+  light: "mapbox://styles/mapbox/light-v11",
+  streets: "mapbox://styles/mapbox/streets-v12",
 }
 
 export function MapControls({ 
   onLocationSearch, 
   mapStyle, 
-  onStyleChange
+  onStyleChange,
+  viewMode = "3D",
+  onViewModeChange
 }: MapControlsProps) {
   const [searchValue, setSearchValue] = useState("")
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -225,32 +231,62 @@ export function MapControls({
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3, delay: 0.2 }}
-        className="flex gap-2"
+        className="flex flex-col gap-2 sm:flex-row"
       >
         <div className="flex items-center bg-black/40 backdrop-blur-md rounded-lg p-1 border border-white/10">
           <button
-            onClick={() => onStyleChange(MAP_STYLES.dark)}
+            onClick={() => onStyleChange(MAP_STYLES.light)}
             className={cn(
               "px-3 py-1.5 text-xs rounded transition-all",
-              mapStyle === MAP_STYLES.dark 
+              mapStyle === MAP_STYLES.light 
                 ? "bg-[#B5985A] text-white" 
                 : "text-gray-400 hover:text-white hover:bg-white/10"
             )}
           >
-            Dark
+            Light
           </button>
           <button
-            onClick={() => onStyleChange(MAP_STYLES.satellite)}
+            onClick={() => onStyleChange(MAP_STYLES.streets)}
             className={cn(
               "px-3 py-1.5 text-xs rounded transition-all",
-              mapStyle === MAP_STYLES.satellite 
+              mapStyle === MAP_STYLES.streets 
                 ? "bg-[#B5985A] text-white" 
                 : "text-gray-400 hover:text-white hover:bg-white/10"
             )}
           >
-            Satellite
+            Streets
           </button>
         </div>
+
+        {/* 2D/3D View Mode Toggle */}
+        {onViewModeChange && (
+          <div className="flex items-center bg-black/40 backdrop-blur-md rounded-lg p-1 border border-white/10">
+            <button
+              onClick={() => onViewModeChange("2D")}
+              className={cn(
+                "px-3 py-1.5 text-xs rounded transition-all flex items-center gap-1",
+                viewMode === "2D" 
+                  ? "bg-[#B5985A] text-white" 
+                  : "text-gray-400 hover:text-white hover:bg-white/10"
+              )}
+            >
+              <SquareStack className="h-3 w-3" />
+              2D
+            </button>
+            <button
+              onClick={() => onViewModeChange("3D")}
+              className={cn(
+                "px-3 py-1.5 text-xs rounded transition-all flex items-center gap-1",
+                viewMode === "3D" 
+                  ? "bg-[#B5985A] text-white" 
+                  : "text-gray-400 hover:text-white hover:bg-white/10"
+              )}
+            >
+              <Box className="h-3 w-3" />
+              3D
+            </button>
+          </div>
+        )}
       </motion.div>
     </div>
   )

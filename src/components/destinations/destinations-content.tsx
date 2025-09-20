@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { DestinationsMap } from "./map/destinations-map"
-import { MapControls } from "./map/map-controls"
+import { DestinationsMap, MapControls as MapControlsFunctions } from "./map/destinations-map"
+import { MapToolbar } from "./map/map-toolbar"
+import { ViewMode as MapViewMode } from "./map/map-controls"
 import { DestinationSidebar } from "./ui/destination-sidebar"
 import { ViewToggle } from "./views/view-toggle"
 import { ListView } from "./views/list-view"
@@ -15,8 +16,8 @@ import { useDestinations, DestinationWithCount } from "@/hooks/use-destinations"
 export type ViewMode = "map" | "list"
 
 const MAP_STYLES = {
-  dark: "mapbox://styles/mapbox/dark-v11",
-  satellite: "mapbox://styles/mapbox/satellite-streets-v12",
+  light: "mapbox://styles/mapbox/light-v11",
+  streets: "mapbox://styles/mapbox/streets-v12",
 }
 
 export function DestinationsContent() {
@@ -24,7 +25,9 @@ export function DestinationsContent() {
   const [selectedDestination, setSelectedDestination] = useState<DestinationWithCount | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mapRef, setMapRef] = useState<any>(null)
-  const [mapStyle, setMapStyle] = useState(MAP_STYLES.dark)
+  const [mapStyle, setMapStyle] = useState(MAP_STYLES.light)
+  const [mapViewMode, setMapViewMode] = useState<MapViewMode>("3D")
+  const [mapControls, setMapControls] = useState<MapControlsFunctions | null>(null)
   const { data, isLoading } = useDestinations()
 
   const handleDestinationSelect = (destination: DestinationWithCount) => {
@@ -70,6 +73,9 @@ export function DestinationsContent() {
               onMapRef={setMapRef}
               mapStyle={mapStyle}
               onStyleChange={setMapStyle}
+              viewMode={mapViewMode}
+              onViewModeChange={setMapViewMode}
+              onMapReady={setMapControls}
             />
           </motion.div>
         ) : null}
@@ -90,25 +96,25 @@ export function DestinationsContent() {
         )}
       </AnimatePresence>
 
-      {/* Floating Controls - Mobile responsive */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="absolute top-4 left-4 right-4 sm:left-4 sm:right-auto z-10"
-      >
-        <MapControls 
-          onLocationSearch={handleLocationSearch}
-          mapStyle={mapStyle}
-          onStyleChange={setMapStyle}
-        />
-      </motion.div>
+      {/* Unified Map Toolbar - Now draggable */}
+      <MapToolbar 
+        onLocationSearch={handleLocationSearch}
+        mapStyle={mapStyle}
+        onStyleChange={setMapStyle}
+        viewMode={mapViewMode}
+        onViewModeChange={setMapViewMode}
+        onZoomIn={mapControls?.zoomIn}
+        onZoomOut={mapControls?.zoomOut}
+        onResetView={mapControls?.resetView}
+        onFullscreen={mapControls?.toggleFullscreen}
+      />
 
-      {/* View Toggle - Hidden on mobile */}
+      {/* View Toggle - Moved to left side */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.1 }}
-        className="absolute top-4 left-1/2 -translate-x-1/2 z-10 hidden sm:block"
+        className="absolute top-4 left-4 z-10 hidden sm:block"
       >
         <ViewToggle currentView={viewMode} onViewChange={setViewMode} />
       </motion.div>

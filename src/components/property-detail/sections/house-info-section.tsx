@@ -317,6 +317,8 @@ export function HouseInfoSection({ property }: HouseInfoSectionProps) {
         )}
       </PropertySection>
 
+      <div className="mb-6" />
+
       <PropertySection
         title="Location"
         isEditing={isEditingLocation}
