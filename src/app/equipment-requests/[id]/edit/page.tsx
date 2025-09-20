@@ -17,8 +17,7 @@ export default async function EditEquipmentRequestPage({
     notFound()
   }
 
-  const user = await auth()
-  if (!hasPermission(user, Permission.EQUIPMENT_REQUEST_EDIT)) {
+  if (!(await hasPermission(Permission.EQUIPMENT_REQUEST_EDIT))) {
     notFound()
   }
 

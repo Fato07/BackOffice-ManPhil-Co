@@ -49,7 +49,7 @@ export function LegalDocumentFilters({
   const [tagInput, setTagInput] = useState("")
   
   // Fetch properties for property filter
-  const { data: propertiesResult } = useProperties({ pageSize: 1000 })
+  const { data: propertiesResult } = useProperties(undefined, 1, 1000)
   const properties = propertiesResult?.data || []
 
   // Update local filters when prop filters change
@@ -64,8 +64,8 @@ export function LegalDocumentFilters({
 
   const handleReset = () => {
     const resetFilters = {
-      category: 'ALL',
-      status: 'ALL',
+      category: 'ALL' as const,
+      status: 'ALL' as const,
       propertyId: undefined,
       expiringInDays: undefined,
       tags: undefined,

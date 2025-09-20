@@ -74,8 +74,8 @@ export function RoomBuilder({ propertyId, rooms: initialRooms }: RoomBuilderProp
     })
   )
   
-  const outdoorRooms = rooms.filter(room => room.type === "OUTDOOR")
-  const interiorRooms = rooms.filter(room => room.type === "INTERIOR")
+  const outdoorRooms = rooms.filter(room => (room as any).type === "OUTDOOR")
+  const interiorRooms = rooms.filter(room => (room as any).type === "INTERIOR")
 
   const toggleRoom = (roomId: string) => {
     setExpandedRooms(prev =>
@@ -441,7 +441,7 @@ function RoomFormDialog({ open, onOpenChange, room, defaultType, onSubmit }: Roo
       setFormData({
         name: room.name || "",
         groupName: room.groupName || "",
-        type: room.type as "INTERIOR" | "OUTDOOR",
+        type: (room as any).type || "INTERIOR",
         view: room.view || "",
         generalInfo: generalInfo?.description || "",
         equipment: equipment,

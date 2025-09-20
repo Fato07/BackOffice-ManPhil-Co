@@ -26,7 +26,7 @@ interface EquipmentRequestFiltersProps {
   onFiltersChange: (filters: EquipmentRequestFilters) => void
 }
 
-export function EquipmentRequestFilters({
+export function EquipmentRequestFiltersPanel({
   filters,
   onFiltersChange,
 }: EquipmentRequestFiltersProps) {

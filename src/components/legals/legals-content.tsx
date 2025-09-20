@@ -292,15 +292,10 @@ export function LegalsContent() {
         <DataTable
           columns={columns}
           data={documents}
-          isLoading={isLoading}
           onRowClick={handleRowClick}
-          currentPage={urlState.page}
-          totalPages={totalPages}
+          page={urlState.page}
+          pageCount={totalPages}
           onPageChange={handlePageChange}
-          sortBy={urlState.sortBy}
-          sortOrder={urlState.sortOrder}
-          onSortChange={handleSortChange}
-          onRowSelectionChange={setSelectedDocumentIds}
         />
       </motion.div>
 

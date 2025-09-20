@@ -8,7 +8,6 @@ import { createClient } from '@supabase/supabase-js'
 import { 
   LegalDocumentCategory,
   LegalDocumentStatus,
-  Prisma,
   Prisma
 } from '@/generated/prisma'
 import {
@@ -363,7 +362,7 @@ export async function updateLegalDocument(
         action: 'UPDATE_LEGAL_DOCUMENT',
         entityType: 'LegalDocument',
         entityId: id,
-        changes: validated as Prisma.JsonValue
+        changes: validated as Prisma.InputJsonValue
       }
     })
 

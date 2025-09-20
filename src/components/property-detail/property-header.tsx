@@ -35,6 +35,10 @@ export function PropertyDetailHeader({ property }: PropertyDetailHeaderProps) {
       label: "Onboarding", 
       className: "bg-yellow-100 text-yellow-800"
     },
+    OFFBOARDED: { 
+      label: "Offboarded", 
+      className: "bg-gray-100 text-gray-800"
+    },
   }
   
   const config = statusConfig[property.status]

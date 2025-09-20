@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/db"
-import { Prisma } from "@/generated/prisma"
+import { Prisma, PropertyStatus } from "@/generated/prisma"
 
 export async function getProperties(params?: {
   page?: number
   pageSize?: number
   search?: string
-  status?: string
+  status?: PropertyStatus
 }) {
   try {
     const page = params?.page || 1

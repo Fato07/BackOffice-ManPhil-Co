@@ -220,7 +220,7 @@ export function EquipmentRequestForm({ request }: EquipmentRequestFormProps) {
                   <FormLabel>Requested Items</FormLabel>
                   <FormControl>
                     <EquipmentRequestItemsTable
-                      items={field.value}
+                      items={field.value || []}
                       editable={true}
                       onChange={field.onChange}
                     />

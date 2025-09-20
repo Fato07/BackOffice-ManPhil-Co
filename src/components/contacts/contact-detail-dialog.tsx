@@ -211,7 +211,7 @@ export function ContactDetailDialog({
                                 <Home className="h-4 w-4 text-muted-foreground" />
                                 <div>
                                   <p className="font-medium text-sm">
-                                    {link.property.name}
+                                    {link.property?.name || 'Unnamed Property'}
                                   </p>
                                   <Badge 
                                     variant="outline" 

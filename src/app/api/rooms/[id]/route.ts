@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db"
 import { z } from "zod"
 import { requirePermission } from "@/lib/auth"
 import { Permission } from "@/types/auth"
+import { RoomType, Prisma } from "@/generated/prisma"
 
 const updateRoomSchema = z.object({
   name: z.string().min(1, "Name is required").optional(),
@@ -97,7 +98,7 @@ export async function PATCH(
 
     const updatedRoom = await prisma.room.update({
       where: { id },
-      data,
+      data: data as Prisma.RoomUpdateInput,
     })
 
     await prisma.auditLog.create({

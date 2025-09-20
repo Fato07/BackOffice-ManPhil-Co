@@ -49,7 +49,15 @@ export function useContacts({
         throw new Error('No data returned')
       }
       return {
-        data: result.data.contacts,
+        data: result.data.contacts.map((contact: any) => ({
+          ...contact,
+          contactProperties: contact.contactProperties.map((cp: any) => ({
+            id: cp.id,
+            propertyId: cp.property.id,
+            propertyName: cp.property.name || 'Unnamed Property',
+            relationship: cp.relationship
+          }))
+        })),
         totalCount: result.data.totalCount,
         pageCount: result.data.pageCount
       }

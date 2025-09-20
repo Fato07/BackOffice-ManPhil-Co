@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db"
 import { z } from "zod"
 import { requirePermission } from "@/lib/auth"
 import { Permission } from "@/types/auth"
+import { RoomType } from "@/generated/prisma"
 
 const createRoomSchema = z.object({
   propertyId: z.string(),
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
         propertyId: data.propertyId,
         name: data.name,
         groupName: data.groupName,
-        type: data.type,
+        type: data.type as RoomType,
         generalInfo: data.generalInfo,
         view: data.view,
         equipment: data.equipment,

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { DataTable } from "@/components/data-table/data-table"
 import { columns } from "@/components/equipment-requests/columns"
 import { CreateEquipmentRequestDialog } from "@/components/equipment-requests/create-equipment-request-dialog"
-import { EquipmentRequestFilters as FiltersComponent } from "@/components/equipment-requests/equipment-request-filters"
+import { EquipmentRequestFiltersPanel } from "@/components/equipment-requests/equipment-request-filters"
 import { useEquipmentRequests } from "@/hooks/use-equipment-requests"
 import { EquipmentRequestFilters, EquipmentRequestListItem } from "@/types/equipment-request"
 import { Input } from "@/components/ui/input"
@@ -215,7 +215,7 @@ export function EquipmentRequestsContent() {
               className="pl-9"
             />
           </div>
-          <FiltersComponent
+          <EquipmentRequestFiltersPanel
             filters={filters}
             onFiltersChange={handleFiltersChange}
           />

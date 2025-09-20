@@ -645,21 +645,10 @@ export async function getContacts(
       prisma.contact.count({ where })
     ])
 
-    // Transform contacts to match ContactListItem interface
-    const transformedContacts = contacts.map(contact => ({
-      ...contact,
-      contactProperties: contact.contactProperties.map(cp => ({
-        id: cp.id,
-        propertyId: cp.property.id,
-        propertyName: cp.property.name || 'Unnamed Property',
-        relationship: cp.relationship
-      }))
-    }))
-
     return {
       success: true,
       data: {
-        contacts: transformedContacts,
+        contacts,
         totalCount,
         pageCount: Math.ceil(totalCount / pageSize)
       }
@@ -1209,7 +1198,6 @@ export async function importContacts(
         } catch (error) {
           errors.push({
             row: i + index + 1,
-            contact: `${contact.firstName} ${contact.lastName}`,
             error: error instanceof Error ? error.message : 'Unknown error'
           })
         }

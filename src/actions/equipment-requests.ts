@@ -10,6 +10,7 @@ import {
   UpdateEquipmentRequestStatusInput,
   EquipmentRequestListItem,
   EquipmentRequestFilters,
+  EquipmentRequestItem,
   createEquipmentRequestSchema,
   updateEquipmentRequestSchema,
   updateEquipmentRequestStatusSchema,
@@ -29,11 +30,10 @@ export async function getEquipmentRequests(
   totalPages: number
 }> {
   try {
-    const { userId } = await auth()
-    if (!userId) throw new Error("Unauthorized")
+    const authData = await auth()
+    if (!authData?.userId) throw new Error("Unauthorized")
 
-    const user = await auth()
-    if (!hasPermission(user, Permission.EQUIPMENT_REQUEST_VIEW)) {
+    if (!(await hasPermission(Permission.EQUIPMENT_REQUEST_VIEW))) {
       throw new Error("Insufficient permissions")
     }
 
@@ -141,11 +141,10 @@ export async function getEquipmentRequests(
 // Get single equipment request by ID
 export async function getEquipmentRequestById(id: string) {
   try {
-    const { userId } = await auth()
-    if (!userId) throw new Error("Unauthorized")
+    const authData = await auth()
+    if (!authData?.userId) throw new Error("Unauthorized")
 
-    const user = await auth()
-    if (!hasPermission(user, Permission.EQUIPMENT_REQUEST_VIEW)) {
+    if (!(await hasPermission(Permission.EQUIPMENT_REQUEST_VIEW))) {
       throw new Error("Insufficient permissions")
     }
 
@@ -178,7 +177,10 @@ export async function getEquipmentRequestById(id: string) {
       throw new Error("Equipment request not found")
     }
 
-    return request
+    return {
+      ...request,
+      items: request.items as unknown as EquipmentRequestItem[]
+    }
   } catch (error) {
     console.error("Error fetching equipment request:", error)
     throw new Error("Failed to fetch equipment request")
@@ -188,13 +190,12 @@ export async function getEquipmentRequestById(id: string) {
 // Create equipment request
 export async function createEquipmentRequest(data: CreateEquipmentRequestInput) {
   try {
-    const { userId } = await auth()
-    if (!userId) throw new Error("Unauthorized")
+    const authData = await auth()
+    if (!authData?.userId) throw new Error("Unauthorized")
 
-    const user = await auth()
-    const userEmail = user?.sessionClaims?.email as string || ""
+    const userEmail = authData?.sessionClaims?.email as string || ""
     
-    if (!hasPermission(user, Permission.EQUIPMENT_REQUEST_CREATE)) {
+    if (!(await hasPermission(Permission.EQUIPMENT_REQUEST_CREATE))) {
       throw new Error("Insufficient permissions")
     }
 
@@ -206,7 +207,7 @@ export async function createEquipmentRequest(data: CreateEquipmentRequestInput) 
       data: {
         propertyId: validatedData.propertyId,
         roomId: validatedData.roomId,
-        requestedBy: userId,
+        requestedBy: authData.userId,
         requestedByEmail: userEmail,
         priority: validatedData.priority,
         items: validatedData.items as any,
@@ -226,7 +227,7 @@ export async function createEquipmentRequest(data: CreateEquipmentRequestInput) 
     // Log audit
     await prisma.auditLog.create({
       data: {
-        userId,
+        userId: authData.userId,
         action: "CREATE_EQUIPMENT_REQUEST",
         entityType: "EquipmentRequest",
         entityId: request.id,
@@ -255,11 +256,10 @@ export async function updateEquipmentRequest(
   data: UpdateEquipmentRequestInput
 ) {
   try {
-    const { userId } = await auth()
-    if (!userId) throw new Error("Unauthorized")
+    const authData = await auth()
+    if (!authData?.userId) throw new Error("Unauthorized")
 
-    const user = await auth()
-    if (!hasPermission(user, Permission.EQUIPMENT_REQUEST_EDIT)) {
+    if (!(await hasPermission(Permission.EQUIPMENT_REQUEST_EDIT))) {
       throw new Error("Insufficient permissions")
     }
 
@@ -295,7 +295,7 @@ export async function updateEquipmentRequest(
     // Log audit
     await prisma.auditLog.create({
       data: {
-        userId,
+        userId: authData.userId,
         action: "UPDATE_EQUIPMENT_REQUEST",
         entityType: "EquipmentRequest",
         entityId: id,
@@ -319,20 +319,19 @@ export async function updateEquipmentRequestStatus(
   data: UpdateEquipmentRequestStatusInput
 ) {
   try {
-    const { userId } = await auth()
-    if (!userId) throw new Error("Unauthorized")
+    const authData = await auth()
+    if (!authData?.userId) throw new Error("Unauthorized")
 
-    const user = await auth()
-    const userEmail = user?.sessionClaims?.email as string || ""
+    const userEmail = authData?.sessionClaims?.email as string || ""
     
     // Check permissions based on status
     if (data.status === EquipmentRequestStatus.APPROVED || 
         data.status === EquipmentRequestStatus.REJECTED) {
-      if (!hasPermission(user, Permission.EQUIPMENT_REQUEST_APPROVE)) {
+      if (!(await hasPermission(Permission.EQUIPMENT_REQUEST_APPROVE))) {
         throw new Error("Insufficient permissions to approve/reject requests")
       }
     } else {
-      if (!hasPermission(user, Permission.EQUIPMENT_REQUEST_EDIT)) {
+      if (!(await hasPermission(Permission.EQUIPMENT_REQUEST_EDIT))) {
         throw new Error("Insufficient permissions to update request status")
       }
     }
@@ -359,7 +358,7 @@ export async function updateEquipmentRequestStatus(
     }
 
     if (data.status === EquipmentRequestStatus.APPROVED) {
-      updateData.approvedBy = userId
+      updateData.approvedBy = authData.userId
       updateData.approvedByEmail = userEmail
       updateData.approvedAt = new Date()
     } else if (data.status === EquipmentRequestStatus.REJECTED) {
@@ -377,7 +376,7 @@ export async function updateEquipmentRequestStatus(
     // Log audit
     await prisma.auditLog.create({
       data: {
-        userId,
+        userId: authData.userId,
         action: `UPDATE_EQUIPMENT_REQUEST_STATUS_${data.status}`,
         entityType: "EquipmentRequest",
         entityId: id,
@@ -403,11 +402,10 @@ export async function updateEquipmentRequestStatus(
 // Delete equipment request
 export async function deleteEquipmentRequest(id: string) {
   try {
-    const { userId } = await auth()
-    if (!userId) throw new Error("Unauthorized")
+    const authData = await auth()
+    if (!authData?.userId) throw new Error("Unauthorized")
 
-    const user = await auth()
-    if (!hasPermission(user, Permission.EQUIPMENT_REQUEST_DELETE)) {
+    if (!(await hasPermission(Permission.EQUIPMENT_REQUEST_DELETE))) {
       throw new Error("Insufficient permissions")
     }
 
@@ -439,7 +437,7 @@ export async function deleteEquipmentRequest(id: string) {
     // Log audit
     await prisma.auditLog.create({
       data: {
-        userId,
+        userId: authData.userId,
         action: "DELETE_EQUIPMENT_REQUEST",
         entityType: "EquipmentRequest",
         entityId: id,

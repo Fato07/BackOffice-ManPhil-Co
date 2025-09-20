@@ -88,11 +88,9 @@ export function AccessibilityDisplay({
         {accessibilityOptions.map((option) => {
           const Icon = AccessibilityIcons[option]
           return (
-            <Icon 
-              key={option} 
-              className="h-4 w-4 text-muted-foreground" 
-              title={getAccessibilityLabel(option)}
-            />
+            <span key={option} title={getAccessibilityLabel(option)}>
+              <Icon className="h-4 w-4 text-muted-foreground" />
+            </span>
           )
         })}
       </div>

@@ -26,7 +26,7 @@ export const createLegalDocumentSchema = z.object({
   expiryDate: z.date().optional(),
   reminderDays: z.number().int().min(0).max(365).optional(),
   tags: z.array(z.string().max(50, 'Tag must be less than 50 characters')).optional().default([]),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
   file: fileSchema,
 })
 
@@ -41,7 +41,7 @@ export const updateLegalDocumentSchema = z.object({
   expiryDate: z.date().nullish(),
   reminderDays: z.number().int().min(0).max(365).nullish(),
   tags: z.array(z.string().max(50)).optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
 // Upload version schema
