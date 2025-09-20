@@ -8,7 +8,6 @@ import {
 export type LegalDocument = PrismaLegalDocument
 export type LegalDocumentVersion = PrismaLegalDocumentVersion
 
-// Re-export both the type and the constant
 export { LegalDocumentCategory, LegalDocumentStatus }
 
 export interface LegalDocumentWithRelations extends LegalDocument {
@@ -83,7 +82,6 @@ export interface LegalDocumentExportData {
   tags: string[]
 }
 
-// Helper type guards
 export const isLegalDocumentCategory = (value: unknown): value is LegalDocumentCategory => {
   return Object.values(LegalDocumentCategory).includes(value as LegalDocumentCategory)
 }
@@ -92,7 +90,6 @@ export const isLegalDocumentStatus = (value: unknown): value is LegalDocumentSta
   return Object.values(LegalDocumentStatus).includes(value as LegalDocumentStatus)
 }
 
-// Category labels for UI
 export const LEGAL_DOCUMENT_CATEGORY_LABELS: Record<LegalDocumentCategory, string> = {
   [LegalDocumentCategory.PROPERTY_DEED]: 'Property Deed',
   [LegalDocumentCategory.LEASE_AGREEMENT]: 'Lease Agreement',
@@ -104,7 +101,6 @@ export const LEGAL_DOCUMENT_CATEGORY_LABELS: Record<LegalDocumentCategory, strin
   [LegalDocumentCategory.OTHER]: 'Other',
 }
 
-// Status labels for UI
 export const LEGAL_DOCUMENT_STATUS_LABELS: Record<LegalDocumentStatus, string> = {
   [LegalDocumentStatus.ACTIVE]: 'Active',
   [LegalDocumentStatus.EXPIRED]: 'Expired',
@@ -112,7 +108,6 @@ export const LEGAL_DOCUMENT_STATUS_LABELS: Record<LegalDocumentStatus, string> =
   [LegalDocumentStatus.ARCHIVED]: 'Archived',
 }
 
-// Status colors for UI
 export const LEGAL_DOCUMENT_STATUS_COLORS: Record<LegalDocumentStatus, string> = {
   [LegalDocumentStatus.ACTIVE]: 'green',
   [LegalDocumentStatus.EXPIRED]: 'red',
@@ -120,7 +115,6 @@ export const LEGAL_DOCUMENT_STATUS_COLORS: Record<LegalDocumentStatus, string> =
   [LegalDocumentStatus.ARCHIVED]: 'gray',
 }
 
-// File type restrictions
 export const ALLOWED_FILE_TYPES = [
   'application/pdf',
   'application/msword',
