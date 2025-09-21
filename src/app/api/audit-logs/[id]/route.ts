@@ -126,11 +126,11 @@ export async function GET(
             where: { id: log.entityId },
             select: { 
               id: true,
-              name: true,
+              firstName: true,
+              lastName: true,
               email: true,
               phone: true,
-              type: true,
-              company: true,
+              category: true,
             },
           })
           break

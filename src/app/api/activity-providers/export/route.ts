@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       }
       
       if (category) {
-        where.category = category
+        where.type = category
       }
       
       if (tags && tags.length > 0) {
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
       const flattenedData = providers.map(provider => ({
         id: provider.id,
         name: provider.name,
-        category: provider.category,
+        category: provider.type,
         description: provider.description || "",
         address: provider.address || "",
         city: provider.city || "",

@@ -125,7 +125,7 @@ export async function GET(req: NextRequest) {
  */
 function flattenEquipmentRequestForExport(request: EquipmentRequestWithRelations): Record<string, string | number> {
   // Parse items from JSON
-  const items = (request.items as EquipmentRequestItem[]) || []
+  const items = (request.items as unknown as EquipmentRequestItem[]) || []
   
   return {
     // Basic Information

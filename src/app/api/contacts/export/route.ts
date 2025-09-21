@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const format = searchParams.get("format") || "csv"
     const ids = searchParams.get("ids")?.split(",").filter(Boolean) || []
     const search = searchParams.get("search")
-    const category = searchParams.get("category") as GlobalContactCategory | null
+    const category = searchParams.get("category")
     const hasLinkedProperties = searchParams.get("hasLinkedProperties") === "true"
 
     // Build where clause
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       }
       
       if (category && category !== "ALL") {
-        where.category = category
+        where.category = category as GlobalContactCategory
       }
       
       if (hasLinkedProperties) {
