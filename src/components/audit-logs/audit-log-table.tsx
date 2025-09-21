@@ -49,24 +49,67 @@ function UserCell({ userId }: { userId: string }) {
 }
 
 function ActionBadge({ action }: { action: string }) {
+  // Extract base action type from complex action names
+  const getBaseAction = (action: string): string => {
+    const actionLower = action.toLowerCase()
+    
+    // Handle CREATE actions
+    if (actionLower.includes('create')) return 'create'
+    
+    // Handle DELETE actions
+    if (actionLower.includes('delete')) return 'delete'
+    
+    // Handle specific UPDATE status actions
+    if (actionLower.includes('update') && actionLower.includes('status')) {
+      if (actionLower.includes('approved')) return 'approve'
+      if (actionLower.includes('rejected')) return 'reject'
+      if (actionLower.includes('delivered')) return 'deliver'
+      if (actionLower.includes('completed')) return 'complete'
+    }
+    
+    // Handle general UPDATE actions
+    if (actionLower.includes('update')) return 'update'
+    
+    // Default fallback
+    return 'default'
+  }
+
   const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
     create: "default",
     update: "secondary",
     delete: "destructive",
+    approve: "default",
+    reject: "destructive",
+    deliver: "secondary",
+    complete: "default",
+    default: "outline",
   }
 
   const colors: Record<string, string> = {
     create: "bg-green-100 text-green-800 hover:bg-green-100 border-green-300",
     update: "bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-300",
     delete: "bg-red-100 text-red-800 hover:bg-red-100 border-red-300",
+    approve: "bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-emerald-300",
+    reject: "bg-rose-100 text-rose-800 hover:bg-rose-100 border-rose-300",
+    deliver: "bg-indigo-100 text-indigo-800 hover:bg-indigo-100 border-indigo-300",
+    complete: "bg-teal-100 text-teal-800 hover:bg-teal-100 border-teal-300",
+    default: "bg-gray-100 text-gray-800 hover:bg-gray-100 border-gray-300",
   }
+
+  const baseAction = getBaseAction(action)
+  
+  // Format the display text for better readability
+  const displayText = action
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (l) => l.toUpperCase())
 
   return (
     <Badge 
       variant="outline"
-      className={`${colors[action] || ""} font-medium text-[10px] py-0 px-1.5 h-5`}
+      className={`${colors[baseAction] || colors.default} font-medium text-[10px] py-0 px-1.5 h-5`}
     >
-      {action}
+      {displayText}
     </Badge>
   )
 }

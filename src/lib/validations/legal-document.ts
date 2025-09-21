@@ -3,7 +3,7 @@ import { LegalDocumentCategory, LegalDocumentStatus } from '@/generated/prisma'
 import { MAX_FILE_SIZE, ALLOWED_FILE_TYPES } from '@/types/legal-document'
 
 // Base validation schemas
-export const legalDocumentCategorySchema = z.nativeEnum(LegalDocumentCategory)
+export const legalDocumentCategorySchema = z.nativeEnum(LegalDocumentCategory).describe('Please select a valid category from the dropdown')
 export const legalDocumentStatusSchema = z.nativeEnum(LegalDocumentStatus)
 
 // File validation schema
@@ -20,9 +20,11 @@ export const fileSchema = z
 export const createLegalDocumentSchema = z.object({
   name: z.string().min(1, 'Name is required').max(255, 'Name must be less than 255 characters'),
   description: z.string().max(1000, 'Description must be less than 1000 characters').optional(),
-  category: legalDocumentCategorySchema,
+  category: legalDocumentCategorySchema.refine((val) => val !== undefined, {
+    message: 'Please select a category'
+  }),
   subcategory: z.string().max(100, 'Subcategory must be less than 100 characters').optional(),
-  propertyId: z.string().cuid('Invalid property ID').optional(),
+  propertyId: z.string().cuid().nullable().optional(),
   expiryDate: z.date().optional(),
   reminderDays: z.number().int().min(0).max(365).optional(),
   tags: z.array(z.string().max(50, 'Tag must be less than 50 characters')).optional().default([]),

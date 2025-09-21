@@ -36,6 +36,7 @@ import { exportContactsSchema, type ExportContactsData } from "@/lib/validations
 import { CONTACT_CATEGORIES } from "@/types/contact"
 import { GlobalContactCategory } from "@/generated/prisma"
 import { toast } from "sonner"
+import { useExportContacts } from "@/hooks/use-contacts"
 
 interface ExportContactsDialogProps {
   selectedContactIds?: string[]
@@ -61,7 +62,7 @@ export function ExportContactsDialog({ selectedContactIds = [], children }: Expo
   const [selectedFields, setSelectedFields] = useState<string[]>(
     EXPORT_FIELDS.filter(field => field.defaultChecked).map(field => field.id)
   )
-  const [isExporting, setIsExporting] = useState(false)
+  const exportContacts = useExportContacts()
 
   const form = useForm({
     resolver: zodResolver(exportContactsSchema),
@@ -82,28 +83,16 @@ export function ExportContactsDialog({ selectedContactIds = [], children }: Expo
 
   const onSubmit = async (data: ExportContactsData) => {
     try {
-      setIsExporting(true)
-
-      // Here you would typically make an API call to generate the export
-      // For now, we'll simulate the export process
-      const exportData = {
-        ...data,
-        fields: selectedFields,
-      }
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-
-      // In a real implementation, this would trigger a download
-      const filename = `contacts-export-${new Date().toISOString().split('T')[0]}.${data.format}`
+      await exportContacts.mutateAsync({
+        format: data.format,
+        contactIds: data.contactIds?.length ? data.contactIds : undefined,
+        filters: data.contactIds?.length ? undefined : data.filters,
+      })
       
-      toast.success(`Export completed: ${filename}`)
       setOpen(false)
       form.reset()
     } catch (error) {
-      toast.error("Failed to export contacts")
-    } finally {
-      setIsExporting(false)
+      // Error is handled by the mutation
     }
   }
 
@@ -260,9 +249,9 @@ export function ExportContactsDialog({ selectedContactIds = [], children }: Expo
               <Button 
                 type="submit" 
                 className="bg-[#1E3A3A] hover:bg-[#1E3A3A]/90"
-                disabled={isExporting || selectedFields.length === 0}
+                disabled={exportContacts.isPending || selectedFields.length === 0}
               >
-                {isExporting ? (
+                {exportContacts.isPending ? (
                   <>
                     <span className="mr-2">Exporting...</span>
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />

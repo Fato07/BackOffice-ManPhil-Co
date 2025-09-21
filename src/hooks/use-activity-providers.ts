@@ -184,12 +184,42 @@ export function useImportProviders() {
 export function useExportProviders() {
   return useMutation({
     mutationFn: async (data: ExportActivityProvidersInput) => {
-      const response = await fetch("/api/activity-providers/export", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+      // Build query parameters
+      const params = new URLSearchParams({
+        format: data.format || "csv",
+      })
+      
+      // Handle filters
+      if (data.filters) {
+        if (data.filters.search) {
+          params.append("search", data.filters.search)
+        }
+        if (data.filters.category) {
+          params.append("category", data.filters.category)
+        }
+        if (data.filters.tags && data.filters.tags.length > 0) {
+          params.append("tags", data.filters.tags.join(","))
+        }
+        if (data.filters.hasWebsite !== undefined) {
+          params.append("hasWebsite", String(data.filters.hasWebsite))
+        }
+        if (data.filters.hasPhone !== undefined) {
+          params.append("hasPhone", String(data.filters.hasPhone))
+        }
+        if (data.filters.hasEmail !== undefined) {
+          params.append("hasEmail", String(data.filters.hasEmail))
+        }
+        
+        // Handle ID-based filtering for selected items
+        if (data.filters.search?.startsWith("id:")) {
+          const ids = data.filters.search.substring(3).split(",")
+          params.set("ids", ids.join(","))
+          params.delete("search")
+        }
+      }
+      
+      const response = await fetch(`/api/activity-providers/export?${params}`, {
+        method: "GET",
       });
       
       if (!response.ok) {

@@ -98,14 +98,14 @@ export function ProviderFilters({ filters, onFiltersChange }: ProviderFiltersPro
           <div className="space-y-2">
             <Label>Type</Label>
             <Select 
-              value={filters.category || ""} 
-              onValueChange={(value) => updateFilters({ category: value || undefined })}
+              value={filters.category || "all"} 
+              onValueChange={(value) => updateFilters({ category: value === "all" ? undefined : value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All types" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All types</SelectItem>
+                <SelectItem value="all">All types</SelectItem>
                 {PROVIDER_TYPES.map((type) => (
                   <SelectItem key={type.value} value={type.value}>
                     {type.label}

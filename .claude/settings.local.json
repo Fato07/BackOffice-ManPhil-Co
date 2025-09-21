@@ -6,7 +6,11 @@
       "mcp__firecrawl__firecrawl_scrape",
       "mcp__ide__getDiagnostics",
       "mcp__firecrawl__firecrawl_scrape",
-      "mcp__brave-search__brave_web_search"
+      "mcp__brave-search__brave_web_search",
+      "mcp__filesystem__write_file",
+      "WebFetch(domain:docs.mapbox.com)",
+      "mcp__context7__get-library-docs",
+      "Bash(bun run:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

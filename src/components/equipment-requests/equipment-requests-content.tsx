@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { DataTable } from "@/components/data-table/data-table"
 import { columns } from "@/components/equipment-requests/columns"
 import { CreateEquipmentRequestDialog } from "@/components/equipment-requests/create-equipment-request-dialog"
+import { ExportDialog } from "@/components/equipment-requests/export-dialog"
 import { EquipmentRequestFiltersPanel } from "@/components/equipment-requests/equipment-request-filters"
 import { useEquipmentRequests } from "@/hooks/use-equipment-requests"
 import { EquipmentRequestFilters, EquipmentRequestListItem } from "@/types/equipment-request"
@@ -67,6 +68,7 @@ export function EquipmentRequestsContent() {
   const [searchInput, setSearchInput] = useState(urlState.search || '')
   const [isFilterLoading, setIsFilterLoading] = useState(false)
   const [selectedRequestIds, setSelectedRequestIds] = useState<string[]>([])
+  const [exportDialogOpen, setExportDialogOpen] = useState(false)
 
   // Debounce search value
   const debouncedSearch = useDebounce(searchInput, 300)
@@ -121,10 +123,10 @@ export function EquipmentRequestsContent() {
     setIsFilterLoading(true)
 
     // Convert EquipmentRequestFilters to URL state
-    const updates: any = {
+    const updates = {
       search: newFilters.search || null,
-      status: newFilters.status || 'ALL',
-      priority: newFilters.priority || 'ALL',
+      status: newFilters.status || 'ALL' as const,
+      priority: newFilters.priority || 'ALL' as const,
       propertyId: newFilters.propertyId || null,
       destinationId: newFilters.destinationId || null,
       dateFrom: newFilters.dateFrom || null,
@@ -166,8 +168,7 @@ export function EquipmentRequestsContent() {
   }
 
   const handleExport = () => {
-    // Export functionality - to be implemented when CSV export requirements are defined
-    // console.log("Export equipment requests")
+    setExportDialogOpen(true)
   }
 
   return (
@@ -286,6 +287,15 @@ export function EquipmentRequestsContent() {
           </>
         )}
       </motion.div>
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        selectedRequestIds={selectedRequestIds}
+        totalRequests={requests?.total || 0}
+        filteredCount={requests?.total}
+      />
     </div>
   )
 }

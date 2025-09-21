@@ -66,6 +66,9 @@ export function useCreateLegalDocument() {
           } else {
             formData.append(key, String(value))
           }
+        } else if (key === 'propertyId' && value === null) {
+          // Explicitly send null for propertyId to indicate global document
+          formData.append(key, 'null')
         }
       })
 

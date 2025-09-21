@@ -74,7 +74,7 @@ export function CreateDocumentDialog({
   const { mutate: createDocument, isPending } = useCreateLegalDocument()
   
   // Fetch properties for property selection
-  const { data: propertiesResult } = useProperties({}, 1, 1000)
+  const { data: propertiesResult, isLoading: propertiesLoading, error: propertiesError } = useProperties({}, 1, 100)
   const properties = propertiesResult?.data || []
 
   const form = useForm<FormData>({
@@ -213,10 +213,10 @@ export function CreateDocumentDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
                       <FormControl>
                         <SelectTrigger className="border-[#B5985A]/20 focus:border-[#B5985A]/40 focus:ring-[#B5985A]/20 transition-colors duration-200">
-                          <SelectValue placeholder="Select category" />
+                          <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -257,19 +257,36 @@ export function CreateDocumentDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Property</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select 
+                      onValueChange={(value) => field.onChange(value === "none" ? null : value)} 
+                      value={field.value || "none"}
+                    >
                       <FormControl>
                         <SelectTrigger className="border-[#B5985A]/20 focus:border-[#B5985A]/40 focus:ring-[#B5985A]/20 transition-colors duration-200">
-                          <SelectValue placeholder="Select property (optional)" />
+                          <SelectValue placeholder="No specific property (Global)" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="GLOBAL">Global Document</SelectItem>
-                        {properties.map((property) => (
-                          <SelectItem key={property.id} value={property.id}>
-                            {property.name}
+                        <SelectItem value="none">No specific property (Global)</SelectItem>
+                        {propertiesLoading ? (
+                          <SelectItem value="loading" disabled>
+                            Loading properties...
                           </SelectItem>
-                        ))}
+                        ) : propertiesError ? (
+                          <SelectItem value="error" disabled>
+                            Error loading properties
+                          </SelectItem>
+                        ) : properties.length === 0 ? (
+                          <SelectItem value="empty" disabled>
+                            No properties found
+                          </SelectItem>
+                        ) : (
+                          properties.map((property) => (
+                            <SelectItem key={property.id} value={property.id}>
+                              {property.name}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     <FormDescription className="text-xs">

@@ -94,6 +94,46 @@ export async function GET(
             },
           })
           break
+          
+        case "EquipmentRequest":
+          entityDetails = await prisma.equipmentRequest.findUnique({
+            where: { id: log.entityId },
+            select: { 
+              id: true,
+              requestedBy: true,
+              priority: true,
+              status: true,
+              items: true,
+              reason: true,
+              property: { 
+                select: { 
+                  id: true,
+                  name: true 
+                } 
+              },
+              room: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              }
+            },
+          })
+          break
+          
+        case "Contact":
+          entityDetails = await prisma.contact.findUnique({
+            where: { id: log.entityId },
+            select: { 
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              type: true,
+              company: true,
+            },
+          })
+          break
       }
     } catch (error) {
       // Entity might be deleted

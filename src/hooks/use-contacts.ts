@@ -259,6 +259,67 @@ export function useUnlinkContactFromProperty() {
   })
 }
 
+// Export contacts mutation
+export function useExportContacts() {
+  return useMutation({
+    mutationFn: async (data: { format: string; contactIds?: string[]; filters?: any }) => {
+      // Build query parameters
+      const params = new URLSearchParams({
+        format: data.format || "csv",
+      })
+      
+      if (data.contactIds && data.contactIds.length > 0) {
+        params.append("ids", data.contactIds.join(","))
+      } else if (data.filters) {
+        // Apply filters
+        if (data.filters.search) {
+          params.append("search", data.filters.search)
+        }
+        if (data.filters.category && data.filters.category !== "ALL") {
+          params.append("category", data.filters.category)
+        }
+        if (data.filters.hasLinkedProperties) {
+          params.append("hasLinkedProperties", "true")
+        }
+      }
+      
+      const response = await fetch(`/api/contacts/export?${params}`, {
+        method: "GET",
+      })
+      
+      if (!response.ok) {
+        throw new Error("Failed to export contacts")
+      }
+      
+      const contentDisposition = response.headers.get("Content-Disposition")
+      const filename = contentDisposition
+        ?.split("filename=")[1]
+        ?.replace(/"/g, "") || `contacts-export.${data.format}`
+      
+      const blob = await response.blob()
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      
+      return { success: true }
+    },
+    onSuccess: () => {
+      toast.success("Contacts exported successfully")
+    },
+    onError: (error) => {
+      toast.error("Failed to export contacts")
+    },
+  })
+}
+
 // Optimistic updates hook for better UX
 export function useOptimisticContactUpdate() {
   const queryClient = useQueryClient()
@@ -285,21 +346,4 @@ export function useOptimisticContactUpdate() {
   }
 
   return { optimisticUpdate, rollback }
-}
-
-// Export contacts hook (for CSV downloads, etc.)
-export function useExportContacts() {
-  return useMutation({
-    mutationFn: async (params: { contactIds?: string[], filters?: ContactFilters }) => {
-      // This would integrate with the export action when implemented
-      // For now, this is a placeholder for the export functionality
-      throw new Error('Export functionality not yet implemented')
-    },
-    onSuccess: () => {
-      toast.success('Contacts exported successfully')
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to export contacts')
-    },
-  })
 }

@@ -87,6 +87,8 @@ export async function POST(request: NextRequest) {
           inputData[key] = new Date(value as string)
         } else if (key === 'reminderDays' && value) {
           inputData[key] = parseInt(value as string)
+        } else if (key === 'propertyId' && (value === '' || value === 'null')) {
+          // Don't set propertyId, leave it undefined for global documents
         } else if (value) {
           inputData[key] = value
         }
