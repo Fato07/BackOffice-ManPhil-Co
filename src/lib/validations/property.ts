@@ -13,35 +13,35 @@ export type CreatePropertyFormData = z.infer<typeof createPropertySchema>
 
 // Update property basic info
 export const updatePropertyBasicSchema = z.object({
-  name: z.string().min(1).max(255).optional(),
-  originalName: z.string().max(255).nullable().optional(),
+  name: z.string().min(1, "Name must not be empty").max(255, "Name too long").optional(),
+  originalName: z.string().max(255, "Original name too long").nullish(),
   status: z.nativeEnum(PropertyStatus).optional(),
-  destinationId: z.string().min(1).optional(),
-  numberOfRooms: z.number().int().min(0).optional(),
-  numberOfBathrooms: z.number().int().min(0).optional(),
-  maxGuests: z.number().int().min(0).optional(),
-  propertySize: z.number().positive().nullable().optional(),
+  destinationId: z.string().min(1, "Destination required").optional(),
+  numberOfRooms: z.number().int().min(0, "Rooms cannot be negative").optional(),
+  numberOfBathrooms: z.number().int().min(0, "Bathrooms cannot be negative").optional(),
+  maxGuests: z.number().int().min(0, "Guests cannot be negative").optional(),
+  propertySize: z.number().positive("Property size must be positive").nullish(),
   licenseType: z.nativeEnum(LicenseType).optional(),
   conciergeServiceOffer: z.nativeEnum(ConciergeServiceOffer).optional(),
   categories: z.array(z.string()).optional(),
-  operatedByExternal: z.string().nullable().optional(),
+  operatedByExternal: z.string().nullish(),
 })
 
 // Update property location
 export const updatePropertyLocationSchema = z.object({
-  address: z.string().nullable().optional(),
-  postcode: z.string().nullable().optional(),
-  city: z.string().nullable().optional(),
-  latitude: z.number().min(-90).max(90).nullable().optional(),
-  longitude: z.number().min(-180).max(180).nullable().optional(),
-  additionalDetails: z.string().nullable().optional(),
+  address: z.string().nullish(),
+  postcode: z.string().nullish(),
+  city: z.string().nullish(),
+  latitude: z.number().min(-90, "Invalid latitude").max(90, "Invalid latitude").nullish(),
+  longitude: z.number().min(-180, "Invalid longitude").max(180, "Invalid longitude").nullish(),
+  additionalDetails: z.string().nullish(),
 })
 
 // Update property promotion
 export const updatePropertyPromotionSchema = z.object({
   exclusivity: z.boolean().optional(),
-  position: z.number().int().positive().nullable().optional(),
-  segment: z.string().nullable().optional(),
+  position: z.number().int().positive("Position must be positive").nullish(),
+  segment: z.string().nullish(),
   iconicCollection: z.boolean().optional(),
   onboardingFees: z.boolean().optional(),
   onlineReservation: z.boolean().optional(),
@@ -50,71 +50,93 @@ export const updatePropertyPromotionSchema = z.object({
 
 // Update property environment
 export const updatePropertyEnvironmentSchema = z.object({
-  neighborhood: z.string().nullable().optional(),
-  setting: z.string().nullable().optional(),
-  specialAttention: z.string().nullable().optional(),
+  neighborhood: z.string().nullish(),
+  setting: z.string().nullish(),
+  specialAttention: z.string().nullish(),
   locatedInCity: z.boolean().optional(),
   beachAccess: z.boolean().optional(),
-  beachAccessibility: z.string().nullable().optional(),
-  beachTravelTime: z.string().nullable().optional(),
+  beachAccessibility: z.string().nullish(),
+  beachTravelTime: z.string().nullish(),
   privateBeachAccess: z.boolean().optional(),
   skiSlopes: z.boolean().optional(),
   shops: z.boolean().optional(),
   restaurants: z.boolean().optional(),
   touristCenter: z.boolean().optional(),
   golfCourse: z.boolean().optional(),
+  accessibilityOptions: z.array(z.enum(["BY_CAR", "SKI_IN_SKI_OUT", "BY_FOOT"])).optional(),
 })
 
 // Update property content
 export const updatePropertyContentSchema = z.object({
-  goodToKnow: z.string().nullable().optional(),
-  internalComment: z.string().nullable().optional(),
-  warning: z.string().nullable().optional(),
-  automaticOffer: z.any().nullable().optional(), // JSON field
+  goodToKnow: z.string().nullish(),
+  internalComment: z.string().nullish(),
+  warning: z.string().nullish(),
+  automaticOffer: z.any().nullish(), // JSON field - consider using z.record() for better type safety
 })
 
 // Update property events
 export const updatePropertyEventsSchema = z.object({
   eventsAllowed: z.boolean().optional(),
-  eventsCapacity: z.number().int().min(0).nullable().optional(),
-  eventsDetails: z.any().nullable().optional(), // JSON field
+  eventsCapacity: z.number().int().min(0, "Event capacity cannot be negative").nullish(),
+  eventsDetails: z.any().nullish(), // JSON field - consider using z.record() for better type safety
 })
 
 // Room validation
 export const createRoomSchema = z.object({
-  propertyId: z.string().min(1),
+  propertyId: z.string().min(1, "Property ID is required"),
   name: z.string().min(1, "Room name is required"),
-  type: z.enum(["OUTDOOR", "INTERIOR"]),
-  groupName: z.string().nullable().optional(),
-  position: z.number().int().min(0).default(0),
-  generalInfo: z.any().nullable().optional(),
-  view: z.string().nullable().optional(),
-  equipment: z.any().nullable().optional(), // JSON field
+  type: z.enum([
+    "BADMINTON_COURT", "BAR", "BASKETBALL_COURT", "BATHROOM", "BEDROOM", 
+    "BEDROOM_FOR_CHILDREN", "BEDROOM_FOR_STAFF", "BILLBOARD_ROOM", "CIGAR_CELL",
+    "COLD_CHAMBER", "CONFERENCE_ROOM", "COURTYARD", "COVERED_TERRACE", "DINING_ROOM",
+    "DORMITORY", "DRESSING_ROOM", "FITNESS_ROOM", "FOOTBALL_COURT", "GAMING_ROOM",
+    "GARDEN", "KITCHEN", "LAUNDRY_ROOM", "LIVING_ROOM", "MASSAGE_ROOM", "MEDITATION_ROOM",
+    "MOVIE_ROOM", "MUSIC_ROOM", "OFFICE_ROOM", "PADEL_COURT", "PETANQUE", "POOL_AREA",
+    "POOLHOUSE", "RELAXATION_ROOM", "RESTROOM", "ROOFTOP", "SKIROOM", "SLEEPING_SLUG",
+    "SMOKEHOUSE", "SPA", "SUITE", "TENNIS_COURT", "TERRACE", "TV_ROOM", "VIP",
+    "VERANDA", "VOLLEYBALL_COURT", "WINDOWLESS_BEDROOM", "WINE_CELLAR"
+  ], {
+    message: "Invalid room type"
+  }),
+  groupName: z.string().nullish(),
+  position: z.number().int().min(0, "Position cannot be negative").default(0),
+  generalInfo: z.any().nullish(), // Consider using z.record() for better type safety
+  view: z.string().nullish(),
+  equipment: z.any().nullish(), // Consider using z.record() for better type safety
 })
 
 export const updateRoomSchema = createRoomSchema.partial().omit({ propertyId: true })
 
 // Contact validation
 export const createContactSchema = z.object({
-  propertyId: z.string().min(1),
-  type: z.enum(["OWNER", "AGENCY", "STAFF", "MAINTENANCE", "EMERGENCY"]),
-  name: z.string().min(1, "Contact name is required"),
-  email: z.string().email("Invalid email").nullable().optional(),
-  phone: z.string().nullable().optional(),
-  notes: z.string().nullable().optional(),
+  propertyId: z.string().min(1, "Property ID is required"),
+  type: z.enum([
+    "OWNER", "MANAGER", "AGENCY", "STAFF", "MAINTENANCE", "EMERGENCY", 
+    "CHECK_IN_MANAGER", "SECURITY_DEPOSIT_MANAGER", "SIGNATORY"
+  ], {
+    message: "Invalid contact type"
+  }),
+  name: z.string().min(1, "Contact name is required").max(255, "Name too long"),
+  email: z.string().email({ message: "Invalid email format" }).nullish(),
+  phone: z.string().max(50, "Phone number too long").nullish(),
+  notes: z.string().max(1000, "Notes too long").nullish(),
   isApproved: z.boolean().default(false),
 })
 
 // Price range validation
 export const createPriceRangeSchema = z.object({
-  propertyId: z.string().min(1),
-  name: z.string().min(1, "Price range name is required"),
-  startDate: z.date(),
-  endDate: z.date(),
+  propertyId: z.string().min(1, "Property ID is required"),
+  name: z.string().min(1, "Price range name is required").max(255, "Name too long"),
+  startDate: z.date({
+    message: "Valid start date is required"
+  }),
+  endDate: z.date({
+    message: "Valid end date is required"
+  }),
   nightlyRate: z.number().positive("Nightly rate must be positive"),
-  weeklyRate: z.number().positive().nullable().optional(),
-  monthlyRate: z.number().positive().nullable().optional(),
-  minimumStay: z.number().int().positive().default(1),
+  weeklyRate: z.number().positive("Weekly rate must be positive").nullish(),
+  monthlyRate: z.number().positive("Monthly rate must be positive").nullish(),
+  minimumStay: z.number().int().positive("Minimum stay must be positive").default(1),
 }).refine((data) => data.endDate > data.startDate, {
   message: "End date must be after start date",
   path: ["endDate"],
@@ -123,8 +145,9 @@ export const createPriceRangeSchema = z.object({
 // Search and filter validation
 export const propertySearchSchema = z.object({
   search: z.string().optional(),
-  status: z.enum(["ALL", "PUBLISHED", "HIDDEN", "ONBOARDING"]).optional(),
+  status: z.enum(["ALL", "PUBLISHED", "HIDDEN", "ONBOARDING", "OFFBOARDED"]).optional(),
   destinationId: z.string().optional(),
+  destinationIds: z.array(z.string()).optional(),
   
   // Room and bathroom filters
   minRooms: z.number().int().min(0).optional(),

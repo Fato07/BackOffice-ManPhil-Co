@@ -14,6 +14,8 @@ import { useUpdateProperty } from "@/hooks/use-properties"
 import { PropertyStatus, LicenseType, ConciergeServiceOffer } from "@/types/property"
 import { z } from "zod"
 import { toast } from "sonner"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Permission } from "@/types/auth"
 
 type BasicInfoFormData = z.infer<typeof updatePropertyBasicSchema>
 
@@ -43,6 +45,8 @@ interface HouseInfoSectionProps {
 
 export function HouseInfoSection({ property }: HouseInfoSectionProps) {
   const updateProperty = useUpdateProperty()
+  const { hasPermission } = usePermissions()
+  const canEdit = hasPermission(Permission.PROPERTY_EDIT)
   const [isEditingGeneral, setIsEditingGeneral] = useState(false)
   const [isEditingLocation, setIsEditingLocation] = useState(false)
   const [categories, setCategories] = useState(property.categories)
@@ -146,6 +150,7 @@ export function HouseInfoSection({ property }: HouseInfoSectionProps) {
         onSave={handleSaveGeneral}
         onCancel={handleCancelGeneral}
         isSaving={updateProperty.isPending}
+        canEdit={canEdit}
       >
         {isEditingGeneral ? (
           <div className="space-y-4">
@@ -312,6 +317,8 @@ export function HouseInfoSection({ property }: HouseInfoSectionProps) {
         )}
       </PropertySection>
 
+      <div className="mb-6" />
+
       <PropertySection
         title="Location"
         isEditing={isEditingLocation}
@@ -319,6 +326,7 @@ export function HouseInfoSection({ property }: HouseInfoSectionProps) {
         onSave={handleSaveLocation}
         onCancel={handleCancelLocation}
         isSaving={updateProperty.isPending}
+        canEdit={canEdit}
       >
         {isEditingLocation ? (
           <div className="space-y-4">

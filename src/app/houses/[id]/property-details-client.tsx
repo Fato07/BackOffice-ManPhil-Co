@@ -1,27 +1,58 @@
 "use client"
 
-import { useRef, useState, useEffect } from "react"
+import React, { useRef, useState, useEffect, lazy, Suspense } from "react"
 import { PropertyNavigation } from "@/components/property-detail/property-navigation"
 import { SectionNavigator } from "@/components/property-detail/section-navigator"
-import { PromoteSection } from "@/components/property-detail/sections/promote-section"
-import { HouseInfoSection } from "@/components/property-detail/sections/house-info-section"
-import { LocationSection } from "@/components/property-detail/sections/location-section"
-import { FurtherInfoSection } from "@/components/property-detail/sections/further-info-section"
-import { HeatingSection } from "@/components/property-detail/sections/heating-section"
-import { EventsSection } from "@/components/property-detail/sections/events-section"
-import { ServicesSection } from "@/components/property-detail/sections/services-section"
-import { GoodToKnowSection } from "@/components/property-detail/sections/good-to-know-section"
-import { InternalSection } from "@/components/property-detail/sections/internal-section"
-import { MarketingSection } from "@/components/property-detail/sections/marketing-section"
-import { PhotosSection } from "@/components/property-detail/sections/photos-section"
-import { LinksSection } from "@/components/property-detail/sections/links-section"
-import { RoomBuilder } from "@/components/property-detail/sections/room-builder"
 import { CommandPalette } from "@/components/property-detail/command-palette"
+import { ImageViewerModal } from "@/components/property-detail/image-viewer-modal"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
-import { Command } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Command, Home, Info, MapPin, FileText, Thermometer, Calendar, Wrench, AlertCircle, Shield, Megaphone, Camera, Link, DoorOpen, Users, Images, ChevronLeft } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import type { PropertyWithRelations } from "@/types"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Permission } from "@/types/auth"
+import { Section } from "@/components/property-detail/property-navigation"
+
+// Lazy load all sections for better performance
+const PromoteSection = lazy(() => import("@/components/property-detail/sections/promote-section").then(m => ({ default: m.PromoteSection })))
+const HouseInfoSection = lazy(() => import("@/components/property-detail/sections/house-info-section").then(m => ({ default: m.HouseInfoSection })))
+const LocationSection = lazy(() => import("@/components/property-detail/sections/location-section").then(m => ({ default: m.LocationSection })))
+const FurtherInfoSection = lazy(() => import("@/components/property-detail/sections/further-info-section").then(m => ({ default: m.FurtherInfoSection })))
+const HeatingSection = lazy(() => import("@/components/property-detail/sections/heating-section").then(m => ({ default: m.HeatingSection })))
+const EventsSection = lazy(() => import("@/components/property-detail/sections/events-section").then(m => ({ default: m.EventsSection })))
+const ServicesSection = lazy(() => import("@/components/property-detail/sections/services-section").then(m => ({ default: m.ServicesSection })))
+const GoodToKnowSection = lazy(() => import("@/components/property-detail/sections/good-to-know-section").then(m => ({ default: m.GoodToKnowSection })))
+const InternalSection = lazy(() => import("@/components/property-detail/sections/internal-section").then(m => ({ default: m.InternalSection })))
+const MarketingSection = lazy(() => import("@/components/property-detail/sections/marketing-section").then(m => ({ default: m.MarketingSection })))
+const PhotosSection = lazy(() => import("@/components/property-detail/sections/photos-section").then(m => ({ default: m.PhotosSection })))
+const LinksSection = lazy(() => import("@/components/property-detail/sections/links-section").then(m => ({ default: m.LinksSection })))
+const ContactsSection = lazy(() => import("@/components/property-detail/sections/contacts-section").then(m => ({ default: m.ContactsSection })))
+const RoomBuilder = lazy(() => import("@/components/property-detail/sections/room-builder").then(m => ({ default: m.RoomBuilder })))
+
+// Section loading skeleton
+function SectionSkeleton() {
+  return (
+    <GlassCard className="animate-pulse">
+      <div className="px-8 py-6 border-b border-gray-100/50">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-6 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-8 w-8 rounded-full" />
+        </div>
+      </div>
+      <div className="px-8 py-6 space-y-4">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    </GlassCard>
+  )
+}
 
 interface PropertyDetailsWrapperProps {
   property: PropertyWithRelations
@@ -31,23 +62,46 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
   const [currentSection, setCurrentSection] = useState("promote")
   const [navigationExpanded, setNavigationExpanded] = useState(true)
   const [navigatorSections, setNavigatorSections] = useState<{ id: string; label: string; element?: HTMLElement | null }[]>([])
+  const [visibleSections, setVisibleSections] = useState(new Set<string>())
+  const [showPhotoViewer, setShowPhotoViewer] = useState(false)
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const { canViewSection } = usePermissions()
+  const router = useRouter()
 
-  const sections = [
-    { id: "promote", label: "Promote", component: PromoteSection },
-    { id: "info", label: "House Information", component: HouseInfoSection },
-    { id: "location", label: "Location", component: LocationSection },
-    { id: "further-info", label: "Further Information", component: FurtherInfoSection },
-    { id: "heating", label: "Heating & AC", component: HeatingSection },
-    { id: "events", label: "Events", component: EventsSection },
-    { id: "services", label: "Services", component: ServicesSection },
-    { id: "good-to-know", label: "Good to Know", component: GoodToKnowSection },
-    { id: "internal", label: "Internal", component: InternalSection },
-    { id: "marketing", label: "Automatic Offer", component: MarketingSection },
-    { id: "photos", label: "Photos", component: PhotosSection },
-    { id: "links", label: "Links & Resources", component: LinksSection },
-    { id: "rooms", label: "Rooms", component: RoomBuilder },
+  const allSections = [
+    { id: "promote", label: "Promote", component: PromoteSection, icon: Home, description: "Visibility and positioning" },
+    { id: "info", label: "House Information", component: HouseInfoSection, icon: Info, description: "Basic property details" },
+    { id: "location", label: "Location", component: LocationSection, icon: MapPin, description: "Address and coordinates" },
+    { id: "further-info", label: "Further Information", component: FurtherInfoSection, icon: FileText, description: "Additional details" },
+    { id: "heating", label: "Heating & AC", component: HeatingSection, icon: Thermometer, description: "Climate control systems" },
+    { id: "events", label: "Events", component: EventsSection, icon: Calendar, description: "Special events and activities" },
+    { id: "services", label: "Services", component: ServicesSection, icon: Wrench, description: "Available amenities" },
+    { id: "good-to-know", label: "Good to Know", component: GoodToKnowSection, icon: AlertCircle, description: "Important information" },
+    { id: "internal", label: "Internal", component: InternalSection, icon: Shield, description: "Private notes and data", permission: Permission.INTERNAL_VIEW, isInternal: true },
+    { id: "contacts", label: "Linked Contacts", component: ContactsSection, icon: Users, description: "Property contacts and service providers", permission: Permission.CONTACTS_VIEW },
+    { id: "marketing", label: "Automatic Offer", component: MarketingSection, icon: Megaphone, description: "Marketing content" },
+    { id: "photos", label: "Photos", component: PhotosSection, icon: Camera, description: "Property images" },
+    { id: "links", label: "Links & Resources", component: LinksSection, icon: Link, description: "External resources" },
+    { id: "rooms", label: "Rooms", component: RoomBuilder, icon: DoorOpen, description: "Room configuration" },
   ]
+
+  // Filter sections based on user permissions
+  const sections = allSections.filter(section => {
+    if (section.permission) {
+      return canViewSection(section.id);
+    }
+    return true;
+  })
+
+  // Create navigation sections with the necessary properties for PropertyNavigation
+  const navigationSections: Section[] = sections.map(section => ({
+    id: section.id,
+    label: section.label,
+    icon: section.icon,
+    description: section.description,
+    isInternal: section.isInternal,
+  }))
 
   const handleSectionChange = (sectionId: string) => {
     setCurrentSection(sectionId)
@@ -70,11 +124,58 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
     services: !!property.services,
     "good-to-know": !!property.goodToKnow,
     internal: !!property.internalComment || !!property.warning,
+    contacts: (property.contacts?.length ?? 0) > 0,
     marketing: !!property.automaticOffer,
     photos: (property.photos?.length ?? 0) > 0,
     links: (property.resources?.length ?? 0) > 0,
     rooms: (property.rooms?.length ?? 0) > 0,
   }
+
+  // Setup intersection observer for virtualization
+  useEffect(() => {
+    // Create observer to track which sections are visible
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const sectionId = entry.target.getAttribute('data-section-id')
+          if (sectionId) {
+            setVisibleSections((prev) => {
+              const next = new Set(prev)
+              if (entry.isIntersecting) {
+                next.add(sectionId)
+              } else {
+                // Keep a buffer of 1 section above and below
+                const sectionIndex = sections.findIndex(s => s.id === sectionId)
+                const hasAdjacentVisible = 
+                  (sectionIndex > 0 && prev.has(sections[sectionIndex - 1].id)) ||
+                  (sectionIndex < sections.length - 1 && prev.has(sections[sectionIndex + 1].id))
+                
+                if (!hasAdjacentVisible) {
+                  next.delete(sectionId)
+                }
+              }
+              return next
+            })
+          }
+        })
+      },
+      {
+        rootMargin: '100px 0px', // Load sections 100px before they come into view
+        threshold: 0,
+      }
+    )
+
+    // Observe all section containers
+    Object.values(sectionRefs.current).forEach((ref) => {
+      if (ref && observerRef.current) {
+        observerRef.current.observe(ref)
+      }
+    })
+
+    return () => {
+      observerRef.current?.disconnect()
+    }
+  }, [sections])
 
   // Update navigatorSections when refs are populated
   useEffect(() => {
@@ -93,31 +194,72 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
   }, [])
 
   return (
-    <div className="flex min-h-screen bg-gray-50 -m-6">
-      {/* Left Navigation */}
-      <PropertyNavigation
-        propertyId={property.id}
-        currentSection={currentSection}
-        onSectionChange={handleSectionChange}
-        completionStatus={completionStatus}
-        onExpandChange={setNavigationExpanded}
-      />
+    <div className="relative flex -mx-6 -my-6 min-h-[calc(100vh-3.5rem)] luxury-gradient-bg">
+      {/* Floating luxury particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div
+            key={i}
+            className="luxury-particle"
+            style={{
+              left: `${10 + i * 9}%`,
+              animationDelay: `${-i * 1.5}s`,
+              animationDuration: `${12 + Math.random() * 6}s`
+            }}
+          />
+        ))}
+      </div>
 
-      {/* Main Content - flex-1 automatically adjusts */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto">
-          {/* Sticky Header */}
-          <div className="sticky top-14 z-30 bg-gradient-to-b from-gray-50 to-gray-50/80 backdrop-blur-md px-8 pb-6 pt-8 mb-8 border-b border-gray-200/50">
+      {/* Left Navigation with enhanced glass effect */}
+      <div className="relative z-40">
+        <PropertyNavigation
+          propertyId={property.id}
+          currentSection={currentSection}
+          onSectionChange={handleSectionChange}
+          completionStatus={completionStatus}
+          onExpandChange={setNavigationExpanded}
+          sections={navigationSections}
+        />
+      </div>
+
+      {/* Main Content - flush with navigation */}
+      <div className="relative z-20 flex-1 flex flex-col bg-transparent">
+        {/* Sticky Header with enhanced glass effect - seamlessly connected to navigation */}
+        <div className="sticky top-14 z-30 bg-gradient-to-b from-white/85 to-white/75 backdrop-blur-2xl pl-8 pr-8 pb-6 pt-6 border-b border-white/40 shadow-lg flex-shrink-0">
+            {/* Back button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push("/houses")}
+              className="mb-4 -ml-2"
+            >
+              <ChevronLeft className="mr-1 h-4 w-4" />
+              Back to Houses
+            </Button>
+            
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-extralight text-gray-900 tracking-tight">
+                <h1 className="text-xl font-extralight text-gray-900 tracking-tight">
                   {property.name}
                 </h1>
                 <p className="text-sm text-gray-600 mt-2 font-light">
                   Complete all sections to publish this luxury property
                 </p>
               </div>
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-4">
+                {/* View All Photos Button */}
+                {property.photos && property.photos.length > 0 && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2"
+                    onClick={() => setShowPhotoViewer(true)}
+                  >
+                    <Images className="h-4 w-4" />
+                    <span className="text-sm">View All Photos</span>
+                  </Button>
+                )}
+                
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -172,16 +314,26 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
             </div>
           </div>
 
-          {/* Sections */}
-          <div className="space-y-12 px-8">
+        {/* Scrollable sections container */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="px-8 py-8">
+            <div className="max-w-7xl mx-auto space-y-12">
             {sections.map((section, index) => {
+              const isInitiallyVisible = index < 3 // Always show first 3 sections
+              const shouldRender = isInitiallyVisible || visibleSections.has(section.id)
+              
               return (
                 <div
                   key={section.id}
                   id={section.id}
+                  data-section-id={section.id}
                   ref={(el) => {
                     if (el && sectionRefs.current[section.id] !== el) {
                       sectionRefs.current[section.id] = el
+                      // Observe this section
+                      if (observerRef.current) {
+                        observerRef.current.observe(el)
+                      }
                       // Update navigatorSections when a new ref is set
                       setNavigatorSections(prev => 
                         prev.map(navSection => 
@@ -193,11 +345,11 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
                     }
                   }}
                   className={cn(
-                    "scroll-mt-36 transition-all duration-500",
+                    "scroll-mt-36 transition-all duration-500 mb-6",
                     currentSection === section.id ? "opacity-100" : "opacity-80"
                   )}
                 >
-                  <GlassCard className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700" style={{ animationDelay: `${index * 100}ms` }}>
+                  <GlassCard variant="luxury" className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700" style={{ animationDelay: `${index * 100}ms` }}>
                     {/* Section Header */}
                     <div className={cn(
                       "px-8 py-6 border-b border-gray-100/50",
@@ -218,6 +370,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
                             {section.id === "services" && "Available services and amenities"}
                             {section.id === "good-to-know" && "Important guest information"}
                             {section.id === "internal" && "Private notes and configuration"}
+                            {section.id === "contacts" && "Property contacts and service providers"}
                             {section.id === "marketing" && "Marketing content and offers"}
                             {section.id === "photos" && "Property images and galleries"}
                             {section.id === "links" && "External links and resources"}
@@ -239,43 +392,42 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
 
                     {/* Section Content */}
                     <div className="px-8 py-6">
-                      {(() => {
-                        switch (section.id) {
-                          case "promote":
-                            return <PromoteSection property={property} />
-                          case "info":
-                            return <HouseInfoSection property={property} />
-                          case "location":
-                            return <LocationSection property={property} />
-                          case "further-info":
-                            return <FurtherInfoSection property={property} />
-                          case "heating":
-                            return <HeatingSection property={property} />
-                          case "events":
-                            return <EventsSection property={property} />
-                          case "services":
-                            return <ServicesSection property={property} />
-                          case "good-to-know":
-                            return <GoodToKnowSection property={property} />
-                          case "internal":
-                            return <InternalSection property={property} />
-                          case "marketing":
-                            return <MarketingSection property={property} />
-                          case "photos":
-                            return <PhotosSection propertyId={property.id} />
-                          case "links":
-                            return <LinksSection propertyId={property.id} />
-                          case "rooms":
-                            return <RoomBuilder propertyId={property.id} rooms={property.rooms || []} />
-                          default:
-                            return null
-                        }
-                      })()}
+                      {shouldRender ? (
+                        <Suspense fallback={
+                          <div className="space-y-4">
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-32 w-full" />
+                          </div>
+                        }>
+                          {(() => {
+                            switch (section.id) {
+                              case "photos":
+                                return <PhotosSection propertyId={property.id} />
+                              case "links":
+                                return <LinksSection propertyId={property.id} />
+                              case "rooms":
+                                return <RoomBuilder propertyId={property.id} rooms={property.rooms || []} />
+                              default:
+                                const Component = section.component as React.ComponentType<{ property: PropertyWithRelations }>
+                                return <Component property={property} />
+                            }
+                          })()}
+                        </Suspense>
+                      ) : (
+                        <div className="h-64 flex items-center justify-center">
+                          <div className="text-center">
+                            <Skeleton className="h-8 w-48 mx-auto mb-4" />
+                            <Skeleton className="h-4 w-64 mx-auto" />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </GlassCard>
                 </div>
               )
             })}
+            </div>
           </div>
 
           {/* Bottom Padding */}
@@ -292,6 +444,16 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
 
       {/* Command Palette */}
       <CommandPalette propertyId={property.id} />
+      
+      {/* Image Viewer Modal */}
+      {property.photos && (
+        <ImageViewerModal
+          isOpen={showPhotoViewer}
+          onClose={() => setShowPhotoViewer(false)}
+          photos={property.photos}
+          initialIndex={0}
+        />
+      )}
     </div>
   )
 }

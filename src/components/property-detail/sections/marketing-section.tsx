@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge"
 import { useUpdateProperty } from "@/hooks/use-properties"
 import { PropertyWithRelations } from "@/types/property"
 import { toast } from "sonner"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Permission } from "@/types/auth"
 import { Plus, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -58,6 +60,8 @@ export function MarketingSection({ property }: MarketingSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [activeLanguage, setActiveLanguage] = useState("en")
   const updateProperty = useUpdateProperty()
+  const { hasPermission } = usePermissions()
+  const canEdit = hasPermission(Permission.PROPERTY_EDIT)
 
   // Use automaticOffer field temporarily to store marketing content
   const marketingContent = (property.automaticOffer as { marketingContent?: Record<string, unknown> })?.marketingContent || {}
@@ -182,6 +186,7 @@ export function MarketingSection({ property }: MarketingSectionProps) {
       onSave={handleSubmitWithoutFocus}
       onCancel={handleCancel}
       isSaving={updateProperty.isPending}
+      canEdit={canEdit}
     >
       <form onSubmit={(e) => e.preventDefault()}>
         <div className="space-y-6">

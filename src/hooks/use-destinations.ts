@@ -1,20 +1,25 @@
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@/lib/api"
+import { Destination } from "@/generated/prisma"
 
-export interface Destination {
-  id: string
-  name: string
-  country: string
-  region: string | null
+export interface DestinationWithCount extends Destination {
+  _count?: {
+    properties: number
+  }
 }
 
-export interface DestinationOption extends Destination {
+export interface DestinationOption {
+  id: string
+  name: string
+  region: string | null
+  latitude: number | null
+  longitude: number | null
   label: string
   propertyCount: number
 }
 
 interface DestinationsResponse {
-  destinations: Destination[]
+  destinations: DestinationWithCount[]
   grouped: Record<string, DestinationOption[]>
 }
 

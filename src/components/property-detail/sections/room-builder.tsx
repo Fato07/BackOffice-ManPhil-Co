@@ -18,6 +18,8 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { toast } from "sonner"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Permission } from "@/types/auth"
 
 interface RoomBuilderProps {
   propertyId: string
@@ -52,6 +54,8 @@ const EQUIPMENT_CATEGORIES = [
 ]
 
 export function RoomBuilder({ propertyId, rooms: initialRooms }: RoomBuilderProps) {
+  const { hasPermission } = usePermissions()
+  const canEdit = hasPermission(Permission.PROPERTY_EDIT)
   const [rooms, setRooms] = useState(initialRooms)
   const [expandedRooms, setExpandedRooms] = useState<string[]>([])
   const [editingRoom, setEditingRoom] = useState<Room | null>(null)
@@ -70,8 +74,8 @@ export function RoomBuilder({ propertyId, rooms: initialRooms }: RoomBuilderProp
     })
   )
   
-  const outdoorRooms = rooms.filter(room => room.type === "OUTDOOR")
-  const interiorRooms = rooms.filter(room => room.type === "INTERIOR")
+  const outdoorRooms = rooms.filter(room => (room as any).type === "OUTDOOR")
+  const interiorRooms = rooms.filter(room => (room as any).type === "INTERIOR")
 
   const toggleRoom = (roomId: string) => {
     setExpandedRooms(prev =>
@@ -165,7 +169,7 @@ export function RoomBuilder({ propertyId, rooms: initialRooms }: RoomBuilderProp
     }
   }
 
-  function SortableRoomCard({ room }: { room: Room }) {
+  function SortableRoomCard({ room, canEdit }: { room: Room; canEdit?: boolean }) {
     const {
       attributes,
       listeners,
@@ -205,28 +209,32 @@ export function RoomBuilder({ propertyId, rooms: initialRooms }: RoomBuilderProp
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button 
-                  size="icon" 
-                  variant="ghost" 
-                  className="h-8 w-8"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setEditingRoom(room)
-                  }}
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-                <Button 
-                  size="icon" 
-                  variant="ghost" 
-                  className="h-8 w-8 text-red-600"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setDeletingRoom(room)
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                {canEdit !== false && (
+                  <>
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      className="h-8 w-8"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditingRoom(room)
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      className="h-8 w-8 text-red-600"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDeletingRoom(room)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
                 {isExpanded ? (
                   <ChevronUp className="h-4 w-4" />
                 ) : (
@@ -330,12 +338,12 @@ export function RoomBuilder({ propertyId, rooms: initialRooms }: RoomBuilderProp
                 </p>
               ) : (
                 outdoorRooms.map(room => (
-                  <SortableRoomCard key={room.id} room={room} />
+                  <SortableRoomCard key={room.id} room={room} canEdit={canEdit} />
                 ))
               )}
             </SortableContext>
           </DndContext>
-          <AddRoomCard type="OUTDOOR" />
+          {canEdit && <AddRoomCard type="OUTDOOR" />}
         </TabsContent>
         
         <TabsContent value="interior" className="mt-4">
@@ -354,12 +362,12 @@ export function RoomBuilder({ propertyId, rooms: initialRooms }: RoomBuilderProp
                 </p>
               ) : (
                 interiorRooms.map(room => (
-                  <SortableRoomCard key={room.id} room={room} />
+                  <SortableRoomCard key={room.id} room={room} canEdit={canEdit} />
                 ))
               )}
             </SortableContext>
           </DndContext>
-          <AddRoomCard type="INTERIOR" />
+          {canEdit && <AddRoomCard type="INTERIOR" />}
         </TabsContent>
       </Tabs>
 
@@ -433,7 +441,7 @@ function RoomFormDialog({ open, onOpenChange, room, defaultType, onSubmit }: Roo
       setFormData({
         name: room.name || "",
         groupName: room.groupName || "",
-        type: room.type as "INTERIOR" | "OUTDOOR",
+        type: (room as any).type || "INTERIOR",
         view: room.view || "",
         generalInfo: generalInfo?.description || "",
         equipment: equipment,

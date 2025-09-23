@@ -15,6 +15,8 @@ import { Card } from "@/components/ui/card"
 import { useUpdateProperty } from "@/hooks/use-properties"
 import { PropertyWithRelations } from "@/types/property"
 import { toast } from "sonner"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Permission } from "@/types/auth"
 import { Plus, Trash2 } from "lucide-react"
 
 const EVENT_TYPES = [
@@ -82,6 +84,8 @@ interface EventsSectionProps {
 export function EventsSection({ property }: EventsSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
   const updateProperty = useUpdateProperty()
+  const { hasPermission } = usePermissions()
+  const canEdit = hasPermission(Permission.PROPERTY_EDIT)
 
   // Get event details from JSON field (Prisma handles JSON automatically)
   const existingEventDetails = (property.eventsDetails as any) || {}
@@ -174,6 +178,7 @@ export function EventsSection({ property }: EventsSectionProps) {
       onSave={form.handleSubmit(handleSave)}
       onCancel={handleCancel}
       isSaving={updateProperty.isPending}
+      canEdit={canEdit}
     >
       <div className="space-y-8">
         {/* Basic Event Settings */}

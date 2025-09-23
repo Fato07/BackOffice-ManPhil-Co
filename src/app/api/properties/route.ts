@@ -28,6 +28,9 @@ export async function GET(req: NextRequest) {
     if (searchParams.accessibility) {
       processedParams.accessibility = searchParams.accessibility.split(',')
     }
+    if (searchParams.destinationIds) {
+      processedParams.destinationIds = searchParams.destinationIds.split(',')
+    }
     
     // Convert string numbers to actual numbers
     const numberFields = ['page', 'pageSize', 'minRooms', 'maxRooms', 
@@ -67,8 +70,10 @@ export async function GET(req: NextRequest) {
       where.status = params.status as PropertyStatus
     }
     
-    // Destination filter
-    if (params.destinationId) {
+    // Destination filter - support both single and multiple destinations
+    if (params.destinationIds && params.destinationIds.length > 0) {
+      where.destinationId = { in: params.destinationIds }
+    } else if (params.destinationId) {
       where.destinationId = params.destinationId
     }
     
@@ -296,6 +301,14 @@ export async function GET(req: NextRequest) {
             },
             orderBy: {
               nightlyRate: 'asc'
+            }
+          },
+          photos: {
+            where: { isMain: true },
+            take: 1,
+            select: {
+              url: true,
+              caption: true
             }
           }
         },

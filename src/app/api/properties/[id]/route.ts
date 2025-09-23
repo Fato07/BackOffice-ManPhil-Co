@@ -9,6 +9,8 @@ import {
   updatePropertyContentSchema,
   updatePropertyEventsSchema
 } from "@/lib/validations"
+import { requirePermission, getUserRole, getCurrentUserId } from "@/lib/auth"
+import { Permission } from "@/types/auth"
 
 // GET /api/properties/[id] - Get a single property
 export async function GET(
@@ -74,7 +76,39 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Extract id early for use in audit logs
     const { id } = await params
+
+    // Check permission to edit properties
+    try {
+      await requirePermission(Permission.PROPERTY_EDIT)
+    } catch (error) {
+      // Log denied attempt
+      const userRole = await getUserRole()
+      const currentUserId = await getCurrentUserId()
+      
+      if (currentUserId) {
+        await prisma.auditLog.create({
+          data: {
+            userId: currentUserId,
+            action: "update_denied",
+            entityType: "property",
+            entityId: id,
+            changes: {
+              reason: "insufficient_permissions",
+              role: userRole,
+              requiredPermission: Permission.PROPERTY_EDIT,
+            },
+          },
+        })
+      }
+      
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to edit properties" },
+        { status: 403 }
+      )
+    }
+
     const body = await req.json()
 
     // Check if property exists
@@ -160,11 +194,37 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const body = await req.json()
+    // Check permission to edit properties
+    try {
+      await requirePermission(Permission.PROPERTY_EDIT)
+    } catch (error) {
+      // Log denied attempt
+      const userRole = await getUserRole()
+      const currentUserId = await getCurrentUserId()
+      
+      if (currentUserId) {
+        await prisma.auditLog.create({
+          data: {
+            userId: currentUserId,
+            action: "update_denied",
+            entityType: "property",
+            entityId: id,
+            changes: {
+              reason: "insufficient_permissions",
+              role: userRole,
+              requiredPermission: Permission.PROPERTY_EDIT,
+            },
+          },
+        })
+      }
+      
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to edit properties" },
+        { status: 403 }
+      )
+    }
 
-    // Log the incoming request data for debugging
-    console.log("PATCH request for property:", id)
-    console.log("Request body:", JSON.stringify(body, null, 2))
+    const body = await req.json()
 
     // Check if property exists
     const existingProperty = await prisma.property.findUnique({
@@ -192,8 +252,6 @@ export async function PATCH(
         updateData[key] = value
       }
     }
-    
-    console.log("Final update data:", JSON.stringify(updateData, null, 2))
     
     // For PATCH, we don't validate against schemas - we accept any valid fields
     // This allows for flexible partial updates from different sections
@@ -280,7 +338,38 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Extract id early for use in audit logs
     const { id } = await params
+
+    // Check permission to delete properties (using PROPERTY_EDIT permission)
+    try {
+      await requirePermission(Permission.PROPERTY_EDIT)
+    } catch (error) {
+      // Log denied attempt
+      const userRole = await getUserRole()
+      const currentUserId = await getCurrentUserId()
+      
+      if (currentUserId) {
+        await prisma.auditLog.create({
+          data: {
+            userId: currentUserId,
+            action: "delete_denied",
+            entityType: "property",
+            entityId: id,
+            changes: {
+              reason: "insufficient_permissions",
+              role: userRole,
+              requiredPermission: Permission.PROPERTY_EDIT,
+            },
+          },
+        })
+      }
+      
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to delete properties" },
+        { status: 403 }
+      )
+    }
 
     // Check if property exists
     const existingProperty = await prisma.property.findUnique({

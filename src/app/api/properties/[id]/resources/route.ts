@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db"
 import { z } from "zod"
 import { createClient } from "@supabase/supabase-js"
 import { StorageApiError } from "@supabase/storage-js"
+import { requirePermission } from "@/lib/auth"
+import { Permission } from "@/types/auth"
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,7 +16,7 @@ const supabase = createClient(
 const createResourceSchema = z.object({
   type: z.string().min(1, "Type is required"),
   name: z.string().min(1, "Name is required"),
-  url: z.string().url("Invalid URL").optional(),
+  url: z.string().url({ message: "Invalid URL" }).optional(),
   file: z.string().optional(), // Base64 encoded file
   fileName: z.string().optional(),
 })
@@ -69,6 +71,16 @@ export async function POST(
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Check permission to edit properties
+    try {
+      await requirePermission(Permission.PROPERTY_EDIT)
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to add resources" },
+        { status: 403 }
+      )
     }
 
     const { id: propertyId } = await params
@@ -131,7 +143,7 @@ export async function POST(
       if (uploadError) {
         console.error("[Resources Upload] Supabase upload error:", uploadError)
         
-        let errorMessage = "Failed to upload file"
+        const errorMessage = "Failed to upload file"
         let errorDetails = uploadError.message
         
         // Check for specific error types

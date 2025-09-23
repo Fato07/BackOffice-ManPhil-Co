@@ -13,6 +13,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { useUpdateProperty } from "@/hooks/use-properties"
 import { PropertyWithRelations } from "@/types/property"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Permission } from "@/types/auth"
 import { toast } from "sonner"
 
 const furtherInfoSchema = z.object({
@@ -53,6 +55,8 @@ interface FurtherInfoSectionProps {
 export function FurtherInfoSection({ property }: FurtherInfoSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
   const updateProperty = useUpdateProperty()
+  const { hasPermission } = usePermissions()
+  const canEdit = hasPermission(Permission.PROPERTY_EDIT)
 
   // Parse JSON fields
   const accessibility = property.accessibility as any || {}
@@ -150,6 +154,7 @@ export function FurtherInfoSection({ property }: FurtherInfoSectionProps) {
       onSave={form.handleSubmit(handleSave)}
       onCancel={handleCancel}
       isSaving={updateProperty.isPending}
+      canEdit={canEdit}
     >
       <div className="space-y-8">
         {/* Accessibility Section */}

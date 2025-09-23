@@ -95,6 +95,7 @@ export function useUpdatePhoto() {
         caption?: string
         altText?: string
         category?: string
+        isMain?: boolean
       }
     }) => {
       const response = await api.patch<{ photo: Photo }>(`/api/photos/${id}`, data)
@@ -102,7 +103,14 @@ export function useUpdatePhoto() {
     },
     onSuccess: (photo) => {
       queryClient.invalidateQueries({ queryKey: photoKeys.all })
-      toast.success("Photo updated successfully")
+      // Also invalidate property queries to refresh main photo in lists
+      queryClient.invalidateQueries({ queryKey: ["properties"] })
+      
+      if (photo.isMain) {
+        toast.success("Main photo set successfully")
+      } else {
+        toast.success("Photo updated successfully")
+      }
     },
     onError: () => {
       toast.error("Failed to update photo")

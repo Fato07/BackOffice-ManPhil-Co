@@ -1,41 +1,73 @@
-import { SignIn } from "@clerk/nextjs";
+"use client";
+
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import CustomSignIn from "@/components/auth/custom-sign-in";
 
 export default function SignInPage() {
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">ManPhil&Co</h1>
-        <p className="text-lg text-gray-600">Property Management System</p>
-      </div>
-      
-      <SignIn 
-        appearance={{
-          elements: {
-            rootBox: "mx-auto",
-            card: "shadow-xl border-0",
-            headerTitle: "text-2xl font-semibold",
-            headerSubtitle: "text-gray-600",
-            socialButtonsBlockButton: "border-gray-300 hover:bg-gray-50",
-            formButtonPrimary: "bg-[#B5985A] hover:bg-[#B5985A]/90 text-white",
-            footerActionLink: "text-[#B5985A] hover:text-[#B5985A]/80",
-            identityPreviewEditButtonIcon: "text-[#B5985A]",
-            formFieldInput: "border-gray-300 focus:border-[#B5985A] focus:ring-[#B5985A]",
-            formFieldInputShowPasswordButton: "text-gray-500 hover:text-[#B5985A]",
-            otpCodeFieldInput: "border-gray-300 focus:border-[#B5985A] focus:ring-[#B5985A]",
-            phoneInputBox: "border-gray-300 focus-within:border-[#B5985A] focus-within:ring-[#B5985A]",
-          },
-          layout: {
-            socialButtonsPlacement: "bottom",
-            showOptionalFields: true,
-          },
-        }}
-        redirectUrl="/houses"
-        signUpUrl="/sign-up"
-      />
+  const [mounted, setMounted] = useState(false);
 
-      <p className="mt-8 text-sm text-gray-500 text-center">
-        &copy; {new Date().getFullYear()} ManPhil&Co. All rights reserved.
-      </p>
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  return (
+    <div className="min-h-screen flex">
+      {/* Left Side - Luxury Image */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-[#0A0A0A]">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1c355e]/80 via-[#0A0A0A]/50 to-[#B5985A]/30"></div>
+        <div className="relative z-10 flex flex-col justify-between p-12 text-white">
+          <div>
+            <Image 
+              src="/Logo Manphil&Co.svg"
+              alt="ManPhil&Co Logo"
+              width={200}
+              height={112}
+              className="brightness-0 invert mb-8"
+              priority
+            />
+          </div>
+          
+          <div className={`space-y-6 ${mounted ? 'animate-fade-in' : 'opacity-0'}`}>
+            <h1 className="text-5xl font-serif font-light leading-tight">
+              Welcome to
+              <span className="block text-gradient">Luxury Management</span>
+            </h1>
+            <p className="text-lg text-gray-300 leading-relaxed max-w-md">
+              Experience the pinnacle of property management excellence. 
+              Your journey to sophisticated portfolio orchestration begins here.
+            </p>
+          </div>
+
+          <div className="text-sm text-gray-400">
+            &copy; {new Date().getFullYear()} ManPhil&Co. All rights reserved.
+          </div>
+        </div>
+
+        {/* Decorative Elements */}
+        <div className="absolute top-20 right-20 w-32 h-32 bg-[#B5985A]/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-20 w-40 h-40 bg-[#1c355e]/30 rounded-full blur-3xl"></div>
+      </div>
+
+      {/* Right Side - Sign In Form */}
+      <div className="flex-1 flex items-center justify-center p-8 bg-[#FAFAF8]">
+        <div className="w-full max-w-md">
+          <div className={`lg:hidden text-center mb-8 ${mounted ? 'animate-slide-up' : 'opacity-0'}`}>
+            <Image 
+              src="/Logo Manphil&Co.svg"
+              alt="ManPhil&Co Logo"
+              width={220}
+              height={123}
+              className="mx-auto"
+              priority
+            />
+          </div>
+
+          <div className={`${mounted ? 'animate-slide-up opacity-100' : 'opacity-0'} [animation-delay:200ms]`}>
+            <CustomSignIn />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { DataTable } from "@/components/data-table/data-table"
 import { columns } from "@/components/houses/columns"
 import { CreateHouseDialog } from "@/components/houses/create-house-dialog"
@@ -8,163 +9,140 @@ import { PropertyFilters as PropertyFiltersComponent } from "@/components/houses
 import { ExportDialog } from "@/components/houses/export-dialog"
 import { ImportDialog } from "@/components/houses/import-dialog"
 import { useProperties } from "@/hooks/use-properties"
-import { PropertyFilters } from "@/types/property"
+import { PropertyFilters, PropertyListItem } from "@/types/property"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, FilterX, Download, Upload } from "lucide-react"
+import { Search, FilterX, Download, Upload, LayoutGrid, List } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
-import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { useDebounce } from "@/hooks/use-debounce"
+import { motion } from "framer-motion"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { PropertyGrid } from "./property-grid"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { 
+  useQueryStates, 
+  parseAsArrayOf, 
+  parseAsString, 
+  parseAsInteger, 
+  parseAsBoolean,
+  parseAsStringEnum 
+} from 'nuqs'
 
-// Helper function to parse URL params to filters
-function parseFiltersFromParams(params: URLSearchParams): PropertyFilters {
-  const filters: PropertyFilters = {}
-  
-  // Basic filters
-  if (params.has('search')) filters.search = params.get('search')!
-  if (params.has('status')) filters.status = params.get('status') as any
-  if (params.has('destinationId')) filters.destinationId = params.get('destinationId')!
-  if (params.has('propertyType')) filters.propertyType = params.get('propertyType')!
-  
-  // Numeric filters
-  if (params.has('minRooms')) filters.minRooms = parseInt(params.get('minRooms')!)
-  if (params.has('maxRooms')) filters.maxRooms = parseInt(params.get('maxRooms')!)
-  if (params.has('minBathrooms')) filters.minBathrooms = parseInt(params.get('minBathrooms')!)
-  if (params.has('maxBathrooms')) filters.maxBathrooms = parseInt(params.get('maxBathrooms')!)
-  if (params.has('maxGuests')) filters.maxGuests = parseInt(params.get('maxGuests')!)
-  if (params.has('minPrice')) filters.minPrice = parseInt(params.get('minPrice')!)
-  if (params.has('maxPrice')) filters.maxPrice = parseInt(params.get('maxPrice')!)
-  
-  // Array filters
-  if (params.has('amenities')) filters.amenities = params.get('amenities')!.split(',') as any
-  if (params.has('services')) filters.services = params.get('services')!.split(',') as any
-  if (params.has('accessibility')) filters.accessibility = params.get('accessibility')!.split(',') as any
-  
-  // Boolean filters
-  if (params.has('petsAllowed')) {
-    filters.policies = filters.policies || {}
-    filters.policies.petsAllowed = params.get('petsAllowed') === 'true'
-  }
-  if (params.has('eventsAllowed')) {
-    filters.policies = filters.policies || {}
-    filters.policies.eventsAllowed = params.get('eventsAllowed') === 'true'
-  }
-  if (params.has('smokingAllowed')) {
-    filters.policies = filters.policies || {}
-    filters.policies.smokingAllowed = params.get('smokingAllowed') === 'true'
-  }
-  
-  // Promotion flags
-  if (params.has('showOnWebsite')) {
-    filters.promoted = filters.promoted || {}
-    filters.promoted.showOnWebsite = params.get('showOnWebsite') === 'true'
-  }
-  if (params.has('highlight')) {
-    filters.promoted = filters.promoted || {}
-    filters.promoted.highlight = params.get('highlight') === 'true'
-  }
-  
-  return filters
-}
-
-// Helper function to convert filters to URL params
-function filtersToParams(filters: PropertyFilters): Record<string, string> {
-  const params: Record<string, string> = {}
-  
-  // Basic filters
-  if (filters.search) params.search = filters.search
-  if (filters.status && filters.status !== 'ALL') params.status = filters.status
-  if (filters.destinationId) params.destinationId = filters.destinationId
-  if (filters.propertyType) params.propertyType = filters.propertyType
-  
-  // Numeric filters
-  if (filters.minRooms) params.minRooms = filters.minRooms.toString()
-  if (filters.maxRooms) params.maxRooms = filters.maxRooms.toString()
-  if (filters.minBathrooms) params.minBathrooms = filters.minBathrooms.toString()
-  if (filters.maxBathrooms) params.maxBathrooms = filters.maxBathrooms.toString()
-  if (filters.maxGuests) params.maxGuests = filters.maxGuests.toString()
-  if (filters.minPrice) params.minPrice = filters.minPrice.toString()
-  if (filters.maxPrice) params.maxPrice = filters.maxPrice.toString()
-  
-  // Array filters
-  if (filters.amenities?.length) params.amenities = filters.amenities.join(',')
-  if (filters.services?.length) params.services = filters.services.join(',')
-  if (filters.accessibility?.length) params.accessibility = filters.accessibility.join(',')
-  
-  // Boolean filters
-  if (filters.policies?.petsAllowed !== undefined) params.petsAllowed = filters.policies.petsAllowed.toString()
-  if (filters.policies?.eventsAllowed !== undefined) params.eventsAllowed = filters.policies.eventsAllowed.toString()
-  if (filters.policies?.smokingAllowed !== undefined) params.smokingAllowed = filters.policies.smokingAllowed.toString()
-  
-  // Promotion flags
-  if (filters.promoted?.showOnWebsite !== undefined) params.showOnWebsite = filters.promoted.showOnWebsite.toString()
-  if (filters.promoted?.highlight !== undefined) params.highlight = filters.promoted.highlight.toString()
-  
-  return params
-}
-
-const FILTER_STORAGE_KEY = 'property-filters-preferences'
+// Define parsers for nuqs
+const propertyStatusParser = parseAsStringEnum<'ALL' | 'PUBLISHED' | 'HIDDEN'>(['ALL', 'PUBLISHED', 'HIDDEN']).withDefault('ALL')
 
 export function HousesContent() {
   const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
   
-  // Initialize filters from URL or localStorage
-  const [filters, setFilters] = useState<PropertyFilters>(() => {
-    // First priority: URL params
-    const urlFilters = parseFiltersFromParams(searchParams)
-    if (Object.keys(urlFilters).length > 0) {
-      return urlFilters
+  // Use nuqs for URL state management
+  const [urlState, setUrlState] = useQueryStates(
+    {
+      // Search and status
+      search: parseAsString.withDefault(''),
+      status: propertyStatusParser,
+      
+      // Destinations
+      destinationId: parseAsString,
+      destinationIds: parseAsArrayOf(parseAsString),
+      
+      // Property details
+      propertyType: parseAsString,
+      minRooms: parseAsInteger,
+      maxRooms: parseAsInteger,
+      minBathrooms: parseAsInteger,
+      maxBathrooms: parseAsInteger,
+      maxGuests: parseAsInteger,
+      
+      // Pricing
+      minPrice: parseAsInteger,
+      maxPrice: parseAsInteger,
+      
+      // Arrays
+      amenities: parseAsArrayOf(parseAsString),
+      services: parseAsArrayOf(parseAsString),
+      accessibility: parseAsArrayOf(parseAsString),
+      
+      // Policies
+      petsAllowed: parseAsBoolean,
+      eventsAllowed: parseAsBoolean,
+      smokingAllowed: parseAsBoolean,
+      
+      // Promoted
+      showOnWebsite: parseAsBoolean,
+      highlight: parseAsBoolean,
+      
+      // Pagination
+      page: parseAsInteger.withDefault(1),
+    },
+    {
+      history: 'push',
     }
-    
-    // Second priority: localStorage
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(FILTER_STORAGE_KEY)
-      if (saved) {
-        try {
-          return JSON.parse(saved)
-        } catch (e) {
-          console.error('Failed to parse saved filters:', e)
-        }
-      }
-    }
-    
-    // Default
-    return {
-      search: "",
-      status: "ALL",
-    }
-  })
+  )
   
-  const [search, setSearch] = useState(filters.search || "")
-  const [page, setPage] = useState(() => {
-    const pageParam = searchParams.get('page')
-    return pageParam ? parseInt(pageParam) : 1
-  })
+  // Local state for search input (before debouncing)
+  const [searchInput, setSearchInput] = useState(urlState.search || '')
   const [isFilterLoading, setIsFilterLoading] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([])
+  const [viewMode, setViewMode] = useState<"table" | "grid">("table")
 
   // Debounce search value
-  const debouncedSearch = useDebounce(search, 300)
+  const debouncedSearch = useDebounce(searchInput, 300)
   
-  // Update filters when debounced search changes
-  useEffect(() => {
-    if (debouncedSearch !== filters.search) {
-      setFilters(prev => ({ ...prev, search: debouncedSearch }))
-      setPage(1)
+  // Update URL when debounced search changes
+  useMemo(() => {
+    if (debouncedSearch !== urlState.search) {
+      setUrlState({ search: debouncedSearch || null, page: 1 })
     }
-  }, [debouncedSearch])
-  
+  }, [debouncedSearch, urlState.search, setUrlState])
+
+  // Convert URL state to PropertyFilters format
+  const filters: PropertyFilters = useMemo(() => {
+    const result: PropertyFilters = {
+      search: urlState.search,
+      status: urlState.status,
+    }
+    
+    // Add defined filters
+    if (urlState.destinationId) result.destinationId = urlState.destinationId
+    if (urlState.destinationIds?.length) result.destinationIds = urlState.destinationIds
+    if (urlState.propertyType) result.propertyType = urlState.propertyType
+    if (urlState.minRooms) result.minRooms = urlState.minRooms
+    if (urlState.maxRooms) result.maxRooms = urlState.maxRooms
+    if (urlState.minBathrooms) result.minBathrooms = urlState.minBathrooms
+    if (urlState.maxBathrooms) result.maxBathrooms = urlState.maxBathrooms
+    if (urlState.maxGuests) result.maxGuests = urlState.maxGuests
+    if (urlState.minPrice) result.minPrice = urlState.minPrice
+    if (urlState.maxPrice) result.maxPrice = urlState.maxPrice
+    if (urlState.amenities?.length) result.amenities = urlState.amenities as any
+    if (urlState.services?.length) result.services = urlState.services as any
+    if (urlState.accessibility?.length) result.accessibility = urlState.accessibility as any
+    
+    // Policies
+    if (urlState.petsAllowed !== null || urlState.eventsAllowed !== null || urlState.smokingAllowed !== null) {
+      result.policies = {}
+      if (urlState.petsAllowed !== null) result.policies.petsAllowed = urlState.petsAllowed
+      if (urlState.eventsAllowed !== null) result.policies.eventsAllowed = urlState.eventsAllowed
+      if (urlState.smokingAllowed !== null) result.policies.smokingAllowed = urlState.smokingAllowed
+    }
+    
+    // Promoted
+    if (urlState.showOnWebsite !== null || urlState.highlight !== null) {
+      result.promoted = {}
+      if (urlState.showOnWebsite !== null) result.promoted.showOnWebsite = urlState.showOnWebsite
+      if (urlState.highlight !== null) result.promoted.highlight = urlState.highlight
+    }
+    
+    return result
+  }, [urlState])
+
   // Count active filters
   const activeFilterCount = useMemo(() => {
     let count = 0
@@ -172,6 +150,7 @@ export function HousesContent() {
     if (filters.search) count++
     if (filters.status && filters.status !== 'ALL') count++
     if (filters.destinationId) count++
+    if (filters.destinationIds?.length) count++
     if (filters.propertyType) count++
     if (filters.minRooms || filters.maxRooms) count++
     if (filters.minBathrooms || filters.maxBathrooms) count++
@@ -189,195 +168,239 @@ export function HousesContent() {
     return count
   }, [filters])
   
-  // Update URL when filters or page change
-  useEffect(() => {
-    const params = new URLSearchParams()
-    
-    // Add filter params
-    const filterParams = filtersToParams(filters)
-    Object.entries(filterParams).forEach(([key, value]) => {
-      params.set(key, value)
-    })
-    
-    // Add page param if not 1
-    if (page > 1) {
-      params.set('page', page.toString())
-    }
-    
-    // Update URL without triggering navigation
-    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname
-    window.history.replaceState(null, '', newUrl)
-  }, [filters, page, pathname])
-  
-  // Save filters to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Don't save default filters
-      if (Object.keys(filters).length > 2 || filters.status !== 'ALL' || filters.search) {
-        localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(filters))
-      } else {
-        localStorage.removeItem(FILTER_STORAGE_KEY)
-      }
-    }
-  }, [filters])
-  
+  // Fetch properties with filters
+  const { data: properties, isLoading } = useProperties(
+    filters,
+    urlState.page,
+    10
+  )
+
   // Handle filter changes
-  const handleFiltersChange = useCallback((newFilters: PropertyFilters) => {
+  const handleFiltersChange = (newFilters: PropertyFilters) => {
     setIsFilterLoading(true)
-    setFilters(newFilters)
-    setPage(1)
     
-    // Clear loading state after a short delay
-    setTimeout(() => setIsFilterLoading(false), 100)
-  }, [])
-  
-  // Clear all filters
-  const clearAllFilters = useCallback(() => {
-    const clearedFilters = {
-      search: "",
-      status: "ALL" as const,
+    // Convert PropertyFilters to URL state
+    const updates: any = {
+      search: newFilters.search || null,
+      status: newFilters.status || 'ALL',
+      destinationId: newFilters.destinationId || null,
+      destinationIds: newFilters.destinationIds?.length ? newFilters.destinationIds : null,
+      propertyType: newFilters.propertyType || null,
+      minRooms: newFilters.minRooms || null,
+      maxRooms: newFilters.maxRooms || null,
+      minBathrooms: newFilters.minBathrooms || null,
+      maxBathrooms: newFilters.maxBathrooms || null,
+      maxGuests: newFilters.maxGuests || null,
+      minPrice: newFilters.minPrice || null,
+      maxPrice: newFilters.maxPrice || null,
+      amenities: newFilters.amenities?.length ? newFilters.amenities : null,
+      services: newFilters.services?.length ? newFilters.services : null,
+      accessibility: newFilters.accessibility?.length ? newFilters.accessibility : null,
+      petsAllowed: newFilters.policies?.petsAllowed ?? null,
+      eventsAllowed: newFilters.policies?.eventsAllowed ?? null,
+      smokingAllowed: newFilters.policies?.smokingAllowed ?? null,
+      showOnWebsite: newFilters.promoted?.showOnWebsite ?? null,
+      highlight: newFilters.promoted?.highlight ?? null,
+      page: 1, // Reset page when filters change
     }
-    setFilters(clearedFilters)
-    setSearch("")
-    setPage(1)
-    localStorage.removeItem(FILTER_STORAGE_KEY)
-  }, [])
+    
+    // Update search input if search changed
+    if (newFilters.search !== searchInput) {
+      setSearchInput(newFilters.search || '')
+    }
+    
+    setUrlState(updates)
+    
+    // Visual feedback
+    setTimeout(() => setIsFilterLoading(false), 300)
+  }
 
-  const { data, isLoading } = useProperties(filters, page)
-  
-  // Show loading overlay when filters change
-  const showLoading = isLoading || isFilterLoading
+  const clearAllFilters = () => {
+    setSearchInput('')
+    setUrlState({
+      search: null,
+      status: 'ALL',
+      destinationId: null,
+      destinationIds: null,
+      propertyType: null,
+      minRooms: null,
+      maxRooms: null,
+      minBathrooms: null,
+      maxBathrooms: null,
+      maxGuests: null,
+      minPrice: null,
+      maxPrice: null,
+      amenities: null,
+      services: null,
+      accessibility: null,
+      petsAllowed: null,
+      eventsAllowed: null,
+      smokingAllowed: null,
+      showOnWebsite: null,
+      highlight: null,
+      page: 1,
+    })
+  }
 
-  const handleRowClick = (property: any) => {
+  const handlePageChange = (newPage: number) => {
+    setUrlState({ page: newPage })
+  }
+
+  const handleRowClick = (property: PropertyListItem) => {
     router.push(`/houses/${property.id}`)
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Houses</h1>
-        <div className="flex items-center gap-2">
+        <motion.h1 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="text-xl font-bold tracking-tight"
+        >
+          Houses
+        </motion.h1>
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-2"
+        >
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export
+              <Button variant="outline" className="gap-2">
+                <Download className="h-4 w-4" />
+                Actions
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setShowExportDialog(true)}>
+                <Download className="mr-2 h-4 w-4" />
                 Export Properties
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setShowImportDialog(true)}>
-                <Upload className="h-4 w-4 mr-2" />
+                <Upload className="mr-2 h-4 w-4" />
                 Import Properties
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <CreateHouseDialog />
-        </div>
+        </motion.div>
       </div>
 
-      <div className="space-y-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="space-y-4"
+      >
+        {/* Search bar and Filters */}
         <div className="flex items-center gap-4">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search houses by name..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
+              placeholder="Search properties..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="pl-9"
             />
           </div>
-          
+          <PropertyFiltersComponent
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+          />
           {activeFilterCount > 0 && (
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="font-normal">
-                {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active
-              </Badge>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearAllFilters}
-                className="h-8 text-xs"
-              >
-                <FilterX className="h-3 w-3 mr-1" />
-                Clear all
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearAllFilters}
+              className="gap-2"
+            >
+              <FilterX className="h-4 w-4" />
+              Clear all ({activeFilterCount})
+            </Button>
           )}
+          <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "table" | "grid")}>
+            <ToggleGroupItem value="table" aria-label="Table view">
+              <List className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="grid" aria-label="Grid view">
+              <LayoutGrid className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
-        
-        <PropertyFiltersComponent
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-        />
-      </div>
+      </motion.div>
 
-      {showLoading ? (
-        <div className="space-y-4">
-          <div className="text-sm text-gray-500">
+      {/* Results */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="space-y-4"
+      >
+        {isLoading || isFilterLoading ? (
+          <>
             <Skeleton className="h-4 w-24" />
-          </div>
-          <div className="border rounded-lg">
-            <div className="p-4 space-y-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center space-x-4">
-                  <Skeleton className="h-12 w-12" />
-                  <div className="space-y-2 flex-1">
-                    <Skeleton className="h-4 w-[250px]" />
-                    <Skeleton className="h-4 w-[200px]" />
+            <div className="rounded-md border">
+              <div className="p-4 space-y-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="flex items-center space-x-4">
+                    <Skeleton className="h-12 w-12" />
+                    <div className="space-y-2 flex-1">
+                      <Skeleton className="h-4 w-[250px]" />
+                      <Skeleton className="h-4 w-[200px]" />
+                    </div>
+                    <Skeleton className="h-8 w-[100px]" />
+                    <Skeleton className="h-8 w-8" />
                   </div>
-                  <Skeleton className="h-8 w-[100px]" />
-                  <Skeleton className="h-8 w-8" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="flex items-center justify-between text-sm text-gray-500">
-            <span>Results: {data?.total || 0}</span>
-            {activeFilterCount > 0 && data?.total === 0 && (
-              <Button
-                variant="link"
-                size="sm"
-                onClick={clearAllFilters}
-                className="text-xs"
-              >
-                Clear filters to see all properties
-              </Button>
-            )}
-          </div>
-
-          {data && data.data.length > 0 ? (
-            <DataTable 
-              columns={columns} 
-              data={data.data}
-              pageSize={20}
-              onRowClick={handleRowClick}
-            />
-          ) : (
-            <div className="border rounded-lg">
-              <div className="p-8 text-center text-gray-500">
-                {activeFilterCount > 0
-                  ? "No houses found matching your filters. Try adjusting your search criteria." 
-                  : "No houses found. Create your first house to get started."}
+                ))}
               </div>
             </div>
-          )}
-        </>
-      )}
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-muted-foreground">
+                {properties?.total || 0} properties found
+              </p>
+              {activeFilterCount > 0 && (
+                <Badge variant="secondary">
+                  {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active
+                </Badge>
+              )}
+            </div>
+            
+            {viewMode === "table" ? (
+              <DataTable
+                columns={columns}
+                data={properties?.data || []}
+                totalCount={properties?.total || 0}
+                pageSize={10}
+                pageCount={properties?.totalPages || 0}
+                page={urlState.page}
+                onPageChange={handlePageChange}
+                onRowClick={handleRowClick}
+                selectedRowIds={selectedPropertyIds}
+                onSelectedRowsChange={setSelectedPropertyIds}
+              />
+            ) : (
+              <PropertyGrid
+                properties={properties?.data || []}
+                isLoading={false}
+              />
+            )}
+          </>
+        )}
+      </motion.div>
 
+      {/* Export Dialog */}
       <ExportDialog
         open={showExportDialog}
         onOpenChange={setShowExportDialog}
         selectedPropertyIds={selectedPropertyIds}
-        totalProperties={data?.total || 0}
-        filteredCount={data?.total}
+        totalProperties={properties?.total || 0}
       />
 
+      {/* Import Dialog */}
       <ImportDialog
         open={showImportDialog}
         onOpenChange={setShowImportDialog}

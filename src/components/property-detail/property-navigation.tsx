@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 
-interface Section {
+export interface Section {
   id: string
   label: string
   icon: React.ElementType
@@ -31,28 +31,13 @@ interface Section {
   isInternal?: boolean
 }
 
-const sections: Section[] = [
-  { id: "promote", label: "Promote", icon: Home, description: "Visibility and positioning" },
-  { id: "info", label: "House Information", icon: Info, description: "Basic property details" },
-  { id: "location", label: "Location", icon: MapPin, description: "Address and coordinates" },
-  { id: "further-info", label: "Further Information", icon: FileText, description: "Additional details" },
-  { id: "heating", label: "Heating & AC", icon: Thermometer, description: "Climate control systems" },
-  { id: "events", label: "Events", icon: Calendar, description: "Special events and activities" },
-  { id: "services", label: "Services", icon: Wrench, description: "Available amenities" },
-  { id: "good-to-know", label: "Good to Know", icon: AlertCircle, description: "Important information" },
-  { id: "internal", label: "Internal", icon: Shield, description: "Private notes and data", isInternal: true },
-  { id: "marketing", label: "Automatic Offer", icon: Megaphone, description: "Marketing content" },
-  { id: "photos", label: "Photos", icon: Camera, description: "Property images" },
-  { id: "links", label: "Links & Resources", icon: Link, description: "External resources" },
-  { id: "rooms", label: "Rooms", icon: DoorOpen, description: "Room configuration" },
-]
-
 interface PropertyNavigationProps {
   propertyId: string
   currentSection: string
   onSectionChange: (sectionId: string) => void
   completionStatus?: Record<string, boolean>
   onExpandChange?: (isExpanded: boolean) => void
+  sections: Section[]
 }
 
 export function PropertyNavigation({
@@ -61,14 +46,20 @@ export function PropertyNavigation({
   onSectionChange,
   completionStatus = {},
   onExpandChange,
+  sections,
 }: PropertyNavigationProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const [activeGroup, setActiveGroup] = useState<"essential" | "details" | "content">("essential")
 
+  // Group sections dynamically based on the provided sections
+  const essentialCount = Math.min(4, sections.length)
+  const detailsCount = Math.min(5, Math.max(0, sections.length - 4))
+  const contentStart = essentialCount + detailsCount
+
   const sectionGroups = {
-    essential: sections.slice(0, 4),
-    details: sections.slice(4, 9),
-    content: sections.slice(9),
+    essential: sections.slice(0, essentialCount),
+    details: sections.slice(essentialCount, essentialCount + detailsCount),
+    content: sections.slice(contentStart),
   }
 
   const groupLabels = {
@@ -94,13 +85,13 @@ export function PropertyNavigation({
   return (
     <div
       className={cn(
-        "bg-white border-r border-gray-200 transition-all duration-300 flex flex-col sticky top-14 h-[calc(100vh-3.5rem)] z-30",
+        "bg-white/90 backdrop-blur-xl border-r border-white/30 transition-all duration-300 flex flex-col sticky top-14 h-[calc(100vh-3.5rem)] z-30 shadow-xl",
         isExpanded ? "w-80" : "w-16"
       )}
     >
       {/* Header */}
       <div className={cn(
-        "border-b border-gray-200",
+        "border-b border-white/20",
         isExpanded ? "p-4" : "p-2"
       )}>
         <div className={cn(
@@ -149,7 +140,7 @@ export function PropertyNavigation({
       {/* Navigation Groups */}
       <div className="flex-1 overflow-y-auto">
         {Object.entries(sectionGroups).map(([groupKey, groupSections]) => (
-          <div key={groupKey} className="border-b border-gray-100 last:border-0">
+          <div key={groupKey} className="border-b border-white/10 last:border-0">
             {isExpanded ? (
               <>
                 <button

@@ -23,7 +23,9 @@ import {
 } from "@/components/ui/sheet"
 import { type PropertyFilters } from "@/types/property"
 import { useDestinations } from "@/hooks/use-destinations"
+import { DestinationTreeMinimal } from "@/components/houses/destination-tree-minimal"
 import { cn } from "@/lib/utils"
+import { PROPERTY_CATEGORIES, ACCESSIBILITY_OPTIONS } from "@/lib/constants/equipment"
 
 interface PropertyFiltersProps {
   filters: PropertyFilters
@@ -92,6 +94,7 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
   const getActiveFilterCount = () => {
     let count = 0
     if (filters.destinationId) count++
+    if (filters.destinationIds?.length) count++
     if (filters.minRooms || filters.maxRooms) count++
     if (filters.minBathrooms || filters.maxBathrooms) count++
     if (filters.maxGuests) count++
@@ -143,66 +146,54 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
   }
 
   return (
-    <div className={cn("space-y-4", className)}>
-      {/* Filter trigger and active filters */}
-      <div className="flex flex-wrap items-center gap-2">
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              <Filter className="h-4 w-4" />
-              Filters
-              {activeFilterCount > 0 && (
-                <Badge variant="secondary" className="ml-1">
-                  {activeFilterCount}
-                </Badge>
-              )}
-            </Button>
-          </SheetTrigger>
+    <>
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger asChild>
+          <Button variant="outline" className="gap-2">
+            <Filter className="h-4 w-4" />
+            Filters
+            {activeFilterCount > 0 && (
+              <Badge variant="secondary" className="ml-1">
+                {activeFilterCount}
+              </Badge>
+            )}
+          </Button>
+        </SheetTrigger>
 
-          <SheetContent className="w-full sm:max-w-md">
-            <SheetHeader>
-              <SheetTitle>Property Filters</SheetTitle>
-              <SheetDescription>
+          <SheetContent className="w-full sm:max-w-md p-0">
+            <SheetHeader className="px-4 py-4 border-b">
+              <SheetTitle className="text-lg">Property Filters</SheetTitle>
+              <SheetDescription className="text-sm">
                 Filter properties by various criteria
               </SheetDescription>
             </SheetHeader>
 
-            <ScrollArea className="h-[calc(100vh-200px)] mt-6 pr-4">
-              <div className="space-y-6">
+            <ScrollArea className="h-[calc(100vh-160px)]">
+              <div className="space-y-4 p-4 pb-8">
                 {/* Destination */}
                 <div className="space-y-2">
-                  <Label>Destination</Label>
-                  <Select
-                    value={localFilters.destinationId || "all"}
-                    onValueChange={(value) => updateLocalFilter("destinationId", value === "all" ? undefined : value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select destination" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Destinations</SelectItem>
-                      {Object.entries(destinationsData?.grouped || {}).map(([country, destinations]) => (
-                        <div key={country}>
-                          <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
-                            {country}
-                          </div>
-                          {destinations.map((dest) => (
-                            <SelectItem key={dest.id} value={dest.id}>
-                              {dest.name} ({dest.propertyCount})
-                            </SelectItem>
-                          ))}
-                        </div>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label>Destinations</Label>
+                  {destinationsData?.grouped && (
+                    <DestinationTreeMinimal
+                      destinations={destinationsData.grouped}
+                      selectedDestinations={localFilters.destinationIds || []}
+                      onSelectionChange={(destinations) => {
+                        updateLocalFilter("destinationIds", destinations.length > 0 ? destinations : undefined)
+                        // Clear single destinationId when using multiple selection
+                        if (destinations.length > 0 && localFilters.destinationId) {
+                          updateLocalFilter("destinationId", undefined)
+                        }
+                      }}
+                    />
+                  )}
                 </div>
 
-                <Separator />
+                <div className="h-px bg-border" />
 
                 {/* Rooms */}
                 <div className="space-y-2">
-                  <Label>Number of Rooms</Label>
-                  <div className="px-1">
+                  <Label className="text-sm text-muted-foreground">Rooms</Label>
+                  <div className="space-y-3">
                     <Slider
                       min={1}
                       max={20}
@@ -212,9 +203,9 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
                         updateLocalFilter("minRooms", min === 1 ? undefined : min)
                         updateLocalFilter("maxRooms", max === 20 ? undefined : max)
                       }}
-                      className="mt-2"
+                      className="[&_[role=slider]]:h-3.5 [&_[role=slider]]:w-3.5 [&_[role=slider]]:border-[#B5985A]/20 [&_[role=slider]]:bg-white [&_[role=slider]]:shadow-sm [&_[role=slider]:focus-visible]:ring-[#B5985A]/20 [&_[role=slider]:focus-visible]:ring-offset-0 [&_[role=slider]:hover]:border-[#B5985A] [&_.range]:bg-[#B5985A]"
                     />
-                    <div className="flex justify-between text-sm text-muted-foreground mt-1">
+                    <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{localFilters.minRooms || 1}</span>
                       <span>{localFilters.maxRooms || 20}</span>
                     </div>
@@ -223,8 +214,8 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
 
                 {/* Bathrooms */}
                 <div className="space-y-2">
-                  <Label>Number of Bathrooms</Label>
-                  <div className="px-1">
+                  <Label className="text-sm text-muted-foreground">Bathrooms</Label>
+                  <div className="space-y-3">
                     <Slider
                       min={1}
                       max={10}
@@ -234,9 +225,9 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
                         updateLocalFilter("minBathrooms", min === 1 ? undefined : min)
                         updateLocalFilter("maxBathrooms", max === 10 ? undefined : max)
                       }}
-                      className="mt-2"
+                      className="[&_[role=slider]]:h-3.5 [&_[role=slider]]:w-3.5 [&_[role=slider]]:border-[#B5985A]/20 [&_[role=slider]]:bg-white [&_[role=slider]]:shadow-sm [&_[role=slider]:focus-visible]:ring-[#B5985A]/20 [&_[role=slider]:focus-visible]:ring-offset-0 [&_[role=slider]:hover]:border-[#B5985A] [&_.range]:bg-[#B5985A]"
                     />
-                    <div className="flex justify-between text-sm text-muted-foreground mt-1">
+                    <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{localFilters.minBathrooms || 1}</span>
                       <span>{localFilters.maxBathrooms || 10}</span>
                     </div>
@@ -245,32 +236,33 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
 
                 {/* Max Guests */}
                 <div className="space-y-2">
-                  <Label>Maximum Guests</Label>
+                  <Label className="text-sm text-muted-foreground">Maximum Guests</Label>
                   <Input
                     type="number"
                     min={1}
                     value={localFilters.maxGuests || ""}
                     onChange={(e) => updateLocalFilter("maxGuests", e.target.value ? parseInt(e.target.value) : undefined)}
                     placeholder="Any"
+                    className="h-8 text-sm"
                   />
                 </div>
 
-                <Separator />
+                <div className="h-px bg-border" />
 
                 {/* Property Type */}
                 <div className="space-y-2">
-                  <Label>Property Type</Label>
+                  <Label className="text-sm text-muted-foreground">Property Type</Label>
                   <Select
                     value={localFilters.propertyType || "all"}
                     onValueChange={(value) => updateLocalFilter("propertyType", value === "all" ? undefined : value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8 text-sm">
                       <SelectValue placeholder="Select property type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="all" className="text-sm">All Types</SelectItem>
                       {PROPERTY_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
+                        <SelectItem key={type.value} value={type.value} className="text-sm">
                           {type.label}
                         </SelectItem>
                       ))}
@@ -278,14 +270,18 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
                   </Select>
                 </div>
 
-                <Separator />
+                <div className="h-px bg-border" />
 
                 {/* Amenities */}
                 <div className="space-y-2">
-                  <Label>Amenities</Label>
-                  <div className="space-y-2">
+                  <Label className="text-sm text-muted-foreground">Amenities</Label>
+                  <div className="grid gap-2">
                     {AMENITIES.map((amenity) => (
-                      <div key={amenity.value} className="flex items-center space-x-2">
+                      <label
+                        key={amenity.value}
+                        htmlFor={amenity.value}
+                        className="flex items-center gap-2 cursor-pointer group py-1"
+                      >
                         <Checkbox
                           id={amenity.value}
                           checked={localFilters.amenities?.includes(amenity.value as any) || false}
@@ -297,26 +293,28 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
                               updateLocalFilter("amenities", current.filter(a => a !== amenity.value))
                             }
                           }}
+                          className="h-4 w-4"
                         />
-                        <Label
-                          htmlFor={amenity.value}
-                          className="text-sm font-normal cursor-pointer"
-                        >
+                        <span className="text-sm group-hover:text-foreground transition-colors">
                           {amenity.label}
-                        </Label>
-                      </div>
+                        </span>
+                      </label>
                     ))}
                   </div>
                 </div>
 
-                <Separator />
+                <div className="h-px bg-border" />
 
                 {/* Services */}
                 <div className="space-y-2">
-                  <Label>Services</Label>
-                  <div className="space-y-2">
+                  <Label className="text-sm text-muted-foreground">Services</Label>
+                  <div className="grid gap-2">
                     {SERVICES.map((service) => (
-                      <div key={service.value} className="flex items-center space-x-2">
+                      <label
+                        key={service.value}
+                        htmlFor={service.value}
+                        className="flex items-center gap-2 cursor-pointer group py-1"
+                      >
                         <Checkbox
                           id={service.value}
                           checked={localFilters.services?.includes(service.value as any) || false}
@@ -328,26 +326,28 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
                               updateLocalFilter("services", current.filter(s => s !== service.value))
                             }
                           }}
+                          className="h-4 w-4"
                         />
-                        <Label
-                          htmlFor={service.value}
-                          className="text-sm font-normal cursor-pointer"
-                        >
+                        <span className="text-sm group-hover:text-foreground transition-colors">
                           {service.label}
-                        </Label>
-                      </div>
+                        </span>
+                      </label>
                     ))}
                   </div>
                 </div>
 
-                <Separator />
+                <div className="h-px bg-border" />
 
                 {/* Accessibility */}
                 <div className="space-y-2">
-                  <Label>Accessibility</Label>
-                  <div className="space-y-2">
+                  <Label className="text-sm text-muted-foreground">Accessibility</Label>
+                  <div className="grid gap-2">
                     {ACCESSIBILITY.map((access) => (
-                      <div key={access.value} className="flex items-center space-x-2">
+                      <label
+                        key={access.value}
+                        htmlFor={access.value}
+                        className="flex items-center gap-2 cursor-pointer group py-1"
+                      >
                         <Checkbox
                           id={access.value}
                           checked={localFilters.accessibility?.includes(access.value as any) || false}
@@ -359,26 +359,24 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
                               updateLocalFilter("accessibility", current.filter(a => a !== access.value))
                             }
                           }}
+                          className="h-4 w-4"
                         />
-                        <Label
-                          htmlFor={access.value}
-                          className="text-sm font-normal cursor-pointer"
-                        >
+                        <span className="text-sm group-hover:text-foreground transition-colors">
                           {access.label}
-                        </Label>
-                      </div>
+                        </span>
+                      </label>
                     ))}
                   </div>
                 </div>
 
-                <Separator />
+                <div className="h-px bg-border" />
 
                 {/* Policies */}
                 <div className="space-y-3">
-                  <Label>Policies</Label>
+                  <Label className="text-sm text-muted-foreground">Policies</Label>
                   
                   <div className="space-y-2">
-                    <Label className="text-sm">Pets Allowed</Label>
+                    <span className="text-xs text-muted-foreground">Pets Allowed</span>
                     <RadioGroup
                       value={
                         localFilters.policies?.petsAllowed === true ? "yes" :
@@ -397,23 +395,23 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
                         }
                       }}
                     >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="all" id="pets-all" />
-                        <Label htmlFor="pets-all" className="text-sm font-normal cursor-pointer">All</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="yes" id="pets-yes" />
-                        <Label htmlFor="pets-yes" className="text-sm font-normal cursor-pointer">Yes</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="no" id="pets-no" />
-                        <Label htmlFor="pets-no" className="text-sm font-normal cursor-pointer">No</Label>
-                      </div>
+                      <label htmlFor="pets-all" className="flex items-center gap-2 cursor-pointer py-1">
+                        <RadioGroupItem value="all" id="pets-all" className="h-4 w-4" />
+                        <span className="text-sm">All</span>
+                      </label>
+                      <label htmlFor="pets-yes" className="flex items-center gap-2 cursor-pointer py-1">
+                        <RadioGroupItem value="yes" id="pets-yes" className="h-4 w-4" />
+                        <span className="text-sm">Yes</span>
+                      </label>
+                      <label htmlFor="pets-no" className="flex items-center gap-2 cursor-pointer py-1">
+                        <RadioGroupItem value="no" id="pets-no" className="h-4 w-4" />
+                        <span className="text-sm">No</span>
+                      </label>
                     </RadioGroup>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm">Events Allowed</Label>
+                    <span className="text-xs text-muted-foreground">Events Allowed</span>
                     <RadioGroup
                       value={
                         localFilters.policies?.eventsAllowed === true ? "yes" :
@@ -432,23 +430,23 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
                         }
                       }}
                     >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="all" id="events-all" />
-                        <Label htmlFor="events-all" className="text-sm font-normal cursor-pointer">All</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="yes" id="events-yes" />
-                        <Label htmlFor="events-yes" className="text-sm font-normal cursor-pointer">Yes</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="no" id="events-no" />
-                        <Label htmlFor="events-no" className="text-sm font-normal cursor-pointer">No</Label>
-                      </div>
+                      <label htmlFor="events-all" className="flex items-center gap-2 cursor-pointer py-1">
+                        <RadioGroupItem value="all" id="events-all" className="h-4 w-4" />
+                        <span className="text-sm">All</span>
+                      </label>
+                      <label htmlFor="events-yes" className="flex items-center gap-2 cursor-pointer py-1">
+                        <RadioGroupItem value="yes" id="events-yes" className="h-4 w-4" />
+                        <span className="text-sm">Yes</span>
+                      </label>
+                      <label htmlFor="events-no" className="flex items-center gap-2 cursor-pointer py-1">
+                        <RadioGroupItem value="no" id="events-no" className="h-4 w-4" />
+                        <span className="text-sm">No</span>
+                      </label>
                     </RadioGroup>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm">Smoking Allowed</Label>
+                    <span className="text-xs text-muted-foreground">Smoking Allowed</span>
                     <RadioGroup
                       value={
                         localFilters.policies?.smokingAllowed === true ? "yes" :
@@ -467,27 +465,27 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
                         }
                       }}
                     >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="all" id="smoking-all" />
-                        <Label htmlFor="smoking-all" className="text-sm font-normal cursor-pointer">All</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="yes" id="smoking-yes" />
-                        <Label htmlFor="smoking-yes" className="text-sm font-normal cursor-pointer">Yes</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="no" id="smoking-no" />
-                        <Label htmlFor="smoking-no" className="text-sm font-normal cursor-pointer">No</Label>
-                      </div>
+                      <label htmlFor="smoking-all" className="flex items-center gap-2 cursor-pointer py-1">
+                        <RadioGroupItem value="all" id="smoking-all" className="h-4 w-4" />
+                        <span className="text-sm">All</span>
+                      </label>
+                      <label htmlFor="smoking-yes" className="flex items-center gap-2 cursor-pointer py-1">
+                        <RadioGroupItem value="yes" id="smoking-yes" className="h-4 w-4" />
+                        <span className="text-sm">Yes</span>
+                      </label>
+                      <label htmlFor="smoking-no" className="flex items-center gap-2 cursor-pointer py-1">
+                        <RadioGroupItem value="no" id="smoking-no" className="h-4 w-4" />
+                        <span className="text-sm">No</span>
+                      </label>
                     </RadioGroup>
                   </div>
                 </div>
 
-                <Separator />
+                <div className="h-px bg-border" />
 
                 {/* Price Range */}
                 <div className="space-y-2">
-                  <Label>Price Range (per night)</Label>
+                  <Label className="text-sm text-muted-foreground">Price per night (€)</Label>
                   <div className="flex gap-2 items-center">
                     <Input
                       type="number"
@@ -495,27 +493,102 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
                       value={localFilters.minPrice || ""}
                       onChange={(e) => updateLocalFilter("minPrice", e.target.value ? parseInt(e.target.value) : undefined)}
                       placeholder="Min"
-                      className="w-24"
+                      className="h-8 text-sm"
                     />
-                    <span className="text-muted-foreground">-</span>
+                    <span className="text-xs text-muted-foreground">–</span>
                     <Input
                       type="number"
                       min={0}
                       value={localFilters.maxPrice || ""}
                       onChange={(e) => updateLocalFilter("maxPrice", e.target.value ? parseInt(e.target.value) : undefined)}
                       placeholder="Max"
-                      className="w-24"
+                      className="h-8 text-sm"
                     />
                   </div>
                 </div>
 
-                <Separator />
+                <div className="h-px bg-border" />
+
+                {/* Property Categories */}
+                <div className="space-y-2">
+                  <Label className="text-sm text-muted-foreground">Property Categories</Label>
+                  <div className="grid gap-2">
+                    {PROPERTY_CATEGORIES.map((category) => (
+                      <label
+                        key={category.value}
+                        htmlFor={`category-${category.value}`}
+                        className="flex items-center gap-2 cursor-pointer group py-1"
+                      >
+                        <Checkbox
+                          id={`category-${category.value}`}
+                          checked={localFilters.categories?.includes(category.value) || false}
+                          onCheckedChange={(checked) => {
+                            const current = localFilters.categories || []
+                            if (checked) {
+                              updateLocalFilter("categories", [...current, category.value])
+                            } else {
+                              updateLocalFilter("categories", current.filter(c => c !== category.value))
+                            }
+                          }}
+                          className="h-4 w-4"
+                        />
+                        <div>
+                          <span className="text-sm group-hover:text-foreground transition-colors">
+                            {category.label}
+                          </span>
+                          <div className="text-xs text-muted-foreground">{category.description}</div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="h-px bg-border" />
+
+                {/* Accessibility */}
+                <div className="space-y-2">
+                  <Label className="text-sm text-muted-foreground">Accessibility</Label>
+                  <div className="grid gap-2">
+                    {ACCESSIBILITY_OPTIONS.map((option) => (
+                      <label
+                        key={option.value}
+                        htmlFor={`accessibility-${option.value}`}
+                        className="flex items-center gap-2 cursor-pointer group py-1"
+                      >
+                        <Checkbox
+                          id={`accessibility-${option.value}`}
+                          checked={localFilters.accessibilityOptions?.includes(option.value) || false}
+                          onCheckedChange={(checked) => {
+                            const current = localFilters.accessibilityOptions || []
+                            if (checked) {
+                              updateLocalFilter("accessibilityOptions", [...current, option.value])
+                            } else {
+                              updateLocalFilter("accessibilityOptions", current.filter(a => a !== option.value))
+                            }
+                          }}
+                          className="h-4 w-4"
+                        />
+                        <div>
+                          <span className="text-sm group-hover:text-foreground transition-colors">
+                            {option.label}
+                          </span>
+                          <div className="text-xs text-muted-foreground">{option.description}</div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="h-px bg-border" />
 
                 {/* Promotions */}
                 <div className="space-y-2">
-                  <Label>Promotions</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
+                  <Label className="text-sm text-muted-foreground">Promotions</Label>
+                  <div className="grid gap-2">
+                    <label
+                      htmlFor="showOnWebsite"
+                      className="flex items-center gap-2 cursor-pointer group py-1"
+                    >
                       <Checkbox
                         id="showOnWebsite"
                         checked={localFilters.promoted?.showOnWebsite || false}
@@ -528,15 +601,16 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
                           }
                           updateLocalFilter("promoted", Object.keys(promoted).length ? promoted : undefined)
                         }}
+                        className="h-4 w-4"
                       />
-                      <Label
-                        htmlFor="showOnWebsite"
-                        className="text-sm font-normal cursor-pointer"
-                      >
+                      <span className="text-sm group-hover:text-foreground transition-colors">
                         Show on Website
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
+                      </span>
+                    </label>
+                    <label
+                      htmlFor="highlight"
+                      className="flex items-center gap-2 cursor-pointer group py-1"
+                    >
                       <Checkbox
                         id="highlight"
                         checked={localFilters.promoted?.highlight || false}
@@ -549,14 +623,12 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
                           }
                           updateLocalFilter("promoted", Object.keys(promoted).length ? promoted : undefined)
                         }}
+                        className="h-4 w-4"
                       />
-                      <Label
-                        htmlFor="highlight"
-                        className="text-sm font-normal cursor-pointer"
-                      >
+                      <span className="text-sm group-hover:text-foreground transition-colors">
                         Highlighted Property
-                      </Label>
-                    </div>
+                      </span>
+                    </label>
                   </div>
                 </div>
               </div>
@@ -566,36 +638,66 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t">
               <div className="flex gap-2">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={handleClearFilters}
-                  className="flex-1"
+                  className="flex-1 h-9 text-sm hover:bg-muted"
                 >
                   Clear All
                 </Button>
                 <Button
                   onClick={handleApplyFilters}
-                  className="flex-1"
+                  className="flex-1 h-9 text-sm bg-[#B5985A] hover:bg-[#B5985A]/90 text-white"
                 >
                   Apply Filters
                 </Button>
               </div>
             </div>
           </SheetContent>
-        </Sheet>
+      </Sheet>
 
-        {/* Filter chips */}
-        {activeFilterCount > 0 && (
+      {/* Filter chips */}
+      {activeFilterCount > 0 && (
+        <div className={cn("flex flex-wrap items-center gap-2", className)}>
           <>
-            {filters.destinationId && (
-              <Badge variant="secondary" className="gap-1">
-                {destinationsData?.destinations.find(d => d.id === filters.destinationId)?.name}
-                <button
-                  onClick={() => removeFilter("destinationId")}
-                  className="ml-1 hover:bg-secondary-foreground/20 rounded"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
+            {(filters.destinationId || filters.destinationIds?.length) && (
+              <>
+                {filters.destinationId && (
+                  <Badge variant="secondary" className="gap-1">
+                    {destinationsData?.destinations.find(d => d.id === filters.destinationId)?.name}
+                    <button
+                      onClick={() => removeFilter("destinationId")}
+                      className="ml-1 hover:bg-secondary-foreground/20 rounded"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {filters.destinationIds?.map(id => {
+                  const dest = Object.values(destinationsData?.grouped || {})
+                    .flat()
+                    .find(d => d.id === id)
+                  return dest ? (
+                    <Badge key={id} variant="secondary" className="gap-1">
+                      {dest.name}
+                      <button
+                        onClick={() => {
+                          const newIds = filters.destinationIds?.filter(did => did !== id) || []
+                          const newFilters = { ...filters }
+                          if (newIds.length > 0) {
+                            newFilters.destinationIds = newIds
+                          } else {
+                            delete newFilters.destinationIds
+                          }
+                          onFiltersChange(newFilters)
+                        }}
+                        className="ml-1 hover:bg-secondary-foreground/20 rounded"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ) : null
+                })}
+              </>
             )}
 
             {(filters.minRooms || filters.maxRooms) && (
@@ -778,8 +880,8 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
               Clear all
             </Button>
           </>
-        )}
-      </div>
-    </div>
+        </div>
+      )}
+    </>
   )
 }

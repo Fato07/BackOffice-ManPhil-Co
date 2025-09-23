@@ -7,6 +7,8 @@ import { Check, X } from "lucide-react"
 import { PropertySection } from "../property-section"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Permission } from "@/types/auth"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -38,6 +40,8 @@ interface LocationSectionProps {
 
 export function LocationSection({ property }: LocationSectionProps) {
   const updateProperty = useUpdateProperty()
+  const { hasPermission } = usePermissions()
+  const canEdit = hasPermission(Permission.PROPERTY_EDIT)
   const [isEditingEnvironment, setIsEditingEnvironment] = useState(false)
   const [isEditingNearby, setIsEditingNearby] = useState(false)
   
@@ -97,6 +101,7 @@ export function LocationSection({ property }: LocationSectionProps) {
         onSave={handleSave}
         onCancel={handleCancelEnvironment}
         isSaving={updateProperty.isPending}
+        canEdit={canEdit}
       >
         {isEditingEnvironment ? (
           <div className="space-y-4">
@@ -165,6 +170,8 @@ export function LocationSection({ property }: LocationSectionProps) {
         )}
       </PropertySection>
 
+      <div className="mb-6" />
+
       <PropertySection
         title="Nearby"
         isEditing={isEditingNearby}
@@ -172,6 +179,7 @@ export function LocationSection({ property }: LocationSectionProps) {
         onSave={handleSave}
         onCancel={handleCancelNearby}
         isSaving={updateProperty.isPending}
+        canEdit={canEdit}
       >
         {isEditingNearby ? (
           <div className="space-y-4">

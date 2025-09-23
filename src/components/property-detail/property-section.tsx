@@ -13,6 +13,8 @@ interface PropertySectionProps {
   onSave: () => void | Promise<void>
   onCancel: () => void
   isSaving?: boolean
+  showEditButton?: boolean
+  canEdit?: boolean
 }
 
 export function PropertySection({
@@ -24,6 +26,8 @@ export function PropertySection({
   onSave,
   onCancel,
   isSaving = false,
+  showEditButton = true,
+  canEdit = true,
 }: PropertySectionProps) {
   const handleSave = async () => {
     await onSave()
@@ -60,7 +64,7 @@ export function PropertySection({
                 {isSaving ? "Saving..." : "Save"}
               </Button>
             </>
-          ) : (
+          ) : showEditButton && canEdit ? (
             <Button
               size="sm"
               variant="outline"
@@ -69,7 +73,7 @@ export function PropertySection({
               <Edit2 className="h-4 w-4 mr-1" />
               Edit
             </Button>
-          )}
+          ) : null}
         </div>
       </div>
       <div className="p-6">{children}</div>

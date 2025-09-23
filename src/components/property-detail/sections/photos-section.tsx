@@ -1,22 +1,25 @@
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
-import { Upload, X, GripVertical, Edit2, Trash2, Image as ImageIcon, CheckCircle2 } from "lucide-react"
+import { GripVertical, Edit2, Trash2, Image as ImageIcon, CheckCircle2, Upload, X, Star, Expand } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { FileDropzone } from "@/components/ui/file-dropzone"
+import { ImageViewerModal } from "@/components/property-detail/image-viewer-modal"
 import { usePropertyPhotos, useUploadPhotos, useUpdatePhoto, useDeletePhoto, useReorderPhotos } from "@/hooks/use-photos"
 import { Photo } from "@/generated/prisma"
-import { toast } from "sonner"
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core"
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Permission } from "@/types/auth"
+import { cn } from "@/lib/utils"
 
 interface PhotosSectionProps {
   propertyId: string
@@ -41,12 +44,18 @@ function SortablePhotoCard({
   photo, 
   onEdit, 
   onDelete,
-  isRecentlyUploaded 
+  onSetMain,
+  onView,
+  isRecentlyUploaded,
+  canEdit
 }: { 
   photo: Photo; 
   onEdit: () => void; 
   onDelete: () => void;
+  onSetMain: () => void;
+  onView: () => void;
   isRecentlyUploaded?: boolean;
+  canEdit?: boolean;
 }) {
   const {
     attributes,
@@ -78,7 +87,7 @@ function SortablePhotoCard({
           </div>
         )}
         
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden cursor-pointer" onClick={onView}>
           <img
             src={photo.url}
             alt={photo.caption || "Property photo"}
@@ -98,25 +107,52 @@ function SortablePhotoCard({
               </div>
             </div>
             
-            {/* Action buttons with glass effect */}
-            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-y-2 group-hover:translate-y-0 flex gap-2">
+            {/* View button - always visible */}
+            <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
               <Button 
                 size="icon" 
                 variant="secondary" 
-                onClick={onEdit}
+                onClick={onView}
                 className="bg-white/90 backdrop-blur-md hover:bg-white shadow-xl border-0 transition-all duration-300 hover:scale-110"
+                title="View fullscreen"
               >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-              <Button 
-                size="icon" 
-                variant="secondary" 
-                onClick={onDelete}
-                className="bg-white/90 backdrop-blur-md hover:bg-white shadow-xl border-0 transition-all duration-300 hover:scale-110 hover:bg-red-50 hover:text-red-600"
-              >
-                <Trash2 className="h-4 w-4" />
+                <Expand className="h-4 w-4" />
               </Button>
             </div>
+            
+            {/* Action buttons with glass effect */}
+            {canEdit !== false && (
+              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-y-2 group-hover:translate-y-0 flex gap-2">
+                <Button 
+                  size="icon" 
+                  variant="secondary" 
+                  onClick={onSetMain}
+                  className={cn(
+                    "bg-white/90 backdrop-blur-md hover:bg-white shadow-xl border-0 transition-all duration-300 hover:scale-110",
+                    photo.isMain && "bg-amber-50/90 text-amber-600 hover:bg-amber-50"
+                  )}
+                  title={photo.isMain ? "Main photo" : "Set as main photo"}
+                >
+                  <Star className={cn("h-4 w-4", photo.isMain && "fill-current")} />
+                </Button>
+                <Button 
+                  size="icon" 
+                  variant="secondary" 
+                  onClick={onEdit}
+                  className="bg-white/90 backdrop-blur-md hover:bg-white shadow-xl border-0 transition-all duration-300 hover:scale-110"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+                <Button 
+                  size="icon" 
+                  variant="secondary" 
+                  onClick={onDelete}
+                  className="bg-white/90 backdrop-blur-md hover:bg-white shadow-xl border-0 transition-all duration-300 hover:scale-110 hover:bg-red-50 hover:text-red-600"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
         
@@ -137,11 +173,14 @@ function SortablePhotoCard({
 }
 
 export function PhotosSection({ propertyId }: PhotosSectionProps) {
+  const { hasPermission } = usePermissions()
+  const canEdit = hasPermission(Permission.PROPERTY_EDIT)
   const [selectedCategory, setSelectedCategory] = useState("ALL")
   const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null)
   const [deletingPhoto, setDeletingPhoto] = useState<Photo | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
   const [recentlyUploadedIds, setRecentlyUploadedIds] = useState<Set<string>>(new Set())
+  const [viewerOpen, setViewerOpen] = useState(false)
+  const [viewerInitialIndex, setViewerInitialIndex] = useState(0)
 
   const { data: photos = [], isLoading } = usePropertyPhotos(propertyId)
   const uploadPhotosMutation = useUploadPhotos(propertyId)
@@ -188,34 +227,11 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
     }
   }
 
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files
-    if (files && files.length > 0) {
-      uploadPhotosMutation.mutate(Array.from(files))
-    }
-  }, [uploadPhotosMutation])
-
-  const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault()
-    setIsDragging(false)
-
-    const files = Array.from(event.dataTransfer.files).filter((file) =>
-      file.type.startsWith("image/")
-    )
-
+  const handleFileSelect = useCallback((files: File[]) => {
     if (files.length > 0) {
       uploadPhotosMutation.mutate(files)
     }
   }, [uploadPhotosMutation])
-
-  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault()
-    setIsDragging(true)
-  }, [])
-
-  const handleDragLeave = useCallback(() => {
-    setIsDragging(false)
-  }, [])
 
   const handleUpdatePhoto = async (data: any) => {
     if (!editingPhoto) return
@@ -238,6 +254,21 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
     setDeletingPhoto(null)
   }
 
+  const handleSetMainPhoto = async (photoId: string) => {
+    await updatePhoto.mutateAsync({
+      id: photoId,
+      data: { isMain: true },
+    })
+  }
+
+  const handleViewPhoto = (photoId: string) => {
+    const index = filteredPhotos.findIndex(p => p.id === photoId)
+    if (index !== -1) {
+      setViewerInitialIndex(index)
+      setViewerOpen(true)
+    }
+  }
+
   const filteredPhotos = selectedCategory === "ALL"
     ? photos
     : photos.filter((p) => p.category === selectedCategory)
@@ -253,36 +284,53 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-semibold">Photos ({photos.length})</h2>
-        <Button size="sm" className="relative">
-          <Upload className="h-4 w-4 mr-2" />
-          Upload Photos
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handleFileUpload}
-            className="absolute inset-0 opacity-0 cursor-pointer"
-          />
-        </Button>
       </div>
 
       {/* Upload Drop Zone */}
-      <div
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        className={`mb-6 border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-          isDragging ? "border-primary bg-primary/5" : "border-gray-300"
-        }`}
-      >
-        <ImageIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-        <p className="text-sm text-gray-600">
-          Drag and drop photos here, or click the upload button
-        </p>
-        <p className="text-xs text-gray-500 mt-2">
-          Supports JPEG, PNG, WebP up to 10MB each
-        </p>
-      </div>
+      {canEdit && (
+        <FileDropzone
+          onFileSelect={handleFileSelect}
+          accept={{
+            'image/*': ['.jpg', '.jpeg', '.png', '.webp']
+          }}
+          maxSize={10 * 1024 * 1024} // 10MB
+          multiple={true}
+          maxFiles={20} // Allow up to 20 files at once
+          className="mb-6"
+          showFileInfo={false}
+          placeholder={{
+            idle: (
+              <div className="flex flex-col items-center gap-4">
+                <div className="relative">
+                  <div className="rounded-full border-2 border-dashed border-amber-400/30 bg-amber-50/50 p-6 transition-all hover:border-amber-400/50 hover:bg-amber-50/80">
+                    <ImageIcon className="h-10 w-10 text-amber-600" />
+                  </div>
+                  <div className="absolute inset-0 rounded-full animate-pulse ring-4 ring-amber-200/20" />
+                </div>
+                <div className="space-y-2 text-center">
+                  <p className="text-base font-medium text-gray-700">
+                    Drag & drop property photos here
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    or click to browse your files
+                  </p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Supports JPEG, PNG, WebP up to 10MB each
+                  </p>
+                </div>
+              </div>
+            ),
+            active: (
+              <div className="flex flex-col items-center gap-4">
+                <Upload className="h-10 w-10 text-amber-600 animate-bounce" />
+                <p className="text-base font-medium text-amber-600">
+                  Drop photos here to upload
+                </p>
+              </div>
+            )
+          }}
+        />
+      )}
 
       {/* Category Filter */}
       <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
@@ -325,7 +373,10 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
                   photo={photo}
                   onEdit={() => setEditingPhoto(photo)}
                   onDelete={() => setDeletingPhoto(photo)}
+                  onSetMain={() => handleSetMainPhoto(photo.id)}
+                  onView={() => handleViewPhoto(photo.id)}
                   isRecentlyUploaded={recentlyUploadedIds.has(photo.id)}
+                  canEdit={canEdit}
                 />
               ))}
             </div>
@@ -423,6 +474,14 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Image Viewer Modal */}
+      <ImageViewerModal
+        isOpen={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        photos={filteredPhotos}
+        initialIndex={viewerInitialIndex}
+      />
     </div>
   )
 }
