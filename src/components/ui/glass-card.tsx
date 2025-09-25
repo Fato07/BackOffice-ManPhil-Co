@@ -25,9 +25,9 @@ const glassVariants = {
     gradient: "from-black/10 via-transparent to-black/5"
   },
   luxury: {
-    base: "bg-white/75 backdrop-blur-3xl border-white/30 shadow-lg shadow-gray-900/10",
-    hover: "hover:bg-white/80 hover:shadow-xl hover:shadow-gray-900/15 hover:border-white/40",
-    gradient: "from-white/20 via-white/10 to-transparent"
+    base: "bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl border-white/40 dark:border-zinc-700/40 shadow-xl shadow-gray-900/10 dark:shadow-black/20",
+    hover: "hover:bg-white/95 dark:hover:bg-zinc-900/95 hover:shadow-2xl hover:shadow-gray-900/15 dark:hover:shadow-black/30 hover:border-white/50 dark:hover:border-zinc-700/50",
+    gradient: "from-white/30 via-white/20 to-white/10 dark:from-zinc-800/30 dark:via-zinc-800/20 dark:to-zinc-800/10"
   },
   'ultra-light': {
     base: "bg-white/30 backdrop-blur-2xl border-white/10 shadow-gray-100/5",
