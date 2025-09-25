@@ -345,8 +345,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
                     }
                   }}
                   className={cn(
-                    "scroll-mt-36 transition-all duration-500 mb-6",
-                    currentSection === section.id ? "opacity-100" : "opacity-80"
+                    "scroll-mt-36 transition-all duration-500 mb-6"
                   )}
                 >
                   <GlassCard variant="luxury" className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700" style={{ animationDelay: `${index * 100}ms` }}>
