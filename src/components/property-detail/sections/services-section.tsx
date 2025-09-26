@@ -228,6 +228,7 @@ export function ServicesSection({ property }: ServicesSectionProps) {
                 <Label>Price (€)</Label>
                 <Input
                   type="number"
+                  min="0"
                   className="mt-2"
                   disabled={!isEditing}
                   {...form.register(priceField as any, { valueAsNumber: true })}
@@ -454,6 +455,7 @@ export function ServicesSection({ property }: ServicesSectionProps) {
                           <Label>Price (€)</Label>
                           <Input
                             type="number"
+                            min="0"
                             className="mt-2"
                             disabled={!isEditing}
                             value={service.price}

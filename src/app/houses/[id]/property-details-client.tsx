@@ -58,6 +58,18 @@ interface PropertyDetailsWrapperProps {
   property: PropertyWithRelations
 }
 
+interface SectionConfig {
+  id: string
+  label: string
+  component: React.ComponentType<any> | null
+  icon: React.ComponentType
+  description: string
+  permission?: Permission
+  isInternal?: boolean
+  isContainer?: boolean
+  parentSection?: string
+}
+
 export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps) {
   const [currentSection, setCurrentSection] = useState("promote")
   const [navigationExpanded, setNavigationExpanded] = useState(true)
@@ -68,22 +80,26 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const { canViewSection } = usePermissions()
   const router = useRouter()
+  
+  // Memoize rooms array to prevent re-renders
+  const propertyRooms = React.useMemo(() => property.rooms || [], [property.rooms])
 
-  const allSections = [
+  const allSections: SectionConfig[] = [
     { id: "promote", label: "Promote", component: PromoteSection, icon: Home, description: "Visibility and positioning" },
-    { id: "info", label: "House Information", component: HouseInfoSection, icon: Info, description: "Basic property details" },
-    { id: "location", label: "Location", component: LocationSection, icon: MapPin, description: "Address and coordinates" },
-    { id: "further-info", label: "Further Information", component: FurtherInfoSection, icon: FileText, description: "Additional details" },
+    { id: "property-details", label: "Property Details", component: null, icon: Info, description: "Complete property information", isContainer: true },
+    { id: "info", label: "House Information", component: HouseInfoSection, icon: Info, description: "Basic property details", parentSection: "property-details" },
+    { id: "location", label: "Location", component: LocationSection, icon: MapPin, description: "Address and coordinates", parentSection: "property-details" },
+    { id: "further-info", label: "Further Information", component: FurtherInfoSection, icon: FileText, description: "Additional details", parentSection: "property-details" },
+    { id: "rooms", label: "Rooms", component: RoomBuilder, icon: DoorOpen, description: "Room configuration", parentSection: "property-details" },
+    { id: "contacts", label: "Linked Contacts", component: ContactsSection, icon: Users, description: "Property contacts and service providers", permission: Permission.CONTACTS_VIEW, parentSection: "property-details" },
     { id: "heating", label: "Heating & AC", component: HeatingSection, icon: Thermometer, description: "Climate control systems" },
     { id: "events", label: "Events", component: EventsSection, icon: Calendar, description: "Special events and activities" },
     { id: "services", label: "Services", component: ServicesSection, icon: Wrench, description: "Available amenities" },
     { id: "good-to-know", label: "Good to Know", component: GoodToKnowSection, icon: AlertCircle, description: "Important information" },
     { id: "internal", label: "Internal", component: InternalSection, icon: Shield, description: "Private notes and data", permission: Permission.INTERNAL_VIEW, isInternal: true },
-    { id: "contacts", label: "Linked Contacts", component: ContactsSection, icon: Users, description: "Property contacts and service providers", permission: Permission.CONTACTS_VIEW },
     { id: "marketing", label: "Automatic Offer", component: MarketingSection, icon: Megaphone, description: "Marketing content" },
     { id: "photos", label: "Photos", component: PhotosSection, icon: Camera, description: "Property images" },
     { id: "links", label: "Links & Resources", component: LinksSection, icon: Link, description: "External resources" },
-    { id: "rooms", label: "Rooms", component: RoomBuilder, icon: DoorOpen, description: "Room configuration" },
   ]
 
   // Filter sections based on user permissions
@@ -95,13 +111,50 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
   })
 
   // Create navigation sections with the necessary properties for PropertyNavigation
-  const navigationSections: Section[] = sections.map(section => ({
-    id: section.id,
-    label: section.label,
-    icon: section.icon,
-    description: section.description,
-    isInternal: section.isInternal,
-  }))
+  // Include both parent sections and subsections in the correct order
+  const navigationSections: Section[] = (() => {
+    const result: Section[] = []
+    const addedIds = new Set<string>()
+    
+    // Process each section in order
+    sections.forEach(section => {
+      // Skip if already added or if it's a subsection (we'll add it with its parent)
+      if (addedIds.has(section.id) || section.parentSection) {
+        return
+      }
+      
+      // Add the parent section
+      result.push({
+        id: section.id,
+        label: section.label,
+        icon: section.icon,
+        description: section.description,
+        isInternal: section.isInternal,
+        isContainer: section.isContainer,
+        parentSection: section.parentSection,
+      })
+      addedIds.add(section.id)
+      
+      // If this is a container section, immediately add its subsections
+      if (section.isContainer) {
+        const subsections = sections.filter(s => s.parentSection === section.id)
+        subsections.forEach(subsection => {
+          result.push({
+            id: subsection.id,
+            label: subsection.label,
+            icon: subsection.icon,
+            description: subsection.description,
+            isInternal: subsection.isInternal,
+            isContainer: subsection.isContainer,
+            parentSection: subsection.parentSection,
+          })
+          addedIds.add(subsection.id)
+        })
+      }
+    })
+    
+    return result
+  })()
 
   const handleSectionChange = (sectionId: string) => {
     setCurrentSection(sectionId)
@@ -114,7 +167,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
   }
 
   // Calculate completion status (simplified for now)
-  const completionStatus = {
+  const completionStatus: Record<string, boolean> = {
     promote: !!property.exclusivity || !!property.position,
     info: !!property.name && !!property.numberOfRooms,
     location: !!(property.address || property.city || property.postcode || property.neighborhood || (property.latitude && property.longitude)),
@@ -130,6 +183,15 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
     links: (property.resources?.length ?? 0) > 0,
     rooms: (property.rooms?.length ?? 0) > 0,
   }
+  
+  // Calculate property-details completion based on its subsections
+  completionStatus["property-details"] = !!(
+    completionStatus.info &&
+    completionStatus.location &&
+    completionStatus["further-info"] &&
+    completionStatus.rooms &&
+    completionStatus.contacts
+  )
 
   // Setup intersection observer for virtualization
   useEffect(() => {
@@ -182,7 +244,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
     // Create a small delay to ensure refs are populated
     const timer = setTimeout(() => {
       setNavigatorSections(
-        sections.map(section => ({
+        navigationSections.map(section => ({
           id: section.id,
           label: section.label,
           element: sectionRefs.current[section.id],
@@ -191,7 +253,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
     }, 100)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [navigationSections])
 
   return (
     <div className="relative flex -mx-6 -my-6 min-h-[calc(100vh-3.5rem)] luxury-gradient-bg">
@@ -318,114 +380,252 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
         <div className="flex-1 overflow-y-auto">
           <div className="px-8 py-8">
             <div className="max-w-7xl mx-auto space-y-12">
-            {sections.map((section, index) => {
-              const isInitiallyVisible = index < 3 // Always show first 3 sections
-              const shouldRender = isInitiallyVisible || visibleSections.has(section.id)
+            {(() => {
+              // Group sections by parent
+              const topLevelSections = sections.filter(s => !s.parentSection)
+              const sectionsByParent = sections.reduce((acc, section) => {
+                if (section.parentSection) {
+                  if (!acc[section.parentSection]) {
+                    acc[section.parentSection] = []
+                  }
+                  acc[section.parentSection].push(section)
+                }
+                return acc
+              }, {} as Record<string, typeof sections>)
               
-              return (
-                <div
-                  key={section.id}
-                  id={section.id}
-                  data-section-id={section.id}
-                  ref={(el) => {
-                    if (el && sectionRefs.current[section.id] !== el) {
-                      sectionRefs.current[section.id] = el
-                      // Observe this section
-                      if (observerRef.current) {
-                        observerRef.current.observe(el)
-                      }
-                      // Update navigatorSections when a new ref is set
-                      setNavigatorSections(prev => 
-                        prev.map(navSection => 
-                          navSection.id === section.id 
-                            ? { ...navSection, element: el }
-                            : navSection
-                        )
-                      )
-                    }
-                  }}
-                  className={cn(
-                    "scroll-mt-36 transition-all duration-500 mb-6"
-                  )}
-                >
-                  <GlassCard variant="luxury" className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700" style={{ animationDelay: `${index * 100}ms` }}>
-                    {/* Section Header */}
-                    <div className={cn(
-                      "px-8 py-6 border-b border-gray-100/50",
-                      section.id === "internal" && "bg-amber-50/30"
-                    )}>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h2 className="text-xl font-light text-gray-900 tracking-tight">
-                            <span className="text-[#B5985A] font-normal">{index + 1}.</span> {section.label}
-                          </h2>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {section.id === "promote" && "Control visibility and positioning"}
-                            {section.id === "info" && "Basic property information"}
-                            {section.id === "location" && "Property location details"}
-                            {section.id === "further-info" && "Additional property details"}
-                            {section.id === "heating" && "Climate control information"}
-                            {section.id === "events" && "Special events and activities"}
-                            {section.id === "services" && "Available services and amenities"}
-                            {section.id === "good-to-know" && "Important guest information"}
-                            {section.id === "internal" && "Private notes and configuration"}
-                            {section.id === "contacts" && "Property contacts and service providers"}
-                            {section.id === "marketing" && "Marketing content and offers"}
-                            {section.id === "photos" && "Property images and galleries"}
-                            {section.id === "links" && "External links and resources"}
-                            {section.id === "rooms" && "Room configuration and details"}
-                          </p>
-                        </div>
-                        {completionStatus[section.id as keyof typeof completionStatus] && (
-                          <div className="flex items-center gap-2 text-emerald-600">
-                            <div className="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center">
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            </div>
-                            <span className="text-sm font-light">Complete</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Section Content */}
-                    <div className="px-8 py-6">
-                      {shouldRender ? (
-                        <Suspense fallback={
-                          <div className="space-y-4">
-                            <Skeleton className="h-4 w-full" />
-                            <Skeleton className="h-4 w-3/4" />
-                            <Skeleton className="h-32 w-full" />
-                          </div>
-                        }>
-                          {(() => {
-                            switch (section.id) {
-                              case "photos":
-                                return <PhotosSection propertyId={property.id} />
-                              case "links":
-                                return <LinksSection propertyId={property.id} />
-                              case "rooms":
-                                return <RoomBuilder propertyId={property.id} rooms={property.rooms || []} />
-                              default:
-                                const Component = section.component as React.ComponentType<{ property: PropertyWithRelations }>
-                                return <Component property={property} />
-                            }
-                          })()}
-                        </Suspense>
-                      ) : (
-                        <div className="h-64 flex items-center justify-center">
-                          <div className="text-center">
-                            <Skeleton className="h-8 w-48 mx-auto mb-4" />
-                            <Skeleton className="h-4 w-64 mx-auto" />
-                          </div>
-                        </div>
+              let sectionIndex = 0
+              
+              return topLevelSections.map((section) => {
+                const isInitiallyVisible = sectionIndex < 3 // Always show first 3 sections
+                const shouldRender = isInitiallyVisible || visibleSections.has(section.id)
+                const currentIndex = sectionIndex++
+                
+                if (section.isContainer && sectionsByParent[section.id]) {
+                  // Render container with subsections
+                  const subsections = sectionsByParent[section.id]
+                  
+                  return (
+                    <div
+                      key={section.id}
+                      id={section.id}
+                      data-section-id={section.id}
+                      ref={(el) => {
+                        if (el && sectionRefs.current[section.id] !== el) {
+                          sectionRefs.current[section.id] = el
+                          if (observerRef.current) {
+                            observerRef.current.observe(el)
+                          }
+                          setNavigatorSections(prev => 
+                            prev.map(navSection => 
+                              navSection.id === section.id 
+                                ? { ...navSection, element: el }
+                                : navSection
+                            )
+                          )
+                        }
+                      }}
+                      className={cn(
+                        "scroll-mt-36 transition-all duration-500 mb-6"
                       )}
+                    >
+                      <GlassCard variant="luxury" className={cn(
+                        "animate-in fade-in-0 slide-in-from-bottom-4 duration-700",
+                        section.id === "property-details" && "border-dashed"
+                      )} style={{ animationDelay: `${currentIndex * 100}ms` }}>
+                        {/* Container Section Header */}
+                        <div className="px-8 py-6 border-b border-gray-100/50">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h2 className="text-xl font-light text-gray-900 tracking-tight">
+                                <span className="text-[#B5985A] font-normal">{currentIndex + 1}.</span> {section.label}
+                              </h2>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {section.description}
+                              </p>
+                            </div>
+                            {completionStatus[section.id] && (
+                              <div className="flex items-center gap-2 text-emerald-600">
+                                <div className="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center">
+                                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                </div>
+                                <span className="text-sm font-light">Complete</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Subsections */}
+                        <div className="divide-y divide-gray-100">
+                          {subsections.map((subsection, subIndex) => (
+                            <div 
+                              key={subsection.id}
+                              id={subsection.id}
+                              data-section-id={subsection.id}
+                              ref={(el) => {
+                                if (el && sectionRefs.current[subsection.id] !== el) {
+                                  sectionRefs.current[subsection.id] = el
+                                  if (observerRef.current) {
+                                    observerRef.current.observe(el)
+                                  }
+                                  setNavigatorSections(prev => 
+                                    prev.map(navSection => 
+                                      navSection.id === subsection.id 
+                                        ? { ...navSection, element: el }
+                                        : navSection
+                                    )
+                                  )
+                                }
+                              }}
+                              className="px-8 py-6 scroll-mt-36"
+                            >
+                              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                                {subsection.label}
+                              </h3>
+                              {shouldRender ? (
+                                <Suspense fallback={
+                                  <div className="space-y-4">
+                                    <Skeleton className="h-4 w-full" />
+                                    <Skeleton className="h-4 w-3/4" />
+                                    <Skeleton className="h-32 w-full" />
+                                  </div>
+                                }>
+                                  {(() => {
+                                    switch (subsection.id) {
+                                      case "photos":
+                                        return <PhotosSection propertyId={property.id} />
+                                      case "links":
+                                        return <LinksSection propertyId={property.id} />
+                                      case "rooms":
+                                        return <RoomBuilder propertyId={property.id} rooms={propertyRooms} />
+                                      default:
+                                        const Component = subsection.component as React.ComponentType<{ property: PropertyWithRelations }>
+                                        return <Component property={property} />
+                                    }
+                                  })()}
+                                </Suspense>
+                              ) : (
+                                <div className="h-64 flex items-center justify-center">
+                                  <div className="text-center">
+                                    <Skeleton className="h-8 w-48 mx-auto mb-4" />
+                                    <Skeleton className="h-4 w-64 mx-auto" />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </GlassCard>
                     </div>
-                  </GlassCard>
-                </div>
-              )
-            })}
+                  )
+                } else {
+                  // Render regular section
+                  return (
+                    <div
+                      key={section.id}
+                      id={section.id}
+                      data-section-id={section.id}
+                      ref={(el) => {
+                        if (el && sectionRefs.current[section.id] !== el) {
+                          sectionRefs.current[section.id] = el
+                          if (observerRef.current) {
+                            observerRef.current.observe(el)
+                          }
+                          setNavigatorSections(prev => 
+                            prev.map(navSection => 
+                              navSection.id === section.id 
+                                ? { ...navSection, element: el }
+                                : navSection
+                            )
+                          )
+                        }
+                      }}
+                      className={cn(
+                        "scroll-mt-36 transition-all duration-500 mb-6"
+                      )}
+                    >
+                      <GlassCard variant="luxury" className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700" style={{ animationDelay: `${currentIndex * 100}ms` }}>
+                        {/* Section Header */}
+                        <div className={cn(
+                          "px-8 py-6 border-b border-gray-100/50",
+                          section.id === "internal" && "bg-amber-50/30"
+                        )}>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h2 className="text-xl font-light text-gray-900 tracking-tight">
+                                <span className="text-[#B5985A] font-normal">{currentIndex + 1}.</span> {section.label}
+                              </h2>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {section.id === "promote" && "Control visibility and positioning"}
+                                {section.id === "info" && "Basic property information"}
+                                {section.id === "location" && "Property location details"}
+                                {section.id === "further-info" && "Additional property details"}
+                                {section.id === "heating" && "Climate control information"}
+                                {section.id === "events" && "Special events and activities"}
+                                {section.id === "services" && "Available services and amenities"}
+                                {section.id === "good-to-know" && "Important guest information"}
+                                {section.id === "internal" && "Private notes and configuration"}
+                                {section.id === "contacts" && "Property contacts and service providers"}
+                                {section.id === "marketing" && "Marketing content and offers"}
+                                {section.id === "photos" && "Property images and galleries"}
+                                {section.id === "links" && "External links and resources"}
+                                {section.id === "rooms" && "Room configuration and details"}
+                                {section.id === "property-details" && section.description}
+                              </p>
+                            </div>
+                            {completionStatus[section.id] && (
+                              <div className="flex items-center gap-2 text-emerald-600">
+                                <div className="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center">
+                                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                </div>
+                                <span className="text-sm font-light">Complete</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Section Content */}
+                        <div className="px-8 py-6">
+                          {shouldRender ? (
+                            <Suspense fallback={
+                              <div className="space-y-4">
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-3/4" />
+                                <Skeleton className="h-32 w-full" />
+                              </div>
+                            }>
+                              {(() => {
+                                switch (section.id) {
+                                  case "photos":
+                                    return <PhotosSection propertyId={property.id} />
+                                  case "links":
+                                    return <LinksSection propertyId={property.id} />
+                                  case "rooms":
+                                    return <RoomBuilder propertyId={property.id} rooms={propertyRooms} />
+                                  default:
+                                    const Component = section.component as React.ComponentType<{ property: PropertyWithRelations }>
+                                    return <Component property={property} />
+                                }
+                              })()}
+                            </Suspense>
+                          ) : (
+                            <div className="h-64 flex items-center justify-center">
+                              <div className="text-center">
+                                <Skeleton className="h-8 w-48 mx-auto mb-4" />
+                                <Skeleton className="h-4 w-64 mx-auto" />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </GlassCard>
+                    </div>
+                  )
+                }
+              })
+            })()}
             </div>
           </div>
 

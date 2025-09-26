@@ -17,7 +17,7 @@ import { PropertyWithRelations } from "@/types/property"
 import { toast } from "sonner"
 import { usePermissions } from "@/hooks/use-permissions"
 import { Permission } from "@/types/auth"
-import { Plus, Trash2 } from "lucide-react"
+import { Plus, Trash2, FileText } from "lucide-react"
 
 const EVENT_TYPES = [
   { value: "wedding", label: "Weddings" },
@@ -197,6 +197,7 @@ export function EventsSection({ property }: EventsSectionProps) {
               <Label>Maximum event guests</Label>
               <Input
                 type="number"
+                min="0"
                 className="mt-2 w-32"
                 disabled={!isEditing}
                 {...form.register("maxEventGuests", { valueAsNumber: true })}
@@ -207,6 +208,34 @@ export function EventsSection({ property }: EventsSectionProps) {
 
         {form.watch("eventsAllowed") && (
           <>
+            {/* Additional Event Notes - Moved to top for better visibility */}
+            <Card className="p-6 bg-muted/30 border-muted">
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-muted-foreground" />
+                  <Label className="text-base font-semibold">Event Planning Notes</Label>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Add any important event-related information or special instructions.
+                </p>
+                <div className="relative">
+                  <Textarea
+                    className="mt-2 resize-y min-h-[120px] max-h-[400px]"
+                    disabled={!isEditing}
+                    {...form.register("eventDetails.additionalNotes")}
+                    placeholder="Add any special instructions, vendor preferences, setup requirements, or important event details..."
+                    rows={6}
+                    maxLength={2000}
+                  />
+                  {isEditing && (
+                    <span className="absolute bottom-2 right-2 text-xs text-muted-foreground">
+                      {(form.watch("eventDetails.additionalNotes") || "").length} / 2000
+                    </span>
+                  )}
+                </div>
+              </div>
+            </Card>
+
             {/* Event Types */}
             <div>
               <h3 className="text-base font-semibold mb-4">Event Types</h3>
@@ -231,6 +260,7 @@ export function EventsSection({ property }: EventsSectionProps) {
                             <Label>Maximum Capacity</Label>
                             <Input
                               type="number"
+                              min="0"
                               disabled={!isEditing}
                               {...form.register(`eventDetails.eventTypes.${eventType.value}.capacity` as any, {
                                 valueAsNumber: true
@@ -333,6 +363,7 @@ export function EventsSection({ property }: EventsSectionProps) {
                   <Label>Parking spaces</Label>
                   <Input
                     type="number"
+                    min="0"
                     className="mt-2"
                     disabled={!isEditing}
                     {...form.register("eventDetails.facilities.parkingSpaces", { valueAsNumber: true })}
@@ -366,6 +397,7 @@ export function EventsSection({ property }: EventsSectionProps) {
                     <Label>Minimum rental period (days)</Label>
                     <Input
                       type="number"
+                      min="1"
                       disabled={!isEditing}
                       {...form.register("eventDetails.restrictions.minimumRentalPeriod", { valueAsNumber: true })}
                     />
@@ -386,6 +418,7 @@ export function EventsSection({ property }: EventsSectionProps) {
                       <Label>Security deposit amount</Label>
                       <Input
                         type="number"
+                        min="0"
                         className="mt-2 w-32"
                         disabled={!isEditing}
                         {...form.register("eventDetails.restrictions.securityDepositAmount", { valueAsNumber: true })}
@@ -496,18 +529,6 @@ export function EventsSection({ property }: EventsSectionProps) {
                   </Card>
                 ))}
               </div>
-            </div>
-
-            {/* Additional Notes */}
-            <div>
-              <Label>Additional event notes</Label>
-              <Textarea
-                className="mt-2"
-                disabled={!isEditing}
-                {...form.register("eventDetails.additionalNotes")}
-                placeholder="Any other event-related information..."
-                rows={4}
-              />
             </div>
           </>
         )}

@@ -81,6 +81,39 @@ export const updatePropertyEventsSchema = z.object({
   eventsDetails: z.any().nullish(), // JSON field - consider using z.record() for better type safety
 })
 
+// Update property description
+export const updatePropertyDescriptionSchema = z.object({
+  description: z.object({
+    houseType: z.enum([
+      "VILLA", "APARTMENT", "CHALET", "PENTHOUSE", 
+      "TOWNHOUSE", "CASTLE", "MANOR", "COTTAGE"
+    ]).optional(),
+    architecturalType: z.enum([
+      "CONTEMPORARY", "TRADITIONAL", "MODERN", "RUSTIC", 
+      "COLONIAL", "MEDITERRANEAN", "MINIMALIST"
+    ]).optional(),
+    floorArea: z.number().positive("Floor area must be positive").nullish(),
+    plotSize: z.number().positive("Plot size must be positive").nullish(),
+    numberOfFurnishedFloors: z.number().int().min(0, "Number of floors cannot be negative").nullish(),
+    adjoiningHouse: z.boolean().optional(),
+    maxGuestCapacity: z.number().int().min(0, "Guest capacity cannot be negative").nullish(),
+    maxAdultCapacity: z.number().int().min(0, "Adult capacity cannot be negative").nullish(),
+    numberOfBedrooms: z.number().int().min(0, "Number of bedrooms cannot be negative").nullish(),
+    numberOfBedroomsForLiveInStaff: z.number().int().min(0, "Number of staff bedrooms cannot be negative").nullish(),
+    numberOfBathrooms: z.number().int().min(0, "Number of bathrooms cannot be negative").nullish(),
+  }).optional(),
+})
+
+// Update property parking
+export const updatePropertyParkingSchema = z.object({
+  parking: z.object({
+    hasChargingStation: z.boolean().optional(),
+    hasIndoorParking: z.boolean().optional(),
+    hasOutdoorParking: z.boolean().optional(),
+    numberOfParkingSpots: z.number().int().min(0, "Number of parking spots cannot be negative").nullish(),
+  }).optional(),
+})
+
 // Room validation
 export const createRoomSchema = z.object({
   propertyId: z.string().min(1, "Property ID is required"),

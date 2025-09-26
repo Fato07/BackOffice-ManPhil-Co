@@ -271,6 +271,7 @@ export function FurtherInfoSection({ property }: FurtherInfoSectionProps) {
                   <Label>Maximum event guests</Label>
                   <Input
                     type="number"
+                    min="0"
                     className="mt-2 w-32"
                     disabled={!isEditing}
                     {...form.register("maxEventGuests", { valueAsNumber: true })}

@@ -29,6 +29,8 @@ export interface Section {
   icon: React.ElementType
   description: string
   isInternal?: boolean
+  isContainer?: boolean
+  parentSection?: string
 }
 
 interface PropertyNavigationProps {

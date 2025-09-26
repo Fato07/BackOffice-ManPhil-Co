@@ -230,3 +230,26 @@ export type EventDetails = {
   vendors: EventVendor[]
   additionalNotes?: string
 }
+
+// Property Description types
+export type PropertyDescription = {
+  houseType?: 'VILLA' | 'APARTMENT' | 'CHALET' | 'PENTHOUSE' | 'TOWNHOUSE' | 'CASTLE' | 'MANOR' | 'COTTAGE'
+  architecturalType?: 'CONTEMPORARY' | 'TRADITIONAL' | 'MODERN' | 'RUSTIC' | 'COLONIAL' | 'MEDITERRANEAN' | 'MINIMALIST'
+  floorArea?: number // in sqm
+  plotSize?: number // in sqm
+  numberOfFurnishedFloors?: number
+  adjoiningHouse?: boolean
+  maxGuestCapacity?: number
+  maxAdultCapacity?: number
+  numberOfBedrooms?: number
+  numberOfBedroomsForLiveInStaff?: number
+  numberOfBathrooms?: number
+}
+
+// Property Parking types
+export type PropertyParking = {
+  hasChargingStation?: boolean
+  hasIndoorParking?: boolean
+  hasOutdoorParking?: boolean
+  numberOfParkingSpots?: number
+}

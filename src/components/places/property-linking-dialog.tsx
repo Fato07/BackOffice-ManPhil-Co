@@ -438,6 +438,7 @@ export function PropertyLinkingDialog({
                                   <label className="text-xs text-muted-foreground">Distance (km)</label>
                                   <Input
                                     type="number"
+                                    min="0"
                                     step="0.1"
                                     placeholder="0.0"
                                     value={linkingData[property.id]?.distance || ""}
@@ -451,6 +452,7 @@ export function PropertyLinkingDialog({
                                   <label className="text-xs text-muted-foreground">Walking (min)</label>
                                   <Input
                                     type="number"
+                                    min="0"
                                     placeholder="0"
                                     value={linkingData[property.id]?.walkingTime || ""}
                                     onChange={(e) => updateLinkingData(property.id, {
@@ -463,6 +465,7 @@ export function PropertyLinkingDialog({
                                   <label className="text-xs text-muted-foreground">Driving (min)</label>
                                   <Input
                                     type="number"
+                                    min="0"
                                     placeholder="0"
                                     value={linkingData[property.id]?.drivingTime || ""}
                                     onChange={(e) => updateLinkingData(property.id, {

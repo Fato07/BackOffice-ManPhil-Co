@@ -158,6 +158,7 @@ export function CreateHouseDialog({ children }: CreateHouseDialogProps) {
                         </Button>
                         <Input
                           type="number"
+                          min="0"
                           {...field}
                           value={field.value}
                           onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
@@ -198,6 +199,7 @@ export function CreateHouseDialog({ children }: CreateHouseDialogProps) {
                         </Button>
                         <Input
                           type="number"
+                          min="0"
                           {...field}
                           value={field.value}
                           onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}

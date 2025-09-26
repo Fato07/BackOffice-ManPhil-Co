@@ -134,6 +134,7 @@ export function PromoteSection({ property }: PromoteSectionProps) {
             <Label>Position</Label>
             <Input
               type="number"
+              min="0"
               {...form.register("position", { valueAsNumber: true })}
               placeholder="Enter position number"
               className="mt-1"

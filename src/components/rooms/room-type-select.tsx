@@ -15,18 +15,68 @@ interface RoomTypeSelectProps {
   onValueChange: (value: RoomType) => void
   placeholder?: string
   className?: string
+  filterTypes?: RoomType[]
 }
 
 export function RoomTypeSelect({
   value,
   onValueChange,
   placeholder = "Select room type",
-  className
+  className,
+  filterTypes
 }: RoomTypeSelectProps) {
   const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
+
+  // Filter categories to only show relevant room types
+  const getFilteredCategories = () => {
+    if (!filterTypes) return ROOM_CATEGORIES
+    
+    const filtered: typeof ROOM_CATEGORIES = {} as any
+    
+    Object.entries(ROOM_CATEGORIES).forEach(([categoryKey, category]) => {
+      const filteredItems = category.items.filter(item => filterTypes.includes(item))
+      if (filteredItems.length > 0) {
+        filtered[categoryKey as keyof typeof ROOM_CATEGORIES] = {
+          label: category.label,
+          items: filteredItems as any
+        }
+      }
+    })
+    
+    return filtered
+  }
+
+  const filteredCategories = getFilteredCategories()
+
+  // Filter categories based on search
+  const getSearchFilteredCategories = () => {
+    if (!search) return filteredCategories
+    
+    const searchLower = search.toLowerCase()
+    const filtered: typeof ROOM_CATEGORIES = {} as any
+    
+    Object.entries(filteredCategories).forEach(([categoryKey, category]) => {
+      const filteredItems = category.items.filter(item => {
+        const label = getRoomTypeLabel(item).toLowerCase()
+        return label.includes(searchLower) || item.toLowerCase().includes(searchLower)
+      })
+      
+      if (filteredItems.length > 0) {
+        filtered[categoryKey as keyof typeof ROOM_CATEGORIES] = {
+          label: category.label,
+          items: filteredItems as any
+        }
+      }
+    })
+    
+    return filtered
+  }
+
+  const searchFilteredCategories = getSearchFilteredCategories()
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpen} modal={true}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -38,12 +88,16 @@ export function RoomTypeSelect({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0">
-        <Command>
-          <CommandInput placeholder="Search room types..." />
-          <CommandList>
+      <PopoverContent className="w-[400px] max-h-[400px] p-0 z-[100]" align="start" side="bottom" avoidCollisions={true} sideOffset={5}>
+        <Command className="max-h-full overflow-hidden rounded-md border" shouldFilter={false}>
+          <CommandInput 
+            placeholder="Search room types..." 
+            value={search}
+            onValueChange={setSearch}
+          />
+          <CommandList className="max-h-[calc(400px-3rem)] overflow-y-auto">
             <CommandEmpty>No room type found.</CommandEmpty>
-            {Object.entries(ROOM_CATEGORIES).map(([categoryKey, category]) => (
+            {Object.entries(searchFilteredCategories).map(([categoryKey, category]) => (
               <CommandGroup key={categoryKey} heading={category.label}>
                 {category.items.map((roomType) => (
                   <CommandItem
@@ -52,6 +106,7 @@ export function RoomTypeSelect({
                     onSelect={() => {
                       onValueChange(roomType)
                       setOpen(false)
+                      setSearch("")
                     }}
                   >
                     <Check

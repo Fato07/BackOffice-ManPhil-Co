@@ -9,9 +9,7 @@ import { RoomType, Prisma } from "@/generated/prisma"
 const updateRoomSchema = z.object({
   name: z.string().min(1, "Name is required").optional(),
   groupName: z.string().nullish(),
-  type: z.enum(["INTERIOR", "OUTDOOR"], {
-    message: "Room type must be INTERIOR or OUTDOOR"
-  }).optional(),
+  roomType: z.nativeEnum(RoomType).optional(),
   generalInfo: z.any().optional(),
   view: z.string().nullish(),
   equipment: z.array(z.object({
@@ -96,9 +94,16 @@ export async function PATCH(
       return NextResponse.json({ error: "Room not found" }, { status: 404 })
     }
 
+    // Map roomType to type field if provided
+    const updateData: any = { ...data }
+    if (data.roomType) {
+      updateData.type = data.roomType
+      delete updateData.roomType
+    }
+
     const updatedRoom = await prisma.room.update({
       where: { id },
-      data: data as Prisma.RoomUpdateInput,
+      data: updateData as Prisma.RoomUpdateInput,
     })
 
     await prisma.auditLog.create({
