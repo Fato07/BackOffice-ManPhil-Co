@@ -24,6 +24,66 @@ export {
   BookingType 
 } from "@/generated/prisma"
 
+// Surroundings and Stay types
+export interface SurroundingsInfo {
+  filters?: string[]
+  customNotes?: string
+}
+
+export type ServiceFrequency = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'custom'
+
+export interface ServiceSchedule {
+  frequency: ServiceFrequency
+  customSchedule?: string
+  arrivalTime?: string
+}
+
+export interface StayMetadata {
+  access?: {
+    airports?: string[]
+    trainStations?: string[]
+    cars?: string[]
+    roadType?: 'asphalt' | 'winding' | 'dirt'
+    specialAttention?: boolean
+    specialAttentionNote?: string
+    keyCount?: number
+    beeperCount?: number
+  }
+  maintenance?: {
+    linenChange?: ServiceSchedule
+    towelChange?: ServiceSchedule
+    gardeningService?: ServiceSchedule & { enabled?: boolean }
+    poolMaintenance?: ServiceSchedule & { 
+      enabled?: boolean
+      includesLinen?: boolean
+    }
+  }
+  network?: {
+    fiberOptic?: boolean
+    routerAccessible?: boolean
+    routerLocation?: string
+    supplier?: string
+    wiredInternet?: boolean
+    comment?: string
+  }
+  security?: {
+    surveillance?: string[]
+    nearestHospital?: { 
+      name?: string
+      country?: string 
+      distance?: string
+    }
+    firstAidLocation?: string
+    firstAidKit?: boolean
+    fireExtinguisherLocation?: string
+    smokeDetectorLocation?: string
+    specificMeasures?: string
+  }
+  villaBookComment?: {
+    [language: string]: string
+  }
+}
+
 // Extended types with relations
 export type PropertyWithRelations = Property & {
   destination: Destination

@@ -19,7 +19,7 @@ import { PropertyWithRelations } from "@/types/property"
 import { ContactType } from "@/generated/prisma"
 import { toast } from "sonner"
 import { updatePropertyContacts } from "@/actions/property-contacts"
-import { Plus, Trash2, User, Building, Users, Wrench, AlertTriangle, Mail, Phone, Loader2, UserCheck, CheckCircle, Shield, FileSignature } from "lucide-react"
+import { Plus, Trash2, User, Building, Users, Wrench, AlertTriangle, Mail, Phone, Loader2, UserCheck, CheckCircle, Shield, FileSignature, Home, Trees, Waves, UserPlus } from "lucide-react"
 
 const contactSchema = z.object({
   contacts: z.array(z.object({
@@ -49,6 +49,10 @@ const contactTypeIcons = {
   [ContactType.CHECK_IN_MANAGER]: CheckCircle,
   [ContactType.SECURITY_DEPOSIT_MANAGER]: Shield,
   [ContactType.SIGNATORY]: FileSignature,
+  [ContactType.HOUSEKEEPING]: Home,
+  [ContactType.GARDENING]: Trees,
+  [ContactType.POOL_MAINTENANCE]: Waves,
+  [ContactType.CHECK_IN_STAFF]: UserPlus,
 }
 
 const contactTypeLabels = {
@@ -61,6 +65,10 @@ const contactTypeLabels = {
   [ContactType.CHECK_IN_MANAGER]: "Check-in Manager",
   [ContactType.SECURITY_DEPOSIT_MANAGER]: "Security Deposit Manager",
   [ContactType.SIGNATORY]: "Signatory",
+  [ContactType.HOUSEKEEPING]: "Housekeeping",
+  [ContactType.GARDENING]: "Gardening",
+  [ContactType.POOL_MAINTENANCE]: "Pool Maintenance",
+  [ContactType.CHECK_IN_STAFF]: "Check-in Staff",
 }
 
 export function ContactsSection({ property }: ContactsSectionProps) {

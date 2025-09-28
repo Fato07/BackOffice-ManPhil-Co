@@ -163,7 +163,11 @@ export const CONTACT_TYPES = [
   { value: "EMERGENCY" as ContactType, label: "Emergency", description: "Emergency contact" },
   { value: "CHECK_IN_MANAGER" as ContactType, label: "Check-in Manager", description: "Handles guest check-ins" },
   { value: "SECURITY_DEPOSIT_MANAGER" as ContactType, label: "Security Deposit Manager", description: "Manages security deposits" },
-  { value: "SIGNATORY" as ContactType, label: "Signatory", description: "Authorized to sign documents" }
+  { value: "SIGNATORY" as ContactType, label: "Signatory", description: "Authorized to sign documents" },
+  { value: "HOUSEKEEPING" as ContactType, label: "Housekeeping", description: "Housekeeping service provider" },
+  { value: "GARDENING" as ContactType, label: "Gardening", description: "Garden maintenance service" },
+  { value: "POOL_MAINTENANCE" as ContactType, label: "Pool Maintenance", description: "Pool cleaning and maintenance" },
+  { value: "CHECK_IN_STAFF" as ContactType, label: "Check-in Staff", description: "Staff responsible for check-ins" }
 ] as const
 
 // Helper functions

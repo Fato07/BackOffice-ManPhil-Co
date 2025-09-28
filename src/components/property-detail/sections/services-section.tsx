@@ -1,9 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, Controller, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
+import { DevTool } from "@hookform/devtools"
 import { PropertySection } from "../property-section"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -72,6 +73,97 @@ type ServicesData = z.infer<typeof servicesSchema>
 
 interface ServicesSectionProps {
   property: PropertyWithRelations
+}
+
+interface ServiceRowProps {
+  name: string
+  field: keyof ServicesData
+  typeField: keyof ServicesData
+  priceField?: keyof ServicesData
+  form: any // We'll type this properly later
+  isEditing: boolean
+}
+
+const ServiceRow = ({ 
+  name, 
+  field, 
+  typeField, 
+  priceField,
+  form,
+  isEditing
+}: ServiceRowProps) => {
+  // Use watch for conditional rendering
+  const isEnabled = form.watch(field);
+  const serviceType = form.watch(typeField);
+
+  return (
+    <div className="space-y-3 pb-4 border-b last:border-0">
+      <div className="flex items-center space-x-3">
+        <Controller
+          name={`${field}`}
+          control={form.control}
+          render={({ field: checkboxField }) => (
+            <Checkbox
+              disabled={!isEditing}
+              checked={!!checkboxField.value}
+              onCheckedChange={(checked) => {
+                checkboxField.onChange(!!checked);
+              }}
+              name={checkboxField.name}
+              ref={checkboxField.ref}
+            />
+          )}
+        />
+        <Label>{name}</Label>
+      </div>
+      {isEnabled && (
+        <div className="ml-7 grid grid-cols-2 gap-4">
+          <div>
+            <Label>Type</Label>
+            <Controller
+              name={`${typeField}`}
+              control={form.control}
+              render={({ field }) => (
+                <RadioGroup
+                  className="mt-2"
+                  disabled={!isEditing}
+                  value={field.value || ""}
+                  onValueChange={field.onChange}
+                  name={field.name}
+                  ref={field.ref}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="INCLUDED" />
+                    <Label>Included</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="PAID" />
+                    <Label>Paid</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="ON_REQUEST" />
+                    <Label>On request</Label>
+                  </div>
+                </RadioGroup>
+              )}
+            />
+          </div>
+          {serviceType === "PAID" && priceField && (
+            <div>
+              <Label>Price (€)</Label>
+              <Input
+                type="number"
+                min="0"
+                className="mt-2"
+                disabled={!isEditing}
+                {...form.register(priceField, { valueAsNumber: true })}
+              />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function ServicesSection({ property }: ServicesSectionProps) {
@@ -175,73 +267,8 @@ export function ServicesSection({ property }: ServicesSectionProps) {
     setIsEditing(false)
   }
 
-  const ServiceRow = ({ 
-    name, 
-    field, 
-    typeField, 
-    priceField 
-  }: { 
-    name: string
-    field: keyof ServicesData
-    typeField: keyof ServicesData
-    priceField?: keyof ServicesData
-  }) => {
-    const isEnabled = form.watch(field as any)
-    const serviceType = form.watch(typeField as any)
-
-    return (
-      <div className="space-y-3 pb-4 border-b last:border-0">
-        <div className="flex items-center space-x-3">
-          <Checkbox
-            disabled={!isEditing}
-            checked={!!isEnabled}
-            onCheckedChange={(checked) => form.setValue(field as any, !!checked)}
-          />
-          <Label>{name}</Label>
-        </div>
-        {isEnabled && (
-          <div className="ml-7 grid grid-cols-2 gap-4">
-            <div>
-              <Label>Type</Label>
-              <RadioGroup
-                className="mt-2"
-                disabled={!isEditing}
-                value={serviceType || ""}
-                onValueChange={(value) => form.setValue(typeField as any, value as any)}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="INCLUDED" />
-                  <Label>Included</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="PAID" />
-                  <Label>Paid</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="ON_REQUEST" />
-                  <Label>On request</Label>
-                </div>
-              </RadioGroup>
-            </div>
-            {serviceType === "PAID" && priceField && (
-              <div>
-                <Label>Price (€)</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  className="mt-2"
-                  disabled={!isEditing}
-                  {...form.register(priceField as any, { valueAsNumber: true })}
-                />
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    )
-  }
-
   return (
+    <>
     <PropertySection
       title="Services"
       isEditing={isEditing}
@@ -261,18 +288,24 @@ export function ServicesSection({ property }: ServicesSectionProps) {
               field="airportTransfer"
               typeField="airportTransferType"
               priceField="airportTransferPrice"
+              form={form}
+              isEditing={isEditing}
             />
             <ServiceRow
               name="Car rental"
               field="carRental"
               typeField="carRentalType"
               priceField="carRentalPrice"
+              form={form}
+              isEditing={isEditing}
             />
             <ServiceRow
               name="Driver service"
               field="driver"
               typeField="driverType"
               priceField="driverPrice"
+              form={form}
+              isEditing={isEditing}
             />
             <div>
               <Label>Transport notes</Label>
@@ -295,29 +328,39 @@ export function ServicesSection({ property }: ServicesSectionProps) {
               field="breakfast"
               typeField="breakfastType"
               priceField="breakfastPrice"
+              form={form}
+              isEditing={isEditing}
             />
             <ServiceRow
               name="Lunch"
               field="lunch"
               typeField="lunchType"
               priceField="lunchPrice"
+              form={form}
+              isEditing={isEditing}
             />
             <ServiceRow
               name="Dinner"
               field="dinner"
               typeField="dinnerType"
               priceField="dinnerPrice"
+              form={form}
+              isEditing={isEditing}
             />
             <ServiceRow
               name="Private chef"
               field="chef"
               typeField="chefType"
               priceField="chefPrice"
+              form={form}
+              isEditing={isEditing}
             />
             <ServiceRow
               name="Grocery shopping"
               field="groceryShopping"
               typeField="groceryShoppingType"
+              form={form}
+              isEditing={isEditing}
             />
             <div>
               <Label>Meal notes</Label>
@@ -337,69 +380,109 @@ export function ServicesSection({ property }: ServicesSectionProps) {
           <div className="space-y-4">
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
-                <Checkbox
-                  disabled={!isEditing}
-                  checked={form.watch("conciergeService")}
-                  onCheckedChange={(checked) => form.setValue("conciergeService", !!checked)}
+                <Controller
+                  name="conciergeService"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Checkbox
+                      disabled={!isEditing}
+                      checked={!!field.value}
+                      onCheckedChange={(checked) => field.onChange(!!checked)}
+                    />
+                  )}
                 />
                 <Label>Concierge service</Label>
               </div>
               {form.watch("conciergeService") && (
                 <div className="ml-7">
                   <Label>Availability</Label>
-                  <RadioGroup
-                    className="mt-2"
-                    disabled={!isEditing}
-                    value={form.watch("conciergeType") || ""}
-                    onValueChange={(value) => form.setValue("conciergeType", value as any)}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="24_7" />
-                      <Label>24/7</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="BUSINESS_HOURS" />
-                      <Label>Business hours</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="ON_REQUEST" />
-                      <Label>On request</Label>
-                    </div>
-                  </RadioGroup>
+                  <Controller
+                    name="conciergeType"
+                    control={form.control}
+                    render={({ field: { onChange, value, name, ref } }) => (
+                      <RadioGroup
+                        className="mt-2"
+                        disabled={!isEditing}
+                        value={value || ""}
+                        onValueChange={(val) => {
+                          onChange(val);
+                        }}
+                        name={name}
+                        ref={ref}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="24_7" />
+                          <Label>24/7</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="BUSINESS_HOURS" />
+                          <Label>Business hours</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="ON_REQUEST" />
+                          <Label>On request</Label>
+                        </div>
+                      </RadioGroup>
+                    )}
+                  />
                 </div>
               )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center space-x-3">
-                <Checkbox
-                  disabled={!isEditing}
-                  checked={form.watch("restaurantReservations")}
-                  onCheckedChange={(checked) => form.setValue("restaurantReservations", !!checked)}
+                <Controller
+                  name="restaurantReservations"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Checkbox
+                      disabled={!isEditing}
+                      checked={!!field.value}
+                      onCheckedChange={(checked) => field.onChange(!!checked)}
+                    />
+                  )}
                 />
                 <Label>Restaurant reservations</Label>
               </div>
               <div className="flex items-center space-x-3">
-                <Checkbox
-                  disabled={!isEditing}
-                  checked={form.watch("activityBooking")}
-                  onCheckedChange={(checked) => form.setValue("activityBooking", !!checked)}
+                <Controller
+                  name="activityBooking"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Checkbox
+                      disabled={!isEditing}
+                      checked={!!field.value}
+                      onCheckedChange={(checked) => field.onChange(!!checked)}
+                    />
+                  )}
                 />
                 <Label>Activity booking</Label>
               </div>
               <div className="flex items-center space-x-3">
-                <Checkbox
-                  disabled={!isEditing}
-                  checked={form.watch("equipmentRental")}
-                  onCheckedChange={(checked) => form.setValue("equipmentRental", !!checked)}
+                <Controller
+                  name="equipmentRental"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Checkbox
+                      disabled={!isEditing}
+                      checked={!!field.value}
+                      onCheckedChange={(checked) => field.onChange(!!checked)}
+                    />
+                  )}
                 />
                 <Label>Equipment rental</Label>
               </div>
               <div className="flex items-center space-x-3">
-                <Checkbox
-                  disabled={!isEditing}
-                  checked={form.watch("personalShopping")}
-                  onCheckedChange={(checked) => form.setValue("personalShopping", !!checked)}
+                <Controller
+                  name="personalShopping"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Checkbox
+                      disabled={!isEditing}
+                      checked={!!field.value}
+                      onCheckedChange={(checked) => field.onChange(!!checked)}
+                    />
+                  )}
                 />
                 <Label>Personal shopping</Label>
               </div>
@@ -434,9 +517,9 @@ export function ServicesSection({ property }: ServicesSectionProps) {
                         <Select
                           disabled={!isEditing}
                           value={service.type}
-                          onValueChange={(value: any) => {
+                          onValueChange={(value) => {
                             const updated = [...(additionalServices || [])]
-                            updated[index].type = value
+                            updated[index].type = value as "INCLUDED" | "PAID" | "ON_REQUEST"
                             form.setValue("additionalServices", updated)
                           }}
                         >
@@ -520,5 +603,7 @@ export function ServicesSection({ property }: ServicesSectionProps) {
         </div>
       </div>
     </PropertySection>
+    {process.env.NODE_ENV === 'development' && <DevTool control={form.control} />}
+  </>
   )
 }

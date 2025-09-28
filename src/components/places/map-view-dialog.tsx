@@ -229,7 +229,15 @@ export function MapViewDialog({
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="relative"
+          whileHover={{ scale: 1.1 }}
+          className="relative cursor-pointer"
+          onClick={() => {
+            mapRef.current?.flyTo({
+              center: [provider.longitude!, provider.latitude!],
+              zoom: 50,
+              duration: 1000
+            })
+          }}
         >
           <div className="bg-blue-500 p-2 rounded-full border-2 border-white shadow-lg">
             <Home className="w-4 h-4 text-white" />
@@ -255,7 +263,14 @@ export function MapViewDialog({
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           whileHover={{ scale: 1.1 }}
-          className="relative"
+          className="relative cursor-pointer"
+          onClick={() => {
+            mapRef.current?.flyTo({
+              center: [selectedLocation.longitude, selectedLocation.latitude],
+              zoom: 16,
+              duration: 1000
+            })
+          }}
         >
           <div className="bg-[#B5985A] p-2 rounded-full border-2 border-white shadow-lg">
             <MapPin className="w-4 h-4 text-white" />
@@ -272,6 +287,40 @@ export function MapViewDialog({
     return nearbyProperties.map((property) => {
       // Note: Properties might not have coordinates yet, so we'll need to add them
       // For now, this is a placeholder structure
+      // Once properties have latitude/longitude fields, uncomment and use:
+      /*
+      if (!property.latitude || !property.longitude) return null
+      
+      return (
+        <Marker
+          key={property.id}
+          longitude={property.longitude}
+          latitude={property.latitude}
+          anchor="bottom"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            whileHover={{ scale: 1.1 }}
+            className="relative cursor-pointer"
+            onClick={() => {
+              mapRef.current?.flyTo({
+                center: [property.longitude, property.latitude],
+                zoom: 16,
+                duration: 1000
+              })
+            }}
+          >
+            <div className="bg-green-500 p-2 rounded-full border-2 border-white shadow-lg">
+              <Home className="w-3 h-3 text-white" />
+            </div>
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+              {property.name}
+            </div>
+          </motion.div>
+        </Marker>
+      )
+      */
       return null
     })
   }

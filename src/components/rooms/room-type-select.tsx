@@ -32,12 +32,12 @@ export function RoomTypeSelect({
   const getFilteredCategories = () => {
     if (!filterTypes) return ROOM_CATEGORIES
     
-    const filtered: typeof ROOM_CATEGORIES = {} as any
+    const filtered: Record<string, { label: string; items: RoomType[] }> = {}
     
     Object.entries(ROOM_CATEGORIES).forEach(([categoryKey, category]) => {
       const filteredItems = category.items.filter(item => filterTypes.includes(item))
       if (filteredItems.length > 0) {
-        filtered[categoryKey as keyof typeof ROOM_CATEGORIES] = {
+        filtered[categoryKey] = {
           label: category.label,
           items: filteredItems as any
         }
@@ -54,7 +54,7 @@ export function RoomTypeSelect({
     if (!search) return filteredCategories
     
     const searchLower = search.toLowerCase()
-    const filtered: typeof ROOM_CATEGORIES = {} as any
+    const filtered: Record<string, { label: string; items: RoomType[] }> = {}
     
     Object.entries(filteredCategories).forEach(([categoryKey, category]) => {
       const filteredItems = category.items.filter(item => {
@@ -63,7 +63,7 @@ export function RoomTypeSelect({
       })
       
       if (filteredItems.length > 0) {
-        filtered[categoryKey as keyof typeof ROOM_CATEGORIES] = {
+        filtered[categoryKey] = {
           label: category.label,
           items: filteredItems as any
         }

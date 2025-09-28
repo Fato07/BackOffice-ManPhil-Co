@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Room, RoomType } from "@/generated/prisma"
 import { useCreateRoom, useUpdateRoom, useDeleteRoom, useReorderRooms } from "@/hooks/use-rooms"
 import { RoomTypeSelect } from "@/components/rooms/room-type-select"
-import { EquipmentSelectSimple } from "@/components/rooms/equipment-select-simple"
+import { EquipmentSelectSimple, type EquipmentCategory } from "@/components/rooms/equipment-select-simple"
 import { getRoomTypeLabel, getRoomTypeCategory, ROOM_CATEGORIES } from "@/lib/constants/equipment"
 import { toast } from "sonner"
 import { usePermissions } from "@/hooks/use-permissions"
@@ -381,7 +381,13 @@ interface RoomFormDialogProps {
 }
 
 function RoomFormDialog({ open, onOpenChange, room, isOutdoor, onSubmit }: RoomFormDialogProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    roomType: RoomType
+    groupName: string
+    view: string
+    generalInfo: string
+    equipment: EquipmentCategory[]
+  }>({
     roomType: isOutdoor ? RoomType.TERRACE : RoomType.BEDROOM,
     groupName: "",
     view: "",
@@ -411,7 +417,7 @@ function RoomFormDialog({ open, onOpenChange, room, isOutdoor, onSubmit }: RoomF
   // Reset form when dialog opens/closes or room changes
   useEffect(() => {
     if (room) {
-      const equipment = room.equipment as any || []
+      const equipment = (room.equipment as unknown as EquipmentCategory[]) || []
       const generalInfo = room.generalInfo as any
       setFormData({
         roomType: (room as any).type || (isOutdoor ? RoomType.TERRACE : RoomType.BEDROOM),

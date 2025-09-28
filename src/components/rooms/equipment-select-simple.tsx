@@ -15,7 +15,7 @@ interface EquipmentItem {
   quantity: number
 }
 
-interface EquipmentCategory {
+export interface EquipmentCategory {
   category: string
   items: EquipmentItem[]
 }

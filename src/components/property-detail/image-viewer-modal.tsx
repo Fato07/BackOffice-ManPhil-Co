@@ -2,7 +2,7 @@
 
 import React, { useEffect, useCallback } from "react"
 import { Photo } from "@/generated/prisma"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut, Download, Grid3X3 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -104,6 +104,9 @@ export function ImageViewerModal({
         className="!max-w-[100vw] !w-screen !h-screen !m-0 !translate-x-[-50%] !translate-y-[-50%] !left-[50%] !top-[50%] p-0 bg-black/95 backdrop-blur-2xl border-0 rounded-none" 
         showCloseButton={false}
       >
+        {/* Visually hidden title for accessibility */}
+        <DialogTitle className="sr-only">Property Image Gallery - Viewing {currentIndex + 1} of {photos.length}</DialogTitle>
+        
         {/* Header Controls */}
         <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/70 to-transparent p-4">
           <div className="flex items-center justify-between">

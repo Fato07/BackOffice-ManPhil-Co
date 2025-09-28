@@ -8,10 +8,10 @@ import { ImageViewerModal } from "@/components/property-detail/image-viewer-moda
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Command, Home, Info, MapPin, FileText, Thermometer, Calendar, Wrench, AlertCircle, Shield, Megaphone, Camera, Link, DoorOpen, Users, Images, ChevronLeft } from "lucide-react"
+import { Command, Home, Info, MapPin, FileText, Thermometer, Calendar, Wrench, AlertCircle, Shield, Megaphone, Camera, Link, DoorOpen, Users, Images, ChevronLeft, MapPinned, Book } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
-import type { PropertyWithRelations } from "@/types"
+import type { PropertyWithRelations, SurroundingsInfo, StayMetadata } from "@/types"
 import { usePermissions } from "@/hooks/use-permissions"
 import { Permission } from "@/types/auth"
 import { Section } from "@/components/property-detail/property-navigation"
@@ -31,6 +31,8 @@ const PhotosSection = lazy(() => import("@/components/property-detail/sections/p
 const LinksSection = lazy(() => import("@/components/property-detail/sections/links-section").then(m => ({ default: m.LinksSection })))
 const ContactsSection = lazy(() => import("@/components/property-detail/sections/contacts-section").then(m => ({ default: m.ContactsSection })))
 const RoomBuilder = lazy(() => import("@/components/property-detail/sections/room-builder").then(m => ({ default: m.RoomBuilder })))
+const SurroundingsSection = lazy(() => import("@/components/property-detail/sections/surroundings-section").then(m => ({ default: m.SurroundingsSection })))
+const StaySection = lazy(() => import("@/components/property-detail/sections/stay-section").then(m => ({ default: m.StaySection })))
 
 // Section loading skeleton
 function SectionSkeleton() {
@@ -86,20 +88,32 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
 
   const allSections: SectionConfig[] = [
     { id: "promote", label: "Promote", component: PromoteSection, icon: Home, description: "Visibility and positioning" },
+    { id: "surroundings", label: "Surroundings", component: SurroundingsSection, icon: MapPinned, description: "Property environment and area" },
+    
+    // Property Details container - expanded with more subsections
     { id: "property-details", label: "Property Details", component: null, icon: Info, description: "Complete property information", isContainer: true },
     { id: "info", label: "House Information", component: HouseInfoSection, icon: Info, description: "Basic property details", parentSection: "property-details" },
     { id: "location", label: "Location", component: LocationSection, icon: MapPin, description: "Address and coordinates", parentSection: "property-details" },
     { id: "further-info", label: "Further Information", component: FurtherInfoSection, icon: FileText, description: "Additional details", parentSection: "property-details" },
     { id: "rooms", label: "Rooms", component: RoomBuilder, icon: DoorOpen, description: "Room configuration", parentSection: "property-details" },
+    { id: "heating", label: "Heating & AC", component: HeatingSection, icon: Thermometer, description: "Climate control systems", parentSection: "property-details" },
+    { id: "services", label: "Services", component: ServicesSection, icon: Wrench, description: "Available amenities", parentSection: "property-details" },
     { id: "contacts", label: "Linked Contacts", component: ContactsSection, icon: Users, description: "Property contacts and service providers", permission: Permission.CONTACTS_VIEW, parentSection: "property-details" },
-    { id: "heating", label: "Heating & AC", component: HeatingSection, icon: Thermometer, description: "Climate control systems" },
-    { id: "events", label: "Events", component: EventsSection, icon: Calendar, description: "Special events and activities" },
-    { id: "services", label: "Services", component: ServicesSection, icon: Wrench, description: "Available amenities" },
-    { id: "good-to-know", label: "Good to Know", component: GoodToKnowSection, icon: AlertCircle, description: "Important information" },
+    
+    // Guest Information container
+    { id: "guest-info", label: "Guest Information", component: null, icon: Users, description: "Information for guests", isContainer: true },
+    { id: "stay", label: "Stay", component: StaySection, icon: Book, description: "Guest stay information", parentSection: "guest-info" },
+    { id: "good-to-know", label: "Good to Know", component: GoodToKnowSection, icon: AlertCircle, description: "Important information", parentSection: "guest-info" },
+    { id: "events", label: "Events", component: EventsSection, icon: Calendar, description: "Special events and activities", parentSection: "guest-info" },
+    
+    // Marketing & Media container
+    { id: "marketing-media", label: "Marketing & Media", component: null, icon: Camera, description: "Marketing content and media", isContainer: true },
+    { id: "marketing", label: "Automatic Offer", component: MarketingSection, icon: Megaphone, description: "Marketing content", parentSection: "marketing-media" },
+    { id: "photos", label: "Photos", component: PhotosSection, icon: Camera, description: "Property images", parentSection: "marketing-media" },
+    { id: "links", label: "Links & Resources", component: LinksSection, icon: Link, description: "External resources", parentSection: "marketing-media" },
+    
+    // Standalone sections at the end
     { id: "internal", label: "Internal", component: InternalSection, icon: Shield, description: "Private notes and data", permission: Permission.INTERNAL_VIEW, isInternal: true },
-    { id: "marketing", label: "Automatic Offer", component: MarketingSection, icon: Megaphone, description: "Marketing content" },
-    { id: "photos", label: "Photos", component: PhotosSection, icon: Camera, description: "Property images" },
-    { id: "links", label: "Links & Resources", component: LinksSection, icon: Link, description: "External resources" },
   ]
 
   // Filter sections based on user permissions
@@ -169,6 +183,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
   // Calculate completion status (simplified for now)
   const completionStatus: Record<string, boolean> = {
     promote: !!property.exclusivity || !!property.position,
+    surroundings: !!(property.surroundings && (property.surroundings as SurroundingsInfo).filters?.length),
     info: !!property.name && !!property.numberOfRooms,
     location: !!(property.address || property.city || property.postcode || property.neighborhood || (property.latitude && property.longitude)),
     "further-info": !!property.accessibility || !!property.policies,
@@ -182,6 +197,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
     photos: (property.photos?.length ?? 0) > 0,
     links: (property.resources?.length ?? 0) > 0,
     rooms: (property.rooms?.length ?? 0) > 0,
+    stay: !!(property.checkInTime || property.checkOutTime || property.stayMetadata),
   }
   
   // Calculate property-details completion based on its subsections
@@ -190,7 +206,23 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
     completionStatus.location &&
     completionStatus["further-info"] &&
     completionStatus.rooms &&
+    completionStatus.heating &&
+    completionStatus.services &&
     completionStatus.contacts
+  )
+  
+  // Calculate guest-info completion based on its subsections
+  completionStatus["guest-info"] = !!(
+    completionStatus.stay &&
+    completionStatus["good-to-know"] &&
+    completionStatus.events
+  )
+  
+  // Calculate marketing-media completion based on its subsections
+  completionStatus["marketing-media"] = !!(
+    completionStatus.marketing &&
+    completionStatus.photos &&
+    completionStatus.links
   )
 
   // Setup intersection observer for virtualization
