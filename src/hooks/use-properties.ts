@@ -6,9 +6,11 @@ import {
   CreatePropertyInput,
   UpdatePropertyInput,
   PropertyFilters,
-  PaginatedResponse
+  PaginatedResponse,
+  SurroundingsInfo
 } from "@/types/property"
 import { toast } from "sonner"
+import { updatePropertySurroundings } from "@/actions/property-stay"
 
 // Query keys
 export const propertyKeys = {
@@ -160,6 +162,39 @@ export function useTogglePropertyStatus(id: string) {
     },
     onError: (error) => {
       toast.error("Failed to update property status")
+    },
+  })
+}
+
+// Update property surroundings
+export function useUpdatePropertySurroundings() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async ({ propertyId, surroundings }: { propertyId: string; surroundings: SurroundingsInfo }) => {
+      const result = await updatePropertySurroundings({ propertyId, surroundings })
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update surroundings")
+      }
+      
+      // Fetch the updated property data to return
+      const updatedProperty = await api.get<PropertyWithRelations>(`/api/properties/${propertyId}`)
+      return updatedProperty
+    },
+    onSuccess: (data, variables) => {
+      // Update the cache with the new property data
+      queryClient.setQueryData(propertyKeys.detail(variables.propertyId), data)
+      // Invalidate the list queries to ensure consistency
+      queryClient.invalidateQueries({ queryKey: propertyKeys.lists() })
+      toast.success("Surroundings updated successfully")
+    },
+    onError: (error) => {
+      console.error("Surroundings update error:", error)
+      if (error instanceof Error) {
+        toast.error(`Failed to update surroundings: ${error.message}`)
+      } else {
+        toast.error("Failed to update surroundings")
+      }
     },
   })
 }

@@ -24,6 +24,66 @@ export {
   BookingType 
 } from "@/generated/prisma"
 
+// Surroundings and Stay types
+export interface SurroundingsInfo {
+  filters?: string[]
+  customNotes?: string
+}
+
+export type ServiceFrequency = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'custom'
+
+export interface ServiceSchedule {
+  frequency: ServiceFrequency
+  customSchedule?: string
+  arrivalTime?: string
+}
+
+export interface StayMetadata {
+  access?: {
+    airports?: string[]
+    trainStations?: string[]
+    cars?: string[]
+    roadType?: 'asphalt' | 'winding' | 'dirt'
+    specialAttention?: boolean
+    specialAttentionNote?: string
+    keyCount?: number
+    beeperCount?: number
+  }
+  maintenance?: {
+    linenChange?: ServiceSchedule
+    towelChange?: ServiceSchedule
+    gardeningService?: ServiceSchedule & { enabled?: boolean }
+    poolMaintenance?: ServiceSchedule & { 
+      enabled?: boolean
+      includesLinen?: boolean
+    }
+  }
+  network?: {
+    fiberOptic?: boolean
+    routerAccessible?: boolean
+    routerLocation?: string
+    supplier?: string
+    wiredInternet?: boolean
+    comment?: string
+  }
+  security?: {
+    surveillance?: string[]
+    nearestHospital?: { 
+      name?: string
+      country?: string 
+      distance?: string
+    }
+    firstAidLocation?: string
+    firstAidKit?: boolean
+    fireExtinguisherLocation?: string
+    smokeDetectorLocation?: string
+    specificMeasures?: string
+  }
+  villaBookComment?: {
+    [language: string]: string
+  }
+}
+
 // Extended types with relations
 export type PropertyWithRelations = Property & {
   destination: Destination
@@ -229,4 +289,27 @@ export type EventDetails = {
   }
   vendors: EventVendor[]
   additionalNotes?: string
+}
+
+// Property Description types
+export type PropertyDescription = {
+  houseType?: 'VILLA' | 'APARTMENT' | 'CHALET' | 'PENTHOUSE' | 'TOWNHOUSE' | 'CASTLE' | 'MANOR' | 'COTTAGE'
+  architecturalType?: 'CONTEMPORARY' | 'TRADITIONAL' | 'MODERN' | 'RUSTIC' | 'COLONIAL' | 'MEDITERRANEAN' | 'MINIMALIST'
+  floorArea?: number // in sqm
+  plotSize?: number // in sqm
+  numberOfFurnishedFloors?: number
+  adjoiningHouse?: boolean
+  maxGuestCapacity?: number
+  maxAdultCapacity?: number
+  numberOfBedrooms?: number
+  numberOfBedroomsForLiveInStaff?: number
+  numberOfBathrooms?: number
+}
+
+// Property Parking types
+export type PropertyParking = {
+  hasChargingStation?: boolean
+  hasIndoorParking?: boolean
+  hasOutdoorParking?: boolean
+  numberOfParkingSpots?: number
 }

@@ -9,8 +9,8 @@ import { RoomType } from "@/generated/prisma"
 const createRoomSchema = z.object({
   propertyId: z.string(),
   name: z.string().min(1),
+  roomType: z.nativeEnum(RoomType),
   groupName: z.string().optional(),
-  type: z.enum(["INTERIOR", "OUTDOOR"]),
   generalInfo: z.any().optional(),
   view: z.string().optional(),
   equipment: z.array(z.object({
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
         propertyId: data.propertyId,
         name: data.name,
         groupName: data.groupName,
-        type: data.type as RoomType,
+        type: data.roomType,
         generalInfo: data.generalInfo,
         view: data.view,
         equipment: data.equipment,

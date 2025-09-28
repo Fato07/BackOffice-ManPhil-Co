@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { PropertyStatus, LicenseType, ConciergeServiceOffer } from "@/types/property"
+import { PropertyStatus, LicenseType, ConciergeServiceOffer, ServiceFrequency } from "@/types/property"
 
 // Create property validation
 export const createPropertySchema = z.object({
@@ -79,6 +79,39 @@ export const updatePropertyEventsSchema = z.object({
   eventsAllowed: z.boolean().optional(),
   eventsCapacity: z.number().int().min(0, "Event capacity cannot be negative").nullish(),
   eventsDetails: z.any().nullish(), // JSON field - consider using z.record() for better type safety
+})
+
+// Update property description
+export const updatePropertyDescriptionSchema = z.object({
+  description: z.object({
+    houseType: z.enum([
+      "VILLA", "APARTMENT", "CHALET", "PENTHOUSE", 
+      "TOWNHOUSE", "CASTLE", "MANOR", "COTTAGE"
+    ]).optional(),
+    architecturalType: z.enum([
+      "CONTEMPORARY", "TRADITIONAL", "MODERN", "RUSTIC", 
+      "COLONIAL", "MEDITERRANEAN", "MINIMALIST"
+    ]).optional(),
+    floorArea: z.number().positive("Floor area must be positive").nullish(),
+    plotSize: z.number().positive("Plot size must be positive").nullish(),
+    numberOfFurnishedFloors: z.number().int().min(0, "Number of floors cannot be negative").nullish(),
+    adjoiningHouse: z.boolean().optional(),
+    maxGuestCapacity: z.number().int().min(0, "Guest capacity cannot be negative").nullish(),
+    maxAdultCapacity: z.number().int().min(0, "Adult capacity cannot be negative").nullish(),
+    numberOfBedrooms: z.number().int().min(0, "Number of bedrooms cannot be negative").nullish(),
+    numberOfBedroomsForLiveInStaff: z.number().int().min(0, "Number of staff bedrooms cannot be negative").nullish(),
+    numberOfBathrooms: z.number().int().min(0, "Number of bathrooms cannot be negative").nullish(),
+  }).optional(),
+})
+
+// Update property parking
+export const updatePropertyParkingSchema = z.object({
+  parking: z.object({
+    hasChargingStation: z.boolean().optional(),
+    hasIndoorParking: z.boolean().optional(),
+    hasOutdoorParking: z.boolean().optional(),
+    numberOfParkingSpots: z.number().int().min(0, "Number of parking spots cannot be negative").nullish(),
+  }).optional(),
 })
 
 // Room validation
@@ -198,3 +231,124 @@ export const propertySearchSchema = z.object({
   sortBy: z.string().optional(),
   sortDirection: z.enum(["asc", "desc"]).optional(),
 })
+
+// Service schedule validation
+export const serviceScheduleSchema = z.object({
+  frequency: z.enum(['none', 'daily', 'weekly', 'biweekly', 'monthly', 'custom']),
+  customSchedule: z.string().optional(),
+  arrivalTime: z.string().optional(),
+})
+
+// Surroundings validation
+export const updateSurroundingsSchema = z.object({
+  surroundings: z.object({
+    filters: z.array(z.string()).optional(),
+    customNotes: z.string().optional(),
+  }).nullish(),
+})
+
+// Stay info validation schemas
+export const updateCheckInDetailsSchema = z.object({
+  checkInTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)").nullish(),
+  checkOutTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)").nullish(),
+  checkInPerson: z.string().nullish(),
+})
+
+export const updateAccessInfoSchema = z.object({
+  stayMetadata: z.object({
+    access: z.object({
+      airports: z.array(z.string()).optional(),
+      trainStations: z.array(z.string()).optional(),
+      cars: z.array(z.string()).optional(),
+      roadType: z.enum(['asphalt', 'winding', 'dirt']).optional(),
+      specialAttention: z.boolean().optional(),
+      specialAttentionNote: z.string().optional(),
+      keyCount: z.number().int().min(0).optional(),
+      beeperCount: z.number().int().min(0).optional(),
+    }).optional(),
+  }).optional(),
+})
+
+export const updateMaintenanceSchedulesSchema = z.object({
+  stayMetadata: z.object({
+    maintenance: z.object({
+      linenChange: serviceScheduleSchema.optional(),
+      towelChange: serviceScheduleSchema.optional(),
+      gardeningService: serviceScheduleSchema.extend({ enabled: z.boolean().optional() }).optional(),
+      poolMaintenance: serviceScheduleSchema.extend({ 
+        enabled: z.boolean().optional(),
+        includesLinen: z.boolean().optional() 
+      }).optional(),
+    }).optional(),
+  }).optional(),
+})
+
+export const updateNetworkInfoSchema = z.object({
+  wifiName: z.string().nullish(),
+  wifiPassword: z.string().nullish(),
+  wifiInAllRooms: z.boolean().optional(),
+  wifiSpeed: z.string().nullish(),
+  mobileNetworkCoverage: z.enum(['good', 'average', 'poor', 'none']).nullish(),
+  stayMetadata: z.object({
+    network: z.object({
+      fiberOptic: z.boolean().optional(),
+      routerAccessible: z.boolean().optional(),
+      routerLocation: z.string().optional(),
+      supplier: z.string().optional(),
+      wiredInternet: z.boolean().optional(),
+      comment: z.string().optional(),
+    }).optional(),
+  }).optional(),
+})
+
+export const updateSecurityInfoSchema = z.object({
+  hasFireExtinguisher: z.boolean().optional(),
+  hasFireAlarm: z.boolean().optional(),
+  electricMeterAccessible: z.boolean().optional(),
+  electricMeterLocation: z.string().nullish(),
+  stayMetadata: z.object({
+    security: z.object({
+      surveillance: z.array(z.string()).optional(),
+      nearestHospital: z.object({
+        name: z.string().optional(),
+        country: z.string().optional(),
+        distance: z.string().optional(),
+      }).optional(),
+      firstAidLocation: z.string().optional(),
+      firstAidKit: z.boolean().optional(),
+      fireExtinguisherLocation: z.string().optional(),
+      smokeDetectorLocation: z.string().optional(),
+      specificMeasures: z.string().optional(),
+    }).optional(),
+  }).optional(),
+})
+
+export const updateVillaBookCommentSchema = z.object({
+  language: z.string().min(2).max(5),
+  content: z.string(),
+})
+
+// Contact validation with metadata
+export const createPropertyContactSchema = z.object({
+  propertyId: z.string().min(1, "Property ID is required"),
+  type: z.enum([
+    "OWNER", "MANAGER", "AGENCY", "STAFF", "MAINTENANCE", "EMERGENCY", 
+    "CHECK_IN_MANAGER", "SECURITY_DEPOSIT_MANAGER", "SIGNATORY",
+    "HOUSEKEEPING", "GARDENING", "POOL_MAINTENANCE", "CHECK_IN_STAFF"
+  ], {
+    message: "Invalid contact type"
+  }),
+  name: z.string().min(1, "Contact name is required").max(255, "Name too long"),
+  email: z.string().email({ message: "Invalid email format" }).nullish(),
+  phone: z.string().max(50, "Phone number too long").nullish(),
+  notes: z.string().max(1000, "Notes too long").nullish(),
+  metadata: z.object({
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    language: z.string().optional(),
+    schedule: serviceScheduleSchema.optional(),
+  }).optional(),
+  isApproved: z.boolean().default(false),
+})
+
+export const updatePropertyContactSchema = createPropertyContactSchema.partial().omit({ propertyId: true })

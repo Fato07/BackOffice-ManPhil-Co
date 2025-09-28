@@ -75,10 +75,26 @@ model Property {
   eventsCapacity        Int?
   eventsDetails         Json?
   services              Json?
+  description           Json?
+  parking               Json?
   goodToKnow            String?
   internalComment       String?
   warning               String?
   automaticOffer        Json?
+  surroundings          Json?
+  checkInTime           String?
+  checkOutTime          String?
+  checkInPerson         String?
+  wifiName              String?
+  wifiPassword          String?
+  wifiInAllRooms        Boolean               @default(false)
+  wifiSpeed             String?
+  mobileNetworkCoverage String?
+  hasFireExtinguisher   Boolean               @default(false)
+  hasFireAlarm          Boolean               @default(false)
+  electricMeterAccessible Boolean             @default(false)
+  electricMeterLocation String?
+  stayMetadata          Json?
   createdAt             DateTime              @default(now())
   updatedAt             DateTime              @updatedAt
   bookings              Booking[]
@@ -126,6 +142,7 @@ model PropertyContact {
   email      String?
   phone      String?
   notes      String?
+  metadata   Json?
   isApproved Boolean     @default(false)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
@@ -283,6 +300,10 @@ enum ContactType {
   CHECK_IN_MANAGER
   SECURITY_DEPOSIT_MANAGER
   SIGNATORY
+  HOUSEKEEPING
+  GARDENING
+  POOL_MAINTENANCE
+  CHECK_IN_STAFF
 }
 
 enum GlobalContactCategory {

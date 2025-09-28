@@ -347,6 +347,7 @@ export function CreateDocumentDialog({
                     <FormControl>
                       <Input
                         type="number"
+                        min="0"
                         placeholder="e.g., 30"
                         {...field}
                         onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}

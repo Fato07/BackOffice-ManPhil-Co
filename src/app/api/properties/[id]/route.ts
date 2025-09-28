@@ -239,7 +239,7 @@ export async function PATCH(
     const updateData: any = {}
     
     // List of JSON fields in the Property model
-    const jsonFields = ['accessibility', 'policies', 'arrivalDeparture', 'staff', 'heatingAC', 'eventsDetails', 'services', 'automaticOffer']
+    const jsonFields = ['accessibility', 'policies', 'arrivalDeparture', 'staff', 'heatingAC', 'eventsDetails', 'services', 'automaticOffer', 'description', 'parking']
     
     // Process each field in the body
     for (const [key, value] of Object.entries(body)) {

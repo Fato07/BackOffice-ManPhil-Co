@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
-import { GripVertical, Edit2, Trash2, Image as ImageIcon, CheckCircle2, Upload, X, Star, Expand } from "lucide-react"
+import { GripVertical, Edit2, Trash2, Image as ImageIcon, CheckCircle2, Upload, X, Star, Expand, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -181,6 +181,8 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
   const [recentlyUploadedIds, setRecentlyUploadedIds] = useState<Set<string>>(new Set())
   const [viewerOpen, setViewerOpen] = useState(false)
   const [viewerInitialIndex, setViewerInitialIndex] = useState(0)
+  const [uploadingFiles, setUploadingFiles] = useState<File[]>([])
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   const { data: photos = [], isLoading } = usePropertyPhotos(propertyId)
   const uploadPhotosMutation = useUploadPhotos(propertyId)
@@ -229,11 +231,28 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
 
   const handleFileSelect = useCallback((files: File[]) => {
     if (files.length > 0) {
-      uploadPhotosMutation.mutate(files)
+      setUploadingFiles(files)
+      setUploadProgress(0)
+      uploadPhotosMutation.mutate(files, {
+        onSuccess: () => {
+          setUploadingFiles([])
+          setUploadProgress(100)
+          // Clear progress after a short delay
+          setTimeout(() => setUploadProgress(0), 1000)
+        },
+        onError: () => {
+          setUploadingFiles([])
+          setUploadProgress(0)
+        }
+      })
     }
   }, [uploadPhotosMutation])
 
-  const handleUpdatePhoto = async (data: any) => {
+  const handleUpdatePhoto = async (data: {
+    caption?: string
+    altText?: string  
+    category?: string
+  }) => {
     if (!editingPhoto) return
 
     await updatePhoto.mutateAsync({
@@ -283,53 +302,93 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-semibold">Photos ({photos.length})</h2>
+        <h2 className="text-lg font-semibold">
+          Photos ({photos.length})
+          {uploadingFiles.length > 0 && (
+            <span className="ml-2 text-sm font-normal text-amber-600 animate-pulse">
+              (+{uploadingFiles.length} uploading...)
+            </span>
+          )}
+        </h2>
       </div>
 
       {/* Upload Drop Zone */}
       {canEdit && (
-        <FileDropzone
-          onFileSelect={handleFileSelect}
-          accept={{
-            'image/*': ['.jpg', '.jpeg', '.png', '.webp']
-          }}
-          maxSize={10 * 1024 * 1024} // 10MB
-          multiple={true}
-          maxFiles={20} // Allow up to 20 files at once
-          className="mb-6"
-          showFileInfo={false}
-          placeholder={{
-            idle: (
-              <div className="flex flex-col items-center gap-4">
-                <div className="relative">
-                  <div className="rounded-full border-2 border-dashed border-amber-400/30 bg-amber-50/50 p-6 transition-all hover:border-amber-400/50 hover:bg-amber-50/80">
-                    <ImageIcon className="h-10 w-10 text-amber-600" />
+        <div className="relative">
+          <FileDropzone
+            onFileSelect={handleFileSelect}
+            accept={{
+              'image/*': ['.jpg', '.jpeg', '.png', '.webp']
+            }}
+            maxSize={10 * 1024 * 1024} // 10MB
+            multiple={true}
+            maxFiles={20} // Allow up to 20 files at once
+            className={cn("mb-6", uploadingFiles.length > 0 && "opacity-50 pointer-events-none")}
+            showFileInfo={false}
+            placeholder={{
+              idle: (
+                <div className="flex flex-col items-center gap-4">
+                  <div className="relative">
+                    <div className="rounded-full border-2 border-dashed border-amber-400/30 bg-amber-50/50 p-6 transition-all hover:border-amber-400/50 hover:bg-amber-50/80">
+                      <ImageIcon className="h-10 w-10 text-amber-600" />
+                    </div>
+                    <div className="absolute inset-0 rounded-full animate-pulse ring-4 ring-amber-200/20" />
                   </div>
-                  <div className="absolute inset-0 rounded-full animate-pulse ring-4 ring-amber-200/20" />
+                  <div className="space-y-2 text-center">
+                    <p className="text-base font-medium text-gray-700">
+                      Drag & drop property photos here
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      or click to browse your files
+                    </p>
+                    <p className="text-xs text-gray-400 mt-2">
+                      Supports JPEG, PNG, WebP up to 10MB each
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-2 text-center">
-                  <p className="text-base font-medium text-gray-700">
-                    Drag & drop property photos here
+              ),
+              active: (
+                <div className="flex flex-col items-center gap-4">
+                  <Upload className="h-10 w-10 text-amber-600 animate-bounce" />
+                  <p className="text-base font-medium text-amber-600">
+                    Drop photos here to upload
                   </p>
-                  <p className="text-sm text-gray-500">
-                    or click to browse your files
+                </div>
+              )
+            }}
+          />
+          
+          {/* Upload Progress Overlay */}
+          {uploadingFiles.length > 0 && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl border-2 border-amber-400/50 z-10">
+              <div className="flex flex-col items-center gap-4 px-6 py-8">
+                <div className="relative">
+                  <Loader2 className="h-12 w-12 text-amber-600 animate-spin" />
+                  <div className="absolute inset-0 rounded-full border-4 border-amber-400/20 animate-ping" />
+                </div>
+                <div className="text-center space-y-2">
+                  <p className="text-lg font-semibold text-gray-800">
+                    Uploading {uploadingFiles.length} photo{uploadingFiles.length > 1 ? 's' : ''}...
                   </p>
-                  <p className="text-xs text-gray-400 mt-2">
-                    Supports JPEG, PNG, WebP up to 10MB each
+                  <p className="text-sm text-gray-600">
+                    Please wait while we process your images
                   </p>
+                  {uploadProgress > 0 && uploadProgress < 100 && (
+                    <div className="w-48 mx-auto mt-3">
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-amber-500 transition-all duration-300 ease-out"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">{uploadProgress}%</p>
+                    </div>
+                  )}
                 </div>
               </div>
-            ),
-            active: (
-              <div className="flex flex-col items-center gap-4">
-                <Upload className="h-10 w-10 text-amber-600 animate-bounce" />
-                <p className="text-base font-medium text-amber-600">
-                  Drop photos here to upload
-                </p>
-              </div>
-            )
-          }}
-        />
+            </div>
+          )}
+        </div>
       )}
 
       {/* Category Filter */}
@@ -351,7 +410,7 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
             <Card key={i} className="h-64 animate-pulse bg-gray-100" />
           ))}
         </div>
-      ) : filteredPhotos.length === 0 ? (
+      ) : filteredPhotos.length === 0 && uploadingFiles.length === 0 ? (
         <div className="text-center py-12">
           <ImageIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
           <p className="text-gray-500">No photos uploaded yet</p>
@@ -367,6 +426,35 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
             strategy={verticalListSortingStrategy}
           >
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {/* Placeholder cards for uploading files */}
+              {uploadingFiles.map((file, index) => (
+                <Card 
+                  key={`uploading-${index}`} 
+                  className="group relative overflow-hidden rounded-2xl bg-white/95 backdrop-blur-sm border border-white/20 shadow-lg animate-pulse"
+                >
+                  <div className="absolute inset-0 luxury-gradient pointer-events-none" />
+                  <div className="relative overflow-hidden">
+                    <div className="w-full aspect-[4/3] bg-gray-200 animate-pulse flex items-center justify-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
+                        <p className="text-xs text-gray-500">Uploading...</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="relative z-10 bg-gradient-to-b from-white/50 to-gray-50/30 backdrop-blur-sm">
+                    <CardContent className="p-4">
+                      <p className="text-sm font-medium text-gray-600 truncate">
+                        {file.name}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {(file.size / 1024 / 1024).toFixed(1)} MB
+                      </p>
+                    </CardContent>
+                  </div>
+                </Card>
+              ))}
+              
+              {/* Existing photos */}
               {filteredPhotos.map((photo) => (
                 <SortablePhotoCard
                   key={photo.id}
@@ -395,9 +483,9 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
               e.preventDefault()
               const formData = new FormData(e.currentTarget)
               handleUpdatePhoto({
-                caption: formData.get("caption"),
-                altText: formData.get("altText"),
-                category: formData.get("category"),
+                caption: formData.get("caption") as string,
+                altText: formData.get("altText") as string,
+                category: formData.get("category") as string,
               })
             }}
           >

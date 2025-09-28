@@ -651,4 +651,49 @@
     left: 95%;
     animation-delay: -14s;
   }
+  
+  /* Photo upload animations */
+  @keyframes check-bounce {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+  
+  @keyframes ring-expand {
+    0% {
+      transform: scale(0.5);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+  
+  @keyframes success-fade {
+    0% {
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  
+  .animate-check-bounce {
+    animation: check-bounce 0.5s ease-out;
+  }
+  
+  .animate-ring-expand {
+    animation: ring-expand 1s ease-out;
+  }
+  
+  .animate-success-fade {
+    animation: success-fade 3s ease-out forwards;
+  }
 }

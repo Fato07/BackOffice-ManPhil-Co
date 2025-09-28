@@ -1,13 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Room } from "@/generated/prisma"
+import { Room, RoomType } from "@/generated/prisma"
 import { api } from "@/lib/api"
 import { toast } from "sonner"
 
 interface CreateRoomData {
   propertyId: string
   name: string
+  roomType: RoomType
   groupName?: string
-  type: "INTERIOR" | "OUTDOOR"
   generalInfo?: any
   view?: string
   equipment?: Array<{
@@ -21,8 +21,8 @@ interface CreateRoomData {
 
 interface UpdateRoomData {
   name?: string
+  roomType?: RoomType
   groupName?: string | null
-  type?: "INTERIOR" | "OUTDOOR"
   generalInfo?: any
   view?: string | null
   equipment?: Array<{

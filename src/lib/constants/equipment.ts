@@ -1,7 +1,7 @@
 import { EquipmentType, RoomType, AccessibilityType, ContactType } from "@/generated/prisma"
 
-// Equipment categorization for better UI organization
-export const EQUIPMENT_CATEGORIES = {
+// Equipment categorization for better UI organization - based on list.txt
+export const EQUIPMENT_CATEGORIES: Record<string, { label: string; items: EquipmentType[] }> = {
   KITCHEN: {
     label: "Kitchen Equipment",
     items: [
@@ -11,7 +11,8 @@ export const EQUIPMENT_CATEGORIES = {
       "ICE_CUBE_MAKER", "ICE_CREAM_SORBET_MACHINE", "OVEN", "SANDWICH_MAKER", "THERMOMIX",
       "DEEP_FRYER", "RICE_COOKER", "FOOD_PROCESSOR", "BEAN_TO_CUP_COFFEE_MACHINE",
       "COFFEE_POD_MACHINE", "RACLETTE_MACHINE", "FONDUE_MACHINE", "WAFFLE_MACHINE",
-      "POPCORN_MACHINE", "KITCHENETTE", "DELI_SLICER", "STEAMER", "COMBINED_GAS_INDUCTION_STOVE"
+      "POPCORN_MACHINE", "KITCHENETTE", "DELI_SLICER", "STEAMER", "COMBINED_GAS_INDUCTION_STOVE",
+      "SODASTREAM", "WINE_GLASS", "CHAMPAGNE_GLASS", "BAR", "BEER_TAP"
     ] as EquipmentType[]
   },
   BATHROOM: {
@@ -27,7 +28,7 @@ export const EQUIPMENT_CATEGORIES = {
     items: [
       "SOFA", "CHAIR", "ARMCHAIR", "DOUBLE_BED", "SINGLE_BED", "DOUBLE_BED_TWIN_BEDS",
       "BUNK_BEDS", "SOFA_BED", "SOFA_BED_SINGLE", "DESK", "STORAGE_CUPBOARD", "WALK_IN_CLOSET",
-      "SAFE", "MASSAGE_TABLE"
+      "SAFE", "MASSAGE_TABLE", "LIBRARY"
     ] as EquipmentType[]
   },
   ENTERTAINMENT: {
@@ -35,7 +36,7 @@ export const EQUIPMENT_CATEGORIES = {
     items: [
       "SMART_TV", "FLAT_SCREEN_TV", "TV", "DVD_PLAYER", "DVD_LIBRARY", "GAMING_CONSOLE",
       "VIDEO_PROJECTOR", "SOUND_SYSTEM", "PIANO", "DJ_SET", "CHESS_BOARD", "BOARD_GAMES",
-      "DARTS_SET", "TABLE_FOOTBALL", "BILLIARD_TABLE", "PING_PONG_TABLE", "LIBRARY"
+      "DARTS_SET", "TABLE_FOOTBALL", "BILLIARD_TABLE", "PING_PONG_TABLE", "TURNTABLE"
     ] as EquipmentType[]
   },
   FITNESS: {
@@ -48,7 +49,7 @@ export const EQUIPMENT_CATEGORIES = {
     label: "Outdoor Equipment",
     items: [
       "SWIMMING_POOL", "CHILDREN_POOL", "JACUZZI", "BARBECUE", "GRILL", "HAMMOCK", "SUNBED",
-      "DOUBLE_SUNBED", "SOLARIUM", "PARASOL", "PERGOLA", "TERRACE_EQUIPMENT", "SHARED_TERRACE",
+      "DOUBLE_SUNBED", "SOLARIUM", "PARASOL", "PERGOLA", "TERRACE", "SHARED_TERRACE",
       "SWING", "TREE_HOUSE", "SEESAW", "FOUNTAIN", "POND", "FIRE_PIT", "PUTTING_GREEN",
       "CROQUET", "CRICKET_PITCH", "VINEYARD", "VEGETABLE_GARDEN", "OBSERVATORY", "HELIPAD",
       "MOORING", "PIER", "CHILDREN_SLIDE", "CHILDREN_PLAYHOUSE", "TENT", "BERBER_TENT"
@@ -64,7 +65,7 @@ export const EQUIPMENT_CATEGORIES = {
   APPLIANCES: {
     label: "Appliances",
     items: [
-      "WASHING_MACHINE", "TUMBLE_DRYER", "IRON", "IRONING_BOARD", "DISHWASHER_EQUIPMENT"
+      "WASHING_MACHINE", "TUMBLE_DRYER", "IRON", "IRONING_BOARD", "DISHWASHER"
     ] as EquipmentType[]
   },
   SPORTS: {
@@ -76,12 +77,11 @@ export const EQUIPMENT_CATEGORIES = {
   MISCELLANEOUS: {
     label: "Other Equipment",
     items: [
-      "WINE_CELLAR", "SODASTREAM", "TELEPHONE", "COMPUTER", "PRINTER", "SCANNER",
-      "JACK_CABLE", "WINE_GLASS", "CHAMPAGNE_GLASS", "BAR_EQUIPMENT", "CHILDREN_GAMES",
-      "BEER_TAP"
+      "WINE_CELLAR", "TELEPHONE", "COMPUTER", "PRINTER", "SCANNER",
+      "JACK_CABLE", "CHILDREN_GAMES"
     ] as EquipmentType[]
   }
-} as const
+}
 
 // Room type categorization
 export const ROOM_CATEGORIES = {
@@ -163,7 +163,11 @@ export const CONTACT_TYPES = [
   { value: "EMERGENCY" as ContactType, label: "Emergency", description: "Emergency contact" },
   { value: "CHECK_IN_MANAGER" as ContactType, label: "Check-in Manager", description: "Handles guest check-ins" },
   { value: "SECURITY_DEPOSIT_MANAGER" as ContactType, label: "Security Deposit Manager", description: "Manages security deposits" },
-  { value: "SIGNATORY" as ContactType, label: "Signatory", description: "Authorized to sign documents" }
+  { value: "SIGNATORY" as ContactType, label: "Signatory", description: "Authorized to sign documents" },
+  { value: "HOUSEKEEPING" as ContactType, label: "Housekeeping", description: "Housekeeping service provider" },
+  { value: "GARDENING" as ContactType, label: "Gardening", description: "Garden maintenance service" },
+  { value: "POOL_MAINTENANCE" as ContactType, label: "Pool Maintenance", description: "Pool cleaning and maintenance" },
+  { value: "CHECK_IN_STAFF" as ContactType, label: "Check-in Staff", description: "Staff responsible for check-ins" }
 ] as const
 
 // Helper functions
@@ -191,4 +195,31 @@ export function getAccessibilityLabel(accessibility: AccessibilityType): string 
 export function getContactTypeLabel(contactType: ContactType): string {
   const type = CONTACT_TYPES.find(t => t.value === contactType)
   return type?.label || contactType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
+}
+
+// Categorize room types as interior or outdoor
+export function isOutdoorRoom(roomType: RoomType): boolean {
+  const outdoorRoomTypes: RoomType[] = [
+    RoomType.BADMINTON_COURT,
+    RoomType.BASKETBALL_COURT,
+    RoomType.COURTYARD,
+    RoomType.COVERED_TERRACE,
+    RoomType.FOOTBALL_COURT,
+    RoomType.GARDEN,
+    RoomType.PADEL_COURT,
+    RoomType.PETANQUE,
+    RoomType.POOL_AREA,
+    RoomType.POOLHOUSE,
+    RoomType.ROOFTOP,
+    RoomType.TENNIS_COURT,
+    RoomType.TERRACE,
+    RoomType.VERANDA,
+    RoomType.VOLLEYBALL_COURT,
+  ]
+  
+  return outdoorRoomTypes.includes(roomType)
+}
+
+export function getRoomTypeCategory(roomType: RoomType): "INTERIOR" | "OUTDOOR" {
+  return isOutdoorRoom(roomType) ? "OUTDOOR" : "INTERIOR"
 }

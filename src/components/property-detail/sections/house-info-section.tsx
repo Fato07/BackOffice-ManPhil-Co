@@ -9,15 +9,18 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { updatePropertyBasicSchema } from "@/lib/validations"
+import { updatePropertyBasicSchema, updatePropertyDescriptionSchema, updatePropertyParkingSchema } from "@/lib/validations"
 import { useUpdateProperty } from "@/hooks/use-properties"
-import { PropertyStatus, LicenseType, ConciergeServiceOffer } from "@/types/property"
+import { PropertyStatus, LicenseType, ConciergeServiceOffer, PropertyDescription, PropertyParking } from "@/types/property"
+import { Checkbox } from "@/components/ui/checkbox"
 import { z } from "zod"
 import { toast } from "sonner"
 import { usePermissions } from "@/hooks/use-permissions"
 import { Permission } from "@/types/auth"
 
 type BasicInfoFormData = z.infer<typeof updatePropertyBasicSchema>
+type DescriptionFormData = z.infer<typeof updatePropertyDescriptionSchema>
+type ParkingFormData = z.infer<typeof updatePropertyParkingSchema>
 
 interface HouseInfoSectionProps {
   property: {
@@ -35,6 +38,8 @@ interface HouseInfoSectionProps {
     latitude: number | null
     longitude: number | null
     additionalDetails: string | null
+    description: any
+    parking: any
     destination: {
       id: string
       name: string
@@ -49,6 +54,8 @@ export function HouseInfoSection({ property }: HouseInfoSectionProps) {
   const canEdit = hasPermission(Permission.PROPERTY_EDIT)
   const [isEditingGeneral, setIsEditingGeneral] = useState(false)
   const [isEditingLocation, setIsEditingLocation] = useState(false)
+  const [isEditingDescription, setIsEditingDescription] = useState(false)
+  const [isEditingParking, setIsEditingParking] = useState(false)
   const [categories, setCategories] = useState(property.categories)
   const [newCategory, setNewCategory] = useState("")
   
@@ -72,6 +79,41 @@ export function HouseInfoSection({ property }: HouseInfoSectionProps) {
     city: property.city || "",
     latitude: property.latitude || null,
     longitude: property.longitude || null,
+  })
+
+  // Parse description and parking JSON data
+  const descriptionData = property.description as PropertyDescription || {}
+  const parkingData = property.parking as PropertyParking || {}
+
+  const descriptionForm = useForm<DescriptionFormData>({
+    resolver: zodResolver(updatePropertyDescriptionSchema),
+    defaultValues: {
+      description: {
+        houseType: descriptionData.houseType || undefined,
+        architecturalType: descriptionData.architecturalType || undefined,
+        floorArea: descriptionData.floorArea || undefined,
+        plotSize: descriptionData.plotSize || undefined,
+        numberOfFurnishedFloors: descriptionData.numberOfFurnishedFloors || undefined,
+        adjoiningHouse: descriptionData.adjoiningHouse || false,
+        maxGuestCapacity: descriptionData.maxGuestCapacity || undefined,
+        maxAdultCapacity: descriptionData.maxAdultCapacity || undefined,
+        numberOfBedrooms: descriptionData.numberOfBedrooms || undefined,
+        numberOfBedroomsForLiveInStaff: descriptionData.numberOfBedroomsForLiveInStaff || undefined,
+        numberOfBathrooms: descriptionData.numberOfBathrooms || undefined,
+      }
+    }
+  })
+
+  const parkingForm = useForm<ParkingFormData>({
+    resolver: zodResolver(updatePropertyParkingSchema),
+    defaultValues: {
+      parking: {
+        hasChargingStation: parkingData.hasChargingStation || false,
+        hasIndoorParking: parkingData.hasIndoorParking || false,
+        hasOutdoorParking: parkingData.hasOutdoorParking || false,
+        numberOfParkingSpots: parkingData.numberOfParkingSpots || undefined,
+      }
+    }
   })
 
   const handleSaveGeneral = async () => {
@@ -101,6 +143,32 @@ export function HouseInfoSection({ property }: HouseInfoSectionProps) {
     }
   }
 
+  const handleSaveDescription = async (data: DescriptionFormData) => {
+    try {
+      await updateProperty.mutateAsync({ 
+        id: property.id, 
+        data: data 
+      })
+      toast.success("Description updated successfully")
+      setIsEditingDescription(false)
+    } catch (error) {
+      toast.error("Failed to update description")
+    }
+  }
+
+  const handleSaveParking = async (data: ParkingFormData) => {
+    try {
+      await updateProperty.mutateAsync({ 
+        id: property.id, 
+        data: data 
+      })
+      toast.success("Car park information updated successfully")
+      setIsEditingParking(false)
+    } catch (error) {
+      toast.error("Failed to update car park information")
+    }
+  }
+
   const handleCancelGeneral = () => {
     form.reset()
     setCategories(property.categories)
@@ -118,6 +186,16 @@ export function HouseInfoSection({ property }: HouseInfoSectionProps) {
       longitude: property.longitude || null,
     })
     setIsEditingLocation(false)
+  }
+
+  const handleCancelDescription = () => {
+    descriptionForm.reset()
+    setIsEditingDescription(false)
+  }
+
+  const handleCancelParking = () => {
+    parkingForm.reset()
+    setIsEditingParking(false)
   }
 
   const addCategory = () => {
@@ -429,6 +507,313 @@ export function HouseInfoSection({ property }: HouseInfoSectionProps) {
                 <Label className="text-gray-600">Longitude</Label>
                 <p className="mt-1">{property.longitude || "—"}</p>
               </div>
+            </div>
+          </div>
+        )}
+      </PropertySection>
+
+      <div className="mb-6" />
+
+      <PropertySection
+        title="Description"
+        isEditing={isEditingDescription}
+        onEdit={() => setIsEditingDescription(true)}
+        onSave={descriptionForm.handleSubmit(handleSaveDescription)}
+        onCancel={handleCancelDescription}
+        isSaving={updateProperty.isPending}
+        canEdit={canEdit}
+      >
+        {isEditingDescription ? (
+          <form onSubmit={descriptionForm.handleSubmit(handleSaveDescription)}>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>House type</Label>
+                  <Select
+                    value={descriptionForm.watch("description.houseType")}
+                    onValueChange={(value) => descriptionForm.setValue("description.houseType", value as any)}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select house type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="VILLA">Villa</SelectItem>
+                      <SelectItem value="APARTMENT">Apartment</SelectItem>
+                      <SelectItem value="CHALET">Chalet</SelectItem>
+                      <SelectItem value="PENTHOUSE">Penthouse</SelectItem>
+                      <SelectItem value="TOWNHOUSE">Townhouse</SelectItem>
+                      <SelectItem value="CASTLE">Castle</SelectItem>
+                      <SelectItem value="MANOR">Manor</SelectItem>
+                      <SelectItem value="COTTAGE">Cottage</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Architectural house type</Label>
+                  <Select
+                    value={descriptionForm.watch("description.architecturalType")}
+                    onValueChange={(value) => descriptionForm.setValue("description.architecturalType", value as any)}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select architectural type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="CONTEMPORARY">Contemporary interior</SelectItem>
+                      <SelectItem value="TRADITIONAL">Traditional</SelectItem>
+                      <SelectItem value="MODERN">Modern</SelectItem>
+                      <SelectItem value="RUSTIC">Rustic</SelectItem>
+                      <SelectItem value="COLONIAL">Colonial</SelectItem>
+                      <SelectItem value="MEDITERRANEAN">Mediterranean</SelectItem>
+                      <SelectItem value="MINIMALIST">Minimalist</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Floor area in sqm</Label>
+                  <Input 
+                    type="number"
+                    min="0"
+                    {...descriptionForm.register("description.floorArea", { valueAsNumber: true })}
+                    className="mt-1" 
+                    placeholder="277"
+                  />
+                </div>
+                <div>
+                  <Label>Plot size in sqm</Label>
+                  <Input 
+                    type="number"
+                    min="0"
+                    {...descriptionForm.register("description.plotSize", { valueAsNumber: true })}
+                    className="mt-1" 
+                    placeholder="1950"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Number of furnished floors</Label>
+                  <Input 
+                    type="number"
+                    min="0"
+                    {...descriptionForm.register("description.numberOfFurnishedFloors", { valueAsNumber: true })}
+                    className="mt-1" 
+                    placeholder="2"
+                  />
+                </div>
+                <div className="flex items-center space-x-2 mt-6">
+                  <Checkbox 
+                    id="adjoiningHouse"
+                    checked={descriptionForm.watch("description.adjoiningHouse")}
+                    onCheckedChange={(checked) => descriptionForm.setValue("description.adjoiningHouse", !!checked)}
+                  />
+                  <Label htmlFor="adjoiningHouse">Adjoining house</Label>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Maximum guest capacity</Label>
+                  <Input 
+                    type="number"
+                    min="0"
+                    {...descriptionForm.register("description.maxGuestCapacity", { valueAsNumber: true })}
+                    className="mt-1" 
+                    placeholder="10"
+                  />
+                </div>
+                <div>
+                  <Label>Maximum adult capacity</Label>
+                  <Input 
+                    type="number"
+                    min="0"
+                    {...descriptionForm.register("description.maxAdultCapacity", { valueAsNumber: true })}
+                    className="mt-1" 
+                    placeholder="10"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Number of bedrooms</Label>
+                  <Input 
+                    type="number"
+                    min="0"
+                    {...descriptionForm.register("description.numberOfBedrooms", { valueAsNumber: true })}
+                    className="mt-1" 
+                    placeholder="5"
+                  />
+                </div>
+                <div>
+                  <Label>Number of bedrooms for live-in staff</Label>
+                  <Input 
+                    type="number"
+                    min="0"
+                    {...descriptionForm.register("description.numberOfBedroomsForLiveInStaff", { valueAsNumber: true })}
+                    className="mt-1" 
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label>Number of bathrooms</Label>
+                <Input 
+                  type="number"
+                  min="0"
+                  {...descriptionForm.register("description.numberOfBathrooms", { valueAsNumber: true })}
+                  className="mt-1 w-1/2" 
+                  placeholder="5"
+                />
+              </div>
+            </div>
+          </form>
+        ) : (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-gray-600">House type</Label>
+                <p className="mt-1">{descriptionData.houseType?.replace(/_/g, ' ') || "—"}</p>
+              </div>
+              <div>
+                <Label className="text-gray-600">Architectural house type</Label>
+                <p className="mt-1">{descriptionData.architecturalType?.toLowerCase().replace(/_/g, ' ') || "—"}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-gray-600">Floor area in sqm</Label>
+                <p className="mt-1">{descriptionData.floorArea || "—"}</p>
+              </div>
+              <div>
+                <Label className="text-gray-600">Plot size in sqm</Label>
+                <p className="mt-1">{descriptionData.plotSize || "—"}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-gray-600">Number of furnished floors</Label>
+                <p className="mt-1">{descriptionData.numberOfFurnishedFloors || "—"}</p>
+              </div>
+              <div>
+                <Label className="text-gray-600">Adjoining house</Label>
+                <p className="mt-1">{descriptionData.adjoiningHouse ? "Yes" : "No"}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-gray-600">Maximum guest capacity</Label>
+                <p className="mt-1">{descriptionData.maxGuestCapacity || "—"}</p>
+              </div>
+              <div>
+                <Label className="text-gray-600">Maximum adult capacity</Label>
+                <p className="mt-1">{descriptionData.maxAdultCapacity || "—"}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-gray-600">Number of bedrooms</Label>
+                <p className="mt-1">{descriptionData.numberOfBedrooms || "—"}</p>
+              </div>
+              <div>
+                <Label className="text-gray-600">Number of bedrooms for live-in staff</Label>
+                <p className="mt-1">{descriptionData.numberOfBedroomsForLiveInStaff || "—"}</p>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-gray-600">Number of bathrooms</Label>
+              <p className="mt-1">{descriptionData.numberOfBathrooms || "—"}</p>
+            </div>
+          </div>
+        )}
+      </PropertySection>
+
+      <div className="mb-6" />
+
+      <PropertySection
+        title="Car park"
+        isEditing={isEditingParking}
+        onEdit={() => setIsEditingParking(true)}
+        onSave={parkingForm.handleSubmit(handleSaveParking)}
+        onCancel={handleCancelParking}
+        isSaving={updateProperty.isPending}
+        canEdit={canEdit}
+      >
+        {isEditingParking ? (
+          <form onSubmit={parkingForm.handleSubmit(handleSaveParking)}>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="chargingStation"
+                    checked={parkingForm.watch("parking.hasChargingStation")}
+                    onCheckedChange={(checked) => parkingForm.setValue("parking.hasChargingStation", !!checked)}
+                  />
+                  <Label htmlFor="chargingStation">Charging station</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="indoorParking"
+                    checked={parkingForm.watch("parking.hasIndoorParking")}
+                    onCheckedChange={(checked) => parkingForm.setValue("parking.hasIndoorParking", !!checked)}
+                  />
+                  <Label htmlFor="indoorParking">Indoor parking spots</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="outdoorParking"
+                    checked={parkingForm.watch("parking.hasOutdoorParking")}
+                    onCheckedChange={(checked) => parkingForm.setValue("parking.hasOutdoorParking", !!checked)}
+                  />
+                  <Label htmlFor="outdoorParking">Outdoor parking spots</Label>
+                </div>
+              </div>
+
+              <div>
+                <Label>Number of parking spots</Label>
+                <Input 
+                  type="number"
+                  min="0"
+                  {...parkingForm.register("parking.numberOfParkingSpots", { valueAsNumber: true })}
+                  className="mt-1 w-1/2" 
+                  placeholder="4"
+                />
+              </div>
+            </div>
+          </form>
+        ) : (
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <input type="checkbox" checked={parkingData.hasChargingStation} disabled className="h-4 w-4" />
+                <Label className="text-gray-600">Charging station</Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input type="checkbox" checked={parkingData.hasIndoorParking} disabled className="h-4 w-4" />
+                <Label className="text-gray-600">Indoor parking spots</Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input type="checkbox" checked={parkingData.hasOutdoorParking} disabled className="h-4 w-4" />
+                <Label className="text-gray-600">Outdoor parking spots</Label>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-gray-600">Number of parking spots</Label>
+              <p className="mt-1">{parkingData.numberOfParkingSpots || "—"}</p>
             </div>
           </div>
         )}
