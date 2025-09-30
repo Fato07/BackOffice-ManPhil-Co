@@ -16,15 +16,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: '20'
+          bun-version: latest
 
-      - name: Install Supabase CLI
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/supabase/cli/main/scripts/install.sh | sh
-          echo "/home/runner/.supabase/bin" >> $GITHUB_PATH
+      - name: Install dependencies
+        run: bun install
 
       - name: Deploy to Supabase
         env:
@@ -45,16 +43,16 @@ jobs:
           fi
           
           # Link to Supabase project
-          supabase link --project-ref $SUPABASE_PROJECT_ID --password $SUPABASE_DB_PASSWORD
+          npx supabase link --project-ref $SUPABASE_PROJECT_ID --password $SUPABASE_DB_PASSWORD
           
           # Push database changes
           if [[ "$ENVIRONMENT" != "preview" ]]; then
-            supabase db push --linked
+            npx supabase db push --linked
           fi
           
           # Deploy edge functions if any
           if [ -d "supabase/functions" ]; then
-            supabase functions deploy --linked
+            npx supabase functions deploy --linked
           fi
 
   migrate-prisma:
