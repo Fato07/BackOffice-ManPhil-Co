@@ -4,38 +4,9 @@
 # working directory name when running `supabase init`.
 project_id = "backoffice-manphil-co"
 
-# Remote configurations for branch-specific settings
-# Staging branch configuration (persistent branch)
-[remotes.staging]
-# Your staging branch project ref
-project_id = "vslxmxrlhjywwbfdnevz"
-
-# Staging-specific API configuration
-[remotes.staging.api]
-max_rows = 2000
-
-# Staging-specific database seed
-[remotes.staging.db.seed]
-enabled = true
-sql_paths = ["./seeds/staging.sql"]
-
-# Production configuration (main branch)
-[remotes.production]
-# Your production branch project ref (will be the same for branching)
-project_id = "vslxmxrlhjywwbfdnevz"
-
-# Production-specific API configuration  
-[remotes.production.api]
-max_rows = 1000
-
-# Production-specific database configuration
-[remotes.production.db]
-# Higher pool size for production
-pool_size = 25
-
-# Production database seed (disabled for safety)
-[remotes.production.db.seed]
-enabled = false
+# Branch-specific configurations are handled by Supabase branching feature
+# No remotes configuration needed when using branching within the same project
+# Each branch (staging, production) maintains its own settings automatically
 
 [api]
 enabled = true
