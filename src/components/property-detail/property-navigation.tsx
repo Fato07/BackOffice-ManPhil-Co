@@ -152,7 +152,7 @@ export function PropertyNavigation({
       </div>
 
       {/* Navigation Sections */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
         {isExpanded ? (
           <div className="py-2">
             {topLevelSections.map((section) => {

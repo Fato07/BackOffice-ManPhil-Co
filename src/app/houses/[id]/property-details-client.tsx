@@ -8,7 +8,7 @@ import { ImageViewerModal } from "@/components/property-detail/image-viewer-moda
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Command, Home, Info, MapPin, FileText, Thermometer, Calendar, Wrench, AlertCircle, Shield, Megaphone, Camera, Link, DoorOpen, Users, Images, ChevronLeft, MapPinned, Book } from "lucide-react"
+import { Command, Home, Info, MapPin, FileText, Thermometer, Calendar, Wrench, AlertCircle, Shield, Megaphone, Camera, Link, DoorOpen, Users, Images, ChevronLeft, MapPinned, Book, DollarSign } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import type { PropertyWithRelations, SurroundingsInfo, StayMetadata } from "@/types"
@@ -33,6 +33,7 @@ const ContactsSection = lazy(() => import("@/components/property-detail/sections
 const RoomBuilder = lazy(() => import("@/components/property-detail/sections/room-builder").then(m => ({ default: m.RoomBuilder })))
 const SurroundingsSection = lazy(() => import("@/components/property-detail/sections/surroundings-section").then(m => ({ default: m.SurroundingsSection })))
 const StaySection = lazy(() => import("@/components/property-detail/sections/stay-section").then(m => ({ default: m.StaySection })))
+const PricingSection = lazy(() => import("@/components/property-detail/sections/pricing-section").then(m => ({ default: m.PricingSection })))
 
 // Section loading skeleton
 function SectionSkeleton() {
@@ -89,6 +90,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
   const allSections: SectionConfig[] = [
     { id: "promote", label: "Promote", component: PromoteSection, icon: Home, description: "Visibility and positioning" },
     { id: "surroundings", label: "Surroundings", component: SurroundingsSection, icon: MapPinned, description: "Property environment and area" },
+    { id: "pricing", label: "Pricing", component: PricingSection, icon: DollarSign, description: "Pricing and rates management", permission: Permission.FINANCIAL_VIEW },
     
     // Property Details container - expanded with more subsections
     { id: "property-details", label: "Property Details", component: null, icon: Info, description: "Complete property information", isContainer: true },
@@ -184,6 +186,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
   const completionStatus: Record<string, boolean> = {
     promote: !!property.exclusivity || !!property.position,
     surroundings: !!(property.surroundings && (property.surroundings as SurroundingsInfo).filters?.length),
+    pricing: !!(property.pricing || (property.prices && property.prices.length > 0)),
     info: !!property.name && !!property.numberOfRooms,
     location: !!(property.address || property.city || property.postcode || property.neighborhood || (property.latitude && property.longitude)),
     "further-info": !!property.accessibility || !!property.policies,
@@ -288,7 +291,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
   }, [navigationSections])
 
   return (
-    <div className="relative flex -mx-6 -my-6 min-h-[calc(100vh-3.5rem)] luxury-gradient-bg">
+    <div className="relative flex min-h-[calc(100vh-3.5rem)] luxury-gradient-bg">
       {/* Floating luxury particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         {Array.from({ length: 10 }).map((_, i) => (
@@ -409,9 +412,9 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
           </div>
 
         {/* Scrollable sections container */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="px-8 py-8">
-            <div className="max-w-7xl mx-auto space-y-12">
+        <div className="flex-1">
+          <div className="px-4 sm:px-6 lg:px-8 py-8">
+            <div className="space-y-12">
             {(() => {
               // Group sections by parent
               const topLevelSections = sections.filter(s => !s.parentSection)
@@ -620,7 +623,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
                         </div>
 
                         {/* Section Content */}
-                        <div className="px-8 py-6">
+                        <div className="">
                           {shouldRender ? (
                             <Suspense fallback={
                               <div className="space-y-4">

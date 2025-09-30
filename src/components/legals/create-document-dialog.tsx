@@ -329,7 +329,6 @@ export function CreateDocumentDialog({
                           disabled={(date) =>
                             date < new Date()
                           }
-                          initialFocus
                         />
                       </PopoverContent>
                     </Popover>

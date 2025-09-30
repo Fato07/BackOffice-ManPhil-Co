@@ -109,6 +109,9 @@ model Property {
   activityProviders     ActivityProvider[]
   equipmentRequests     EquipmentRequest[]
   legalDocuments        LegalDocument[]
+  pricing               PropertyPricing?
+  minimumStayRules      MinimumStayRule[]
+  operationalCosts      OperationalCost[]
 
   @@index([status])
   @@index([destinationId])
@@ -174,21 +177,100 @@ model Booking {
 }
 
 model PriceRange {
-  id          String   @id @default(cuid())
-  propertyId  String
-  name        String
-  startDate   DateTime
-  endDate     DateTime
-  nightlyRate Float
-  weeklyRate  Float?
-  monthlyRate Float?
-  minimumStay Int      @default(1)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  id                String   @id @default(cuid())
+  propertyId        String
+  name              String
+  startDate         DateTime
+  endDate           DateTime
+  
+  // Legacy fields (to be removed after migration)
+  nightlyRate       Float?
+  weeklyRate        Float?
+  monthlyRate       Float?
+  
+  // Owner pricing (what owner wants)
+  ownerNightlyRate  Float?
+  ownerWeeklyRate   Float?
+  
+  // Commission settings
+  commissionRate    Float    @default(25.0) // percentage
+  
+  // Public pricing (calculated)
+  publicNightlyRate Float?
+  publicWeeklyRate  Float?
+  
+  // Display settings
+  isValidated       Boolean  @default(true) // checkbox state
+  
+  minimumStay       Int      @default(1)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  property          Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([propertyId])
   @@index([startDate, endDate])
+}
+
+model PropertyPricing {
+  id                      String    @id @default(cuid())
+  propertyId              String    @unique
+  
+  // General settings
+  currency                String    @default("EUR")
+  displayOnWebsite        Boolean   @default(true)
+  retroCommission         Boolean   @default(false)
+  lastPricingUpdate       DateTime?
+  
+  // Financial details
+  securityDeposit         Float?
+  paymentSchedule         String?   // e.g., "50 - 40 - 10"
+  minOwnerAcceptedPrice   Float?
+  minLCAcceptedPrice      Float?
+  publicMinimumPrice      Float?
+  
+  // Commission rates
+  netOwnerCommission      Float?    @default(25.0)
+  publicPriceCommission   Float?    @default(20.0)
+  b2b2cPartnerCommission  Float?    @default(10.0)
+  
+  // Fees
+  publicTaxes             Float?    @default(0.0)
+  clientFees              Float?    @default(2.0)
+  
+  property                Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+}
+
+model MinimumStayRule {
+  id               String            @id @default(cuid())
+  propertyId       String
+  bookingCondition BookingCondition  @default(PER_NIGHT)
+  minimumNights    Int               @default(1)
+  startDate        DateTime?
+  endDate          DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  property         Property          @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  @@index([propertyId])
+  @@index([startDate, endDate])
+}
+
+model OperationalCost {
+  id               String           @id @default(cuid())
+  propertyId       String
+  costType         OperationalCostType
+  priceType        PriceType        @default(PER_STAY)
+  estimatedPrice   Float?
+  publicPrice      Float?
+  paidBy           String?          // e.g., "Le Collectionist"
+  comment          String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  property         Property         @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  @@index([propertyId])
 }
 
 model Resource {
@@ -714,4 +796,25 @@ enum AccessibilityType {
   BY_CAR
   SKI_IN_SKI_OUT
   BY_FOOT
+}
+
+enum BookingCondition {
+  PER_NIGHT
+  WEEKLY_SATURDAY_TO_SATURDAY
+  WEEKLY_SUNDAY_TO_SUNDAY
+  WEEKLY_MONDAY_TO_MONDAY
+}
+
+enum OperationalCostType {
+  HOUSEKEEPING
+  HOUSEKEEPING_AT_CHECKOUT
+  LINEN_CHANGE
+  OPERATIONAL_PACKAGE
+}
+
+enum PriceType {
+  PER_STAY
+  PER_WEEK
+  PER_DAY
+  FIXED
 }

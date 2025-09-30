@@ -115,7 +115,6 @@ export function EquipmentRequestFiltersPanel({
             mode="single"
             selected={localFilters.dateFrom}
             onSelect={(date) => handleFilterChange("dateFrom", date)}
-            initialFocus
           />
         </PopoverContent>
       </Popover>
@@ -143,7 +142,6 @@ export function EquipmentRequestFiltersPanel({
             mode="single"
             selected={localFilters.dateTo}
             onSelect={(date) => handleFilterChange("dateTo", date)}
-            initialFocus
           />
         </PopoverContent>
       </Popover>
