@@ -116,6 +116,10 @@ model Property {
   @@index([status])
   @@index([destinationId])
   @@index([name])
+  @@index([maxGuests])
+  @@index([numberOfRooms, numberOfBathrooms])
+  @@index([status, destinationId])
+  @@index([eventsAllowed])
 }
 
 model Room {
@@ -153,6 +157,8 @@ model PropertyContact {
 
   @@index([propertyId])
   @@index([type])
+  @@index([propertyId, type])
+  @@index([isApproved])
 }
 
 model Booking {
@@ -209,6 +215,7 @@ model PriceRange {
 
   @@index([propertyId])
   @@index([startDate, endDate])
+  @@index([propertyId, nightlyRate])
 }
 
 model PropertyPricing {
@@ -303,6 +310,8 @@ model Photo {
 
   @@index([propertyId])
   @@index([position])
+  @@index([propertyId, isMain])
+  @@index([propertyId, position])
 }
 
 model MarketingContent {

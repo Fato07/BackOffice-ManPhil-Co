@@ -23,8 +23,24 @@ export const propertyKeys = {
   detail: (id: string) => [...propertyKeys.details(), id] as const,
 }
 
-// Fetch properties list
-export function useProperties(filters?: PropertyFilters, page = 1, pageSize = 20) {
+// Fetch properties list with selective data loading
+export function useProperties(filters?: PropertyFilters, page = 1, pageSize = 20, options?: {
+  includeDestination?: boolean
+  includePrices?: boolean
+  includePhotos?: boolean
+  includeRooms?: boolean
+  includeContacts?: boolean
+}) {
+  // Default options for list view - only load essential data
+  const loadOptions = {
+    includeDestination: true,
+    includePrices: false,
+    includePhotos: true,
+    includeRooms: false,
+    includeContacts: false,
+    ...options
+  }
+  
   return useQuery({
     queryKey: propertyKeys.list(filters, page),
     queryFn: async () => {
@@ -50,6 +66,8 @@ export function useProperties(filters?: PropertyFilters, page = 1, pageSize = 20
         maxPrice: filters?.maxPrice,
         showOnWebsite: filters?.promoted?.showOnWebsite,
         highlight: filters?.promoted?.highlight,
+        // Add selective loading params
+        ...loadOptions
       }
       
       // Remove undefined values

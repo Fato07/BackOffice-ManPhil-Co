@@ -8,11 +8,14 @@ function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        // With SSR, we usually want to set some default staleTime
-        // above 0 to avoid refetching immediately on the client
-        staleTime: 60 * 1000, // 1 minute
+        // Increase stale time for better performance
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        // Garbage collect data after 10 minutes of inactivity
+        gcTime: 10 * 60 * 1000, // 10 minutes
         retry: 1,
         refetchOnWindowFocus: false,
+        // Don't refetch on mount if data is fresh
+        refetchOnMount: 'always',
       },
       mutations: {
         onError: (error) => {

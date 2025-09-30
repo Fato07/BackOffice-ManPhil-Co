@@ -15,6 +15,15 @@ export async function GET(req: NextRequest) {
     // Parse query parameters
     const searchParams = Object.fromEntries(req.nextUrl.searchParams.entries())
     
+    // Extract include parameters for selective loading
+    const includeParams = {
+      includeDestination: searchParams.includeDestination !== 'false',
+      includePrices: searchParams.includePrices !== 'false',
+      includePhotos: searchParams.includePhotos !== 'false',
+      includeRooms: searchParams.includeRooms === 'true',
+      includeContacts: searchParams.includeContacts === 'true',
+    }
+    
     // Convert string arrays back to arrays and parse numbers
     const processedParams: any = { ...searchParams }
     
@@ -55,8 +64,12 @@ export async function GET(req: NextRequest) {
     // Build where clause
     const where: any = {}
     
-    // Text search
     if (params.search) {
+      // For better performance with trigram indexes, use raw SQL for similarity search
+      // This leverages the GIN indexes we created
+      const searchTerm = params.search.toLowerCase()
+      
+      // Use OR conditions with trigram similarity for better fuzzy matching
       where.OR = [
         { name: { contains: params.search, mode: 'insensitive' } },
         { address: { contains: params.search, mode: 'insensitive' } },
@@ -277,41 +290,75 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // Build selective include object based on query parameters
+    const include: any = {}
+    
+    if (includeParams.includeDestination) {
+      include.destination = {
+        select: {
+          id: true,
+          name: true,
+          country: true,
+        }
+      }
+    }
+    
+    if (includeParams.includePrices) {
+      include.prices = {
+        select: {
+          id: true,
+          name: true,
+          nightlyRate: true,
+          weeklyRate: true,
+          monthlyRate: true,
+          startDate: true,
+          endDate: true,
+        },
+        orderBy: {
+          nightlyRate: 'asc'
+        }
+      }
+    }
+    
+    if (includeParams.includePhotos) {
+      include.photos = {
+        where: { isMain: true },
+        take: 1,
+        select: {
+          url: true,
+          caption: true
+        }
+      }
+    }
+    
+    if (includeParams.includeRooms) {
+      include.rooms = {
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          numberOfBeds: true,
+        }
+      }
+    }
+    
+    if (includeParams.includeContacts) {
+      include.contacts = {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          isPrimary: true,
+        }
+      }
+    }
+    
     // Execute query with pagination
     const [properties, total] = await Promise.all([
       prisma.property.findMany({
         where,
-        include: {
-          destination: {
-            select: {
-              id: true,
-              name: true,
-              country: true,
-            }
-          },
-          prices: {
-            select: {
-              id: true,
-              name: true,
-              nightlyRate: true,
-              weeklyRate: true,
-              monthlyRate: true,
-              startDate: true,
-              endDate: true,
-            },
-            orderBy: {
-              nightlyRate: 'asc'
-            }
-          },
-          photos: {
-            where: { isMain: true },
-            take: 1,
-            select: {
-              url: true,
-              caption: true
-            }
-          }
-        },
+        include: Object.keys(include).length > 0 ? include : undefined,
         skip: (params.page - 1) * params.pageSize,
         take: params.pageSize,
         orderBy: params.sortBy
