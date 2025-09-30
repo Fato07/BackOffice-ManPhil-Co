@@ -1,4 +1,5 @@
-[dotenv@17.2.2] injecting env (11) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+-- Initial schema migration for staging environment
+-- Generated from Prisma schema
 -- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
 
