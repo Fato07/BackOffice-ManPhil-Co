@@ -67,6 +67,31 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [sorting, setSorting] = React.useState<SortingState>([])
 
+ React.useEffect(() => {
+    if (selectedRowIds) {
+      const newRowSelection: Record<string, boolean> = {}
+      selectedRowIds.forEach((id) => {
+        newRowSelection[id] = true
+      })
+      setRowSelection(newRowSelection)
+    }
+  }, [selectedRowIds])
+
+  const handleRowSelectionChange = React.useCallback((updater: any) => {
+    setRowSelection((old) => {
+      const newSelection = typeof updater === 'function' ? updater(old) : updater
+      
+      if (onSelectedRowsChange) {
+        const selectedIds = Object.keys(newSelection)
+          .filter(key => newSelection[key])
+        
+        onSelectedRowsChange(selectedIds)
+      }
+      
+      return newSelection
+    })
+  }, [onSelectedRowsChange])
+
   const table = useReactTable({
     data,
     columns,
@@ -77,7 +102,7 @@ export function DataTable<TData, TValue>({
       columnFilters,
     },
     enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: handleRowSelectionChange,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
@@ -87,6 +112,7 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
+    getRowId: (row: any) => row.id,
     initialState: {
       pagination: {
         pageSize,

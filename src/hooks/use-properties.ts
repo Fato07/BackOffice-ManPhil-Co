@@ -11,6 +11,7 @@ import {
 } from "@/types/property"
 import { toast } from "sonner"
 import { updatePropertySurroundings } from "@/actions/property-stay"
+import { bulkDeleteProperties } from "@/actions/properties"
 
 // Query keys
 export const propertyKeys = {
@@ -195,6 +196,27 @@ export function useUpdatePropertySurroundings() {
       } else {
         toast.error("Failed to update surroundings")
       }
+    },
+  })
+}
+
+// Bulk delete properties mutation
+export function useBulkDeleteProperties() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: (propertyIds: string[]) => bulkDeleteProperties({ propertyIds }),
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: propertyKeys.lists() })
+        toast.success(`Successfully deleted ${result.data?.deletedCount} properties`)
+      } else {
+        toast.error(result.error || "Failed to delete properties")
+      }
+    },
+    onError: (error) => {
+      console.error("Bulk delete error:", error)
+      toast.error("Failed to delete properties")
     },
   })
 }

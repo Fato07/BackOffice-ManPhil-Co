@@ -8,27 +8,122 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('Start seeding...')
 
-  // Create sample destinations
-  const destination1 = await prisma.destination.create({
+  const destinations = []
+  
+  destinations.push(await prisma.destination.create({
     data: {
-      name: 'French Riviera',
+      name: 'Courchevel 1850',
       country: 'France',
-      region: 'Provence-Alpes-Côte d\'Azur',
-      latitude: 43.7102,
-      longitude: 7.2620,
+      region: 'Auvergne-Rhône-Alpes',
     },
-  })
+  }))
 
-  const destination2 = await prisma.destination.create({
+  destinations.push(await prisma.destination.create({
     data: {
-      name: 'Mallorca',
-      country: 'Spain',
-      region: 'Balearic Islands',
-      latitude: 39.5696,
-      longitude: 2.6502,
+      name: 'Courchevel 1650',
+      country: 'France',
+      region: 'Auvergne-Rhône-Alpes',
     },
-  })
+  }))
 
+  destinations.push(await prisma.destination.create({
+    data: {
+      name: 'Courchevel 1550',
+      country: 'France',
+      region: 'Auvergne-Rhône-Alpes',
+    },
+  }))
+
+  destinations.push(await prisma.destination.create({
+    data: {
+      name: 'Courchevel 1350',
+      country: 'France',
+      region: 'Auvergne-Rhône-Alpes',
+    },
+  }))
+
+  destinations.push(await prisma.destination.create({
+    data: {
+      name: 'Val d\'Isere',
+      country: 'France',
+      region: 'Auvergne-Rhône-Alpes',
+    },
+  }))
+
+  destinations.push(await prisma.destination.create({
+    data: {
+      name: 'Chamonix',
+      country: 'France',
+      region: 'Auvergne-Rhône-Alpes',
+    },
+  }))
+
+  destinations.push(await prisma.destination.create({
+    data: {
+      name: 'Combloux',
+      country: 'France',
+      region: 'Auvergne-Rhône-Alpes',
+    },
+  }))
+
+  destinations.push(await prisma.destination.create({
+    data: {
+      name: 'Meribel',
+      country: 'France',
+      region: 'Auvergne-Rhône-Alpes',
+    },
+  }))
+
+  // Corsica
+  destinations.push(await prisma.destination.create({
+    data: {
+      name: 'Porto-Vecchio',
+      country: 'France',
+      region: 'Corsica',
+    },
+  }))
+
+  destinations.push(await prisma.destination.create({
+    data: {
+      name: 'Bonifacio',
+      country: 'France',
+      region: 'Corsica',
+    },
+  }))
+
+  destinations.push(await prisma.destination.create({
+    data: {
+      name: 'Bastia',
+      country: 'France',
+      region: 'Corsica',
+    },
+  }))
+
+  destinations.push(await prisma.destination.create({
+    data: {
+      name: 'Ajaccio',
+      country: 'France',
+      region: 'Corsica',
+    },
+  }))
+
+  destinations.push(await prisma.destination.create({
+    data: {
+      name: 'Calvi',
+      country: 'France',
+      region: 'Corsica',
+    },
+  }))
+
+  destinations.push(await prisma.destination.create({
+    data: {
+      name: 'Figari',
+      country: 'France',
+      region: 'Corsica',
+    },
+  }))
+
+  // French Riviera & Provence
   const destination3 = await prisma.destination.create({
     data: {
       name: 'Saint-Tropez',
@@ -38,56 +133,55 @@ async function main() {
       longitude: 6.6407,
     },
   })
+  destinations.push(destination3)
 
-  const destination4 = await prisma.destination.create({
+  destinations.push(await prisma.destination.create({
     data: {
-      name: 'Ibiza',
-      country: 'Spain',
-      region: 'Balearic Islands',
-      latitude: 38.9067,
-      longitude: 1.4206,
+      name: 'Presqu\'Ile Saint-Tropez',
+      country: 'France',
+      region: 'Provence-Alpes-Côte d\'Azur',
     },
-  })
+  }))
 
-  const destination5 = await prisma.destination.create({
+  destinations.push(await prisma.destination.create({
     data: {
-      name: 'Santorini',
-      country: 'Greece',
-      region: 'South Aegean',
-      latitude: 36.3932,
-      longitude: 25.4615,
+      name: 'Ramatuelle',
+      country: 'France',
+      region: 'Provence-Alpes-Côte d\'Azur',
     },
-  })
+  }))
 
-  const destination6 = await prisma.destination.create({
+  destinations.push(await prisma.destination.create({
     data: {
-      name: 'Amalfi Coast',
-      country: 'Italy',
-      region: 'Campania',
-      latitude: 40.6340,
-      longitude: 14.6027,
+      name: 'Gassin',
+      country: 'France',
+      region: 'Provence-Alpes-Côte d\'Azur',
     },
-  })
+  }))
 
-  const destination7 = await prisma.destination.create({
+  destinations.push(await prisma.destination.create({
     data: {
-      name: 'Mykonos',
-      country: 'Greece',
-      region: 'South Aegean',
-      latitude: 37.4467,
-      longitude: 25.3289,
+      name: 'Grimaud',
+      country: 'France',
+      region: 'Provence-Alpes-Côte d\'Azur',
     },
-  })
+  }))
 
-  const destination8 = await prisma.destination.create({
+  destinations.push(await prisma.destination.create({
     data: {
-      name: 'Monaco',
-      country: 'Monaco',
-      region: 'Monaco',
-      latitude: 43.7384,
-      longitude: 7.4246,
+      name: 'Escalet',
+      country: 'France',
+      region: 'Provence-Alpes-Côte d\'Azur',
     },
-  })
+  }))
+
+  destinations.push(await prisma.destination.create({
+    data: {
+      name: 'La Croix Valmer',
+      country: 'France',
+      region: 'Provence-Alpes-Côte d\'Azur',
+    },
+  }))
 
   const destination9 = await prisma.destination.create({
     data: {
@@ -98,16 +192,69 @@ async function main() {
       longitude: 7.0174,
     },
   })
+  destinations.push(destination9)
 
-  const destination10 = await prisma.destination.create({
+  destinations.push(await prisma.destination.create({
     data: {
-      name: 'Porto Cervo',
+      name: 'Mougins',
+      country: 'France',
+      region: 'Provence-Alpes-Côte d\'Azur',
+    },
+  }))
+
+  // Italy
+  destinations.push(await prisma.destination.create({
+    data: {
+      name: 'Sardinia',
       country: 'Italy',
       region: 'Sardinia',
-      latitude: 41.1349,
-      longitude: 9.5213,
+    },
+  }))
+
+  // Also keep some of the original destinations that aren't in the list
+  const destination1 = await prisma.destination.create({
+    data: {
+      name: 'French Riviera',
+      country: 'France',
+      region: 'Provence-Alpes-Côte d\'Azur',
+      latitude: 43.7102,
+      longitude: 7.2620,
     },
   })
+  destinations.push(destination1)
+
+  const destination2 = await prisma.destination.create({
+    data: {
+      name: 'Mallorca',
+      country: 'Spain',
+      region: 'Balearic Islands',
+      latitude: 39.5696,
+      longitude: 2.6502,
+    },
+  })
+  destinations.push(destination2)
+
+  const destination5 = await prisma.destination.create({
+    data: {
+      name: 'Santorini',
+      country: 'Greece',
+      region: 'South Aegean',
+      latitude: 36.3932,
+      longitude: 25.4615,
+    },
+  })
+  destinations.push(destination5)
+
+  const destination8 = await prisma.destination.create({
+    data: {
+      name: 'Monaco',
+      country: 'Monaco',
+      region: 'Monaco',
+      latitude: 43.7384,
+      longitude: 7.4246,
+    },
+  })
+  destinations.push(destination8)
 
   // Create sample properties
   const property1 = await prisma.property.create({
@@ -403,11 +550,6 @@ async function main() {
     },
   })
 
-  const destinations = [
-    destination1, destination2, destination3, destination4, destination5,
-    destination6, destination7, destination8, destination9, destination10
-  ]
-  
   console.log(`Created ${destinations.length} destinations: ${destinations.map(d => d.name).join(', ')}`)
   console.log(`Created properties: ${property1.name}, ${property2.name}, ${property3.name}, ${property4.name}, ${property5.name}`)
   

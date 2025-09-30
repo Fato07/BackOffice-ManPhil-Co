@@ -10,12 +10,9 @@ import { useRouter } from "next/navigation"
 import { useProperties } from "@/hooks/use-properties"
 import { PropertyCard } from "@/components/houses/property-card"
 import { Skeleton } from "@/components/ui/skeleton"
-
-interface DestinationWithCount extends Destination {
-  _count?: {
-    properties: number
-  }
-}
+import { EditDestinationDialog } from "../dialogs/edit-destination-dialog"
+import { DeleteDestinationDialog } from "../dialogs/delete-destination-dialog"
+import { DestinationWithCount } from "@/hooks/use-destinations"
 
 interface DestinationSidebarProps {
   destination: DestinationWithCount
@@ -30,6 +27,8 @@ export function DestinationSidebar({
 }: DestinationSidebarProps) {
   const router = useRouter()
   const [showProperties, setShowProperties] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   
   // Fetch properties for this destination
   const { data: propertiesData, isLoading: propertiesLoading } = useProperties(
@@ -219,6 +218,7 @@ export function DestinationSidebar({
           <div className="grid grid-cols-2 gap-2">
             <Button
               variant="outline"
+              onClick={() => setEditDialogOpen(true)}
               className="border-[#B5985A]/30 text-[#B5985A]/70 hover:bg-[#B5985A]/20 hover:border-[#B5985A]/50 hover:text-[#B5985A] transition-all duration-200"
             >
               <Edit className="h-4 w-4 mr-2" />
@@ -226,6 +226,7 @@ export function DestinationSidebar({
             </Button>
             <Button
               variant="destructive"
+              onClick={() => setDeleteDialogOpen(true)}
               className="transition-all duration-200"
             >
               <Trash2 className="h-4 w-4 mr-2" />
@@ -235,6 +236,21 @@ export function DestinationSidebar({
         </div>
       </div>
     </motion.div>
+
+      {/* Edit Destination Dialog */}
+      <EditDestinationDialog
+        destination={destination}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+      />
+
+      {/* Delete Destination Dialog */}
+      <DeleteDestinationDialog
+        destination={destination}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onSuccess={onClose}
+      />
     </>
   )
 }

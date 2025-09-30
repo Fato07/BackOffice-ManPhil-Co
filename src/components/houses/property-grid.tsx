@@ -10,6 +10,8 @@ interface PropertyGridProps {
   isLoading?: boolean
   onEdit?: (property: PropertyListItem) => void
   onDelete?: (property: PropertyListItem) => void
+  selectedPropertyIds?: string[]
+  onSelectionChange?: (ids: string[]) => void
 }
 
 function PropertyCardSkeleton() {
@@ -29,7 +31,23 @@ function PropertyCardSkeleton() {
   )
 }
 
-export function PropertyGrid({ properties, isLoading, onEdit, onDelete }: PropertyGridProps) {
+export function PropertyGrid({ 
+  properties, 
+  isLoading, 
+  onEdit, 
+  onDelete,
+  selectedPropertyIds = [],
+  onSelectionChange 
+}: PropertyGridProps) {
+  const handlePropertySelect = (propertyId: string, selected: boolean) => {
+    if (!onSelectionChange) return
+    
+    if (selected) {
+      onSelectionChange([...selectedPropertyIds, propertyId])
+    } else {
+      onSelectionChange(selectedPropertyIds.filter(id => id !== propertyId))
+    }
+  }
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -56,6 +74,8 @@ export function PropertyGrid({ properties, isLoading, onEdit, onDelete }: Proper
           property={property}
           onEdit={onEdit ? () => onEdit(property) : undefined}
           onDelete={onDelete ? () => onDelete(property) : undefined}
+          isSelected={selectedPropertyIds.includes(property.id)}
+          onSelectChange={onSelectionChange ? (selected) => handlePropertySelect(property.id, selected) : undefined}
         />
       ))}
     </div>

@@ -78,6 +78,11 @@ export const exportActivityProvidersSchema = z.object({
   fields: z.array(z.string()).optional(),
 })
 
+// Bulk delete schema
+export const bulkDeleteProvidersSchema = z.object({
+  providerIds: z.array(z.string().min(1)).min(1, 'At least one provider ID is required'),
+})
+
 // Type exports
 export type CreateActivityProviderInput = z.infer<typeof createActivityProviderSchema>
 export type UpdateActivityProviderInput = z.infer<typeof updateActivityProviderSchema>
@@ -86,3 +91,4 @@ export type LinkProviderToPropertyInput = z.infer<typeof linkProviderToPropertyS
 export type UnlinkProviderFromPropertyInput = z.infer<typeof unlinkProviderFromPropertySchema>
 export type BulkImportActivityProvidersInput = z.infer<typeof bulkImportActivityProvidersSchema>
 export type ExportActivityProvidersInput = z.infer<typeof exportActivityProvidersSchema>
+export type BulkDeleteProvidersData = z.infer<typeof bulkDeleteProvidersSchema>

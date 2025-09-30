@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Map, List } from "lucide-react"
+import { Map, LayoutGrid } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ViewMode } from "../destinations-content"
 
@@ -12,7 +12,7 @@ interface ViewToggleProps {
 
 const views = [
   { id: "map" as ViewMode, icon: Map, label: "Map" },
-  { id: "list" as ViewMode, icon: List, label: "List" },
+  { id: "grid" as ViewMode, icon: LayoutGrid, label: "Grid" },
 ]
 
 export function ViewToggle({ currentView, onViewChange }: ViewToggleProps) {
