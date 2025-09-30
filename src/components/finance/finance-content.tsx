@@ -7,7 +7,7 @@ export function FinanceContent() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex items-center justify-center min-h-[60vh]"
+      className="flex items-center justify-center min-h-[60vh] p-6"
     >
       <h1 className="text-xl font-bold text-muted-foreground">Coming Soon...</h1>
     </motion.div>

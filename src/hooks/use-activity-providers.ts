@@ -12,6 +12,8 @@ import {
   ExportActivityProvidersInput,
   ActivityProvidersListResponse
 } from "@/types/activity-provider"
+import { bulkDeleteActivityProviders } from "@/actions/activity-providers"
+import { BulkDeleteProvidersData } from "@/lib/validations/activity-provider"
 import { toast } from "sonner"
 import { PaginatedResponse } from "@/types/property"
 
@@ -164,14 +166,14 @@ export function useImportProviders() {
       api.post("/api/activity-providers/import", data),
     onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: activityProviderKeys.lists() })
-      if (response.data?.imported > 0) {
-        toast.success(`Successfully imported ${response.data.imported} activity providers`)
+      if (response?.imported > 0) {
+        toast.success(`Successfully imported ${response.imported} activity providers`)
       }
-      if (response.data?.skipped > 0) {
-        toast.warning(`Skipped ${response.data.skipped} duplicate providers`)
+      if (response?.skipped > 0) {
+        toast.warning(`Skipped ${response.skipped} duplicate providers`)
       }
-      if (response.data?.errors?.length > 0) {
-        toast.error(`${response.data.errors.length} providers failed to import`)
+      if (response?.errors?.length > 0) {
+        toast.error(`${response.errors.length} providers failed to import`)
       }
     },
     onError: (error) => {
@@ -280,6 +282,33 @@ export function useUpdateProviderProperties() {
     },
     onError: (error) => {
       toast.error("Failed to update property links")
+    },
+  })
+}
+
+// Bulk delete providers mutation
+export function useBulkDeleteProviders() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: BulkDeleteProvidersData) => {
+      const result = await bulkDeleteActivityProviders(data)
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to delete providers')
+      }
+      return result.data
+    },
+    onSuccess: (data, variables) => {
+      // Invalidate provider lists
+      queryClient.invalidateQueries({ queryKey: activityProviderKeys.lists() })
+      // Remove deleted providers from cache
+      variables.providerIds.forEach(id => {
+        queryClient.removeQueries({ queryKey: activityProviderKeys.detail(id) })
+      })
+      toast.success(`Successfully deleted ${data?.deletedCount || 0} providers`)
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to delete providers')
     },
   })
 }

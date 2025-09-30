@@ -3,6 +3,11 @@
 import { prisma } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { Prisma } from '@/generated/prisma'
+import { auth } from '@clerk/nextjs/server'
+import { requirePermission } from '@/lib/auth'
+import { Permission } from '@/types/auth'
+import { z } from 'zod'
+import { bulkDeleteProvidersSchema, type BulkDeleteProvidersData } from '@/lib/validations/activity-provider'
 
 export async function getActivityProviders(params?: {
   page?: number
@@ -50,7 +55,7 @@ export async function getActivityProviders(params?: {
       pageCount: Math.ceil(totalCount / pageSize)
     }
   } catch (error) {
-    console.error('Error fetching activity providers:', error)
+    // Error handled by returning error response
     return {
       success: false,
       error: 'Failed to fetch activity providers'
@@ -76,7 +81,7 @@ export async function getActivityProvider(id: string) {
 
     return { success: true, data: provider }
   } catch (error) {
-    console.error('Error fetching activity provider:', error)
+    // Error handled by returning error response
     return { success: false, error: 'Failed to fetch activity provider' }
   }
 }
@@ -108,7 +113,7 @@ export async function createActivityProvider(data: {
     revalidatePath('/places')
     return { success: true, data: provider }
   } catch (error) {
-    console.error('Error creating activity provider:', error)
+    // Error handled by returning error response
     return { success: false, error: 'Failed to create activity provider' }
   }
 }
@@ -143,7 +148,7 @@ export async function updateActivityProvider(id: string, data: {
     revalidatePath('/places')
     return { success: true, data: provider }
   } catch (error) {
-    console.error('Error updating activity provider:', error)
+    // Error handled by returning error response
     return { success: false, error: 'Failed to update activity provider' }
   }
 }
@@ -157,7 +162,7 @@ export async function deleteActivityProvider(id: string) {
     revalidatePath('/places')
     return { success: true }
   } catch (error) {
-    console.error('Error deleting activity provider:', error)
+    // Error handled by returning error response
     return { success: false, error: 'Failed to delete activity provider' }
   }
 }
@@ -181,7 +186,7 @@ export async function linkProviderToProperty(providerId: string, propertyId: str
     revalidatePath('/places')
     return { success: true, data: provider }
   } catch (error) {
-    console.error('Error linking provider to property:', error)
+    // Error handled by returning error response
     return { success: false, error: 'Failed to link provider to property' }
   }
 }
@@ -205,7 +210,84 @@ export async function unlinkProviderFromProperty(providerId: string, propertyId:
     revalidatePath('/places')
     return { success: true, data: provider }
   } catch (error) {
-    console.error('Error unlinking provider from property:', error)
+    // Error handled by returning error response
     return { success: false, error: 'Failed to unlink provider from property' }
+  }
+}
+
+export async function bulkDeleteActivityProviders(input: BulkDeleteProvidersData) {
+  try {
+    // Authentication check
+    const { userId } = await auth()
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    // Permission check
+    const hasPermission = await requirePermission(Permission.ACTIVITY_PROVIDER_DELETE)
+    if (!hasPermission) {
+      return { success: false, error: 'You do not have permission to delete activity providers' }
+    }
+
+    // Validate input
+    const validated = bulkDeleteProvidersSchema.parse(input)
+    const { providerIds } = validated
+
+    // Get providers for audit log
+    const providers = await prisma.activityProvider.findMany({
+      where: { id: { in: providerIds } }
+    })
+
+    // Delete providers in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Delete providers
+      const deleteResult = await tx.activityProvider.deleteMany({
+        where: { id: { in: providerIds } }
+      })
+
+      // Create audit log entry
+      await tx.auditLog.create({
+        data: {
+          userId,
+          action: 'bulk_delete',
+          entityType: 'activity_provider',
+          entityId: 'bulk',
+          changes: {
+            before: providers,
+            summary: `Bulk deleted ${deleteResult.count} activity providers`
+          },
+        },
+      })
+
+      return deleteResult
+    })
+
+    // Revalidate the places page
+    revalidatePath('/places')
+
+    return {
+      success: true,
+      data: { deletedCount: result.count },
+    }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const firstError = error.issues[0]
+      return {
+        success: false,
+        error: `Validation error: ${firstError.path.join('.')} - ${firstError.message}`,
+      }
+    }
+
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+
+    return {
+      success: false,
+      error: 'An unexpected error occurred while deleting activity providers',
+    }
   }
 }

@@ -118,7 +118,7 @@ export default function CustomSignIn() {
           </label>
           
           <Link 
-            href="#" 
+            href="/forgot-password" 
             className="text-sm text-[#B5985A] hover:text-[#B5985A]/80 font-medium transition-colors"
           >
             Forgot password?

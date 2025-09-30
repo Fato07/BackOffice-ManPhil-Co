@@ -52,3 +52,6 @@ supabase/.branches
 supabase/.temp
 supabase/.env
 supabase/.env.local
+
+docs/*
+*.lock

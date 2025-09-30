@@ -8,11 +8,11 @@ import { CreateHouseDialog } from "@/components/houses/create-house-dialog"
 import { PropertyFilters as PropertyFiltersComponent } from "@/components/houses/property-filters"
 import { ExportDialog } from "@/components/houses/export-dialog"
 import { ImportDialog } from "@/components/houses/import-dialog"
-import { useProperties } from "@/hooks/use-properties"
+import { useProperties, useBulkDeleteProperties } from "@/hooks/use-properties"
 import { PropertyFilters, PropertyListItem } from "@/types/property"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, FilterX, Download, Upload, LayoutGrid, List } from "lucide-react"
+import { Search, FilterX, Download, Upload, LayoutGrid, List, Trash2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { useDebounce } from "@/hooks/use-debounce"
@@ -22,7 +22,18 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { PropertyGrid } from "./property-grid"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { 
@@ -92,6 +103,10 @@ export function HousesContent() {
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([])
   const [viewMode, setViewMode] = useState<"table" | "grid">("table")
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  
+  // Bulk delete mutation
+  const bulkDeleteMutation = useBulkDeleteProperties()
 
   // Debounce search value
   const debouncedSearch = useDebounce(searchInput, 300)
@@ -249,6 +264,21 @@ export function HousesContent() {
   const handleRowClick = (property: PropertyListItem) => {
     router.push(`/houses/${property.id}`)
   }
+  
+  const handleBulkDelete = async () => {
+    bulkDeleteMutation.mutate(selectedPropertyIds, {
+      onSuccess: () => {
+        setShowDeleteDialog(false)
+        setSelectedPropertyIds([])
+      }
+    })
+  }
+  
+  // Get selected properties data for display in delete dialog
+  const selectedProperties = useMemo(() => {
+    if (!properties?.data || selectedPropertyIds.length === 0) return []
+    return properties.data.filter(p => selectedPropertyIds.includes(p.id))
+  }, [properties?.data, selectedPropertyIds])
 
   return (
     <div className="space-y-6 p-6">
@@ -358,14 +388,41 @@ export function HousesContent() {
           </>
         ) : (
           <>
-            <div className="flex items-center gap-2">
-              <p className="text-sm text-muted-foreground">
-                {properties?.total || 0} properties found
-              </p>
-              {activeFilterCount > 0 && (
-                <Badge variant="secondary">
-                  {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active
-                </Badge>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground">
+                  {properties?.total || 0} properties found
+                </p>
+                {activeFilterCount > 0 && (
+                  <Badge variant="secondary">
+                    {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active
+                  </Badge>
+                )}
+              </div>
+              {selectedPropertyIds.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      Bulk Actions ({selectedPropertyIds.length})
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem 
+                      onClick={() => setShowExportDialog(true)}
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Export Selected
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => setShowDeleteDialog(true)}
+                      className="text-red-600"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Selected
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
             
@@ -386,6 +443,8 @@ export function HousesContent() {
               <PropertyGrid
                 properties={properties?.data || []}
                 isLoading={false}
+                selectedPropertyIds={selectedPropertyIds}
+                onSelectionChange={setSelectedPropertyIds}
               />
             )}
           </>
@@ -405,6 +464,42 @@ export function HousesContent() {
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
       />
+
+      {/* Bulk Delete Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedPropertyIds.length} properties?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              This action cannot be undone. This will permanently delete the following properties and all associated data:
+              <div className="mt-2 max-h-40 overflow-y-auto rounded border p-2">
+                <ul className="space-y-1 text-sm">
+                  {selectedProperties.slice(0, 5).map((property) => (
+                    <li key={property.id} className="text-muted-foreground">
+                      • {property.name}
+                    </li>
+                  ))}
+                  {selectedProperties.length > 5 && (
+                    <li className="text-muted-foreground font-medium">
+                      ... and {selectedProperties.length - 5} more
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleteMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={bulkDeleteMutation.isPending}
+            >
+              {bulkDeleteMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -179,7 +179,6 @@ export function PropertyFilters({ filters, onFiltersChange, className }: Propert
                       selectedDestinations={localFilters.destinationIds || []}
                       onSelectionChange={(destinations) => {
                         updateLocalFilter("destinationIds", destinations.length > 0 ? destinations : undefined)
-                        // Clear single destinationId when using multiple selection
                         if (destinations.length > 0 && localFilters.destinationId) {
                           updateLocalFilter("destinationId", undefined)
                         }

@@ -6,14 +6,14 @@ import { MapToolbar } from "./map/map-toolbar"
 import { ViewMode as MapViewMode } from "./map/map-controls"
 import { DestinationSidebar } from "./ui/destination-sidebar"
 import { ViewToggle } from "./views/view-toggle"
-import { ListView } from "./views/list-view"
+import { GridView } from "./views/grid-view"
 import { StatsWidget } from "./ui/stats-widget"
 import { CreateDestinationDialog } from "./dialogs/create-destination-dialog"
 import { MapSkeleton } from "./map/map-skeleton"
 import { motion, AnimatePresence } from "framer-motion"
 import { useDestinations, DestinationWithCount } from "@/hooks/use-destinations"
 
-export type ViewMode = "map" | "list"
+export type ViewMode = "map" | "grid"
 
 const MAP_STYLES = {
   light: "mapbox://styles/mapbox/light-v11",
@@ -80,15 +80,15 @@ export function DestinationsContent() {
           </motion.div>
         ) : null}
         
-        {viewMode === "list" && (
+        {viewMode === "grid" && (
           <motion.div
-            key="list"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            key="grid"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             className="h-full overflow-auto p-6"
           >
-            <ListView
+            <GridView
               destinations={data?.destinations || []}
               onDestinationSelect={handleDestinationSelect}
             />

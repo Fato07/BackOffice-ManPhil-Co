@@ -1,37 +1,54 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { MapPin, Home } from "lucide-react"
+import { MapPin, Home, Edit, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DestinationWithCount } from "@/hooks/use-destinations"
+import { Button } from "@/components/ui/button"
+import { useState } from "react"
+import { EditDestinationDialog } from "../dialogs/edit-destination-dialog"
+import { DeleteDestinationDialog } from "../dialogs/delete-destination-dialog"
 
 interface GridViewProps {
   destinations: DestinationWithCount[]
   onDestinationSelect: (destination: DestinationWithCount) => void
 }
 
-export function GridView({ destinations, onDestinationSelect }: GridViewProps) {
+export function GridView({ 
+  destinations, 
+  onDestinationSelect
+}: GridViewProps) {
+  const [editingDestination, setEditingDestination] = useState<DestinationWithCount | null>(null)
+  const [deletingDestination, setDeletingDestination] = useState<DestinationWithCount | null>(null)
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {destinations.map((destination, index) => (
+    <div className="space-y-6">
+      {/* Grid */}
+      {destinations.length === 0 ? (
+        <div className="text-center py-16">
+          <p className="text-gray-400 text-lg">No destinations found</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {destinations.map((destination, index) => (
         <motion.div
           key={destination.id}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.05 }}
           whileHover={{ y: -10 }}
-          onClick={() => onDestinationSelect(destination)}
-          className="cursor-pointer group"
+          className="group"
         >
           <div
             className={cn(
-              "relative overflow-hidden rounded-2xl",
+              "relative overflow-hidden rounded-2xl cursor-pointer",
               "bg-gradient-to-br from-gray-900 to-black",
               "border border-white/10",
               "transition-all duration-300",
               "group-hover:border-[#B5985A]/50",
               "group-hover:shadow-2xl group-hover:shadow-[#B5985A]/10"
             )}
+            onClick={() => onDestinationSelect(destination)}
           >
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10">
@@ -42,6 +59,34 @@ export function GridView({ destinations, onDestinationSelect }: GridViewProps) {
 
             {/* Content */}
             <div className="relative p-6 space-y-4">
+              {/* Inline Actions - Show on Hover */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                <div className="flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-lg p-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setEditingDestination(destination)
+                    }}
+                    className="h-7 w-7 p-0 text-gray-400 hover:text-[#B5985A] hover:bg-[#B5985A]/10"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setDeletingDestination(destination)
+                    }}
+                    className="h-7 w-7 p-0 text-gray-400 hover:text-red-500 hover:bg-red-500/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              
               {/* Header */}
               <div className="flex items-start justify-between">
                 <div className="p-3 bg-[#B5985A]/10 rounded-xl border border-[#B5985A]/20">
@@ -91,7 +136,27 @@ export function GridView({ destinations, onDestinationSelect }: GridViewProps) {
             </div>
           </div>
         </motion.div>
-      ))}
+          ))}
+        </div>
+      )}
+      
+      {/* Edit Dialog */}
+      {editingDestination && (
+        <EditDestinationDialog
+          destination={editingDestination}
+          open={!!editingDestination}
+          onOpenChange={(open) => !open && setEditingDestination(null)}
+        />
+      )}
+      
+      {/* Delete Dialog */}
+      {deletingDestination && (
+        <DeleteDestinationDialog
+          destination={deletingDestination}
+          open={!!deletingDestination}
+          onOpenChange={(open) => !open && setDeletingDestination(null)}
+        />
+      )}
     </div>
   )
 }

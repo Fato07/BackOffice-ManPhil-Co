@@ -1,8 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { Plus } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -10,7 +9,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   Form,
@@ -28,127 +26,87 @@ import { toast } from "sonner"
 import { api } from "@/lib/api"
 import { useQueryClient } from "@tanstack/react-query"
 import { destinationKeys } from "@/hooks/use-destinations"
-import { ImageUploadSectionCreate } from "../ui/image-upload-section-create"
+import { DestinationWithCount } from "@/hooks/use-destinations"
+import { ImageUploadSection } from "../ui/image-upload-section"
 import { Separator } from "@/components/ui/separator"
 
-const createDestinationSchema = z.object({
+const editDestinationSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   country: z.string().min(2, "Country is required"),
-  region: z.string().optional(),
+  region: z.string().optional().nullable(),
   latitude: z.string().optional(),
   longitude: z.string().optional(),
 })
 
-type CreateDestinationForm = z.infer<typeof createDestinationSchema>
+type EditDestinationForm = z.infer<typeof editDestinationSchema>
 
-export function CreateDestinationDialog() {
-  const [open, setOpen] = useState(false)
+interface EditDestinationDialogProps {
+  destination: DestinationWithCount
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export function EditDestinationDialog({
+  destination,
+  open,
+  onOpenChange,
+}: EditDestinationDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [altText, setAltText] = useState("")
   const queryClient = useQueryClient()
   
-  const form = useForm<CreateDestinationForm>({
-    resolver: zodResolver(createDestinationSchema),
+  const form = useForm<EditDestinationForm>({
+    resolver: zodResolver(editDestinationSchema),
     defaultValues: {
-      name: "",
-      country: "",
-      region: "",
+      name: destination.name,
+      country: destination.country,
+      region: destination.region || "",
+      latitude: destination.latitude?.toString() || "",
+      longitude: destination.longitude?.toString() || "",
     },
   })
 
-  const handleImageSelect = (file: File | null, altText: string) => {
-    setSelectedFile(file)
-    setAltText(altText)
-  }
-
-  const uploadImage = async (destinationId: string) => {
-    if (!selectedFile) return
-
-    const formData = new FormData()
-    formData.append("file", selectedFile)
-    formData.append("altText", altText || `${form.getValues("name")} hero image`)
-
-    const response = await fetch(`/api/destinations/${destinationId}/image`, {
-      method: "POST",
-      body: formData,
+  // Update form when destination changes
+  useEffect(() => {
+    form.reset({
+      name: destination.name,
+      country: destination.country,
+      region: destination.region || "",
+      latitude: destination.latitude?.toString() || "",
+      longitude: destination.longitude?.toString() || "",
     })
+  }, [destination, form])
 
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.error || "Failed to upload image")
-    }
-
-    return data
-  }
-
-  const onSubmit = async (data: CreateDestinationForm) => {
+  const onSubmit = async (data: EditDestinationForm) => {
     setIsSubmitting(true)
     try {
-      // Step 1: Create the destination
       const payload = {
-        ...data,
-        latitude: data.latitude ? parseFloat(data.latitude) : undefined,
-        longitude: data.longitude ? parseFloat(data.longitude) : undefined,
+        name: data.name,
+        country: data.country,
+        region: data.region || null,
+        latitude: data.latitude ? parseFloat(data.latitude) : null,
+        longitude: data.longitude ? parseFloat(data.longitude) : null,
       }
-      const newDestination = await api.post<{ id: string }>("/api/destinations", payload)
       
-      // Step 2: Upload image if selected
-      if (selectedFile) {
-        try {
-          await uploadImage(newDestination.id)
-          toast.success("Destination created with image")
-        } catch (imageError) {
-          // Image upload failed but destination was created
-          toast.success("Destination created successfully")
-          toast.error("Failed to upload image. You can add it later by editing the destination.")
-        }
-      } else {
-        toast.success("Destination created successfully")
-      }
-
-      // Invalidate queries to refresh the list
-      await queryClient.invalidateQueries({ queryKey: destinationKeys.all })
+      await api.put(`/api/destinations/${destination.id}`, payload)
       
-      // Close dialog and reset states
-      setOpen(false)
-      form.reset()
-      setSelectedFile(null)
-      setAltText("")
+      toast.success("Destination updated successfully")
+      queryClient.invalidateQueries({ queryKey: destinationKeys.all })
+      onOpenChange(false)
     } catch (error) {
-      // Error handled by toast notification
-      toast.error("Failed to create destination")
+      console.error("Error updating destination:", error)
+      toast.error("Failed to update destination")
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Button
-            size="lg"
-            className={[
-              "h-14 w-14 rounded-full p-0",
-              "bg-[#B5985A] hover:bg-[#B5985A]/80",
-              "shadow-2xl shadow-[#B5985A]/30",
-              "border border-white/20"
-            ].join(" ")}
-          >
-            <Plus className="h-6 w-6" />
-          </Button>
-        </motion.div>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-black/90 backdrop-blur-xl border-white/10">
         <DialogHeader>
-          <DialogTitle className="text-white">Add New Destination</DialogTitle>
+          <DialogTitle className="text-white">Edit Destination</DialogTitle>
           <DialogDescription className="text-gray-400">
-            Create a new destination to associate with properties.
+            Update the destination information and image.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -196,6 +154,7 @@ export function CreateDestinationDialog() {
                   <FormControl>
                     <Input
                       {...field}
+                      value={field.value || ""}
                       placeholder="e.g., Provence-Alpes-Côte d'Azur"
                       className="bg-white/10 border-white/10 text-white placeholder:text-gray-500"
                     />
@@ -249,16 +208,21 @@ export function CreateDestinationDialog() {
             <div className="pt-2">
               <Separator className="bg-white/10" />
             </div>
-            <ImageUploadSectionCreate
-              onImageSelect={handleImageSelect}
-              disabled={isSubmitting}
+            <ImageUploadSection
+              destinationId={destination.id}
+              currentImageUrl={destination.imageUrl}
+              currentImageAltText={destination.imageAltText}
+              onImageUpdate={() => {
+                // Refresh the data after image update
+                queryClient.invalidateQueries({ queryKey: destinationKeys.all })
+              }}
             />
             
             <div className="flex gap-2 pt-4">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setOpen(false)}
+                onClick={() => onOpenChange(false)}
                 className="flex-1 border-white/10 text-white hover:bg-white/10"
                 disabled={isSubmitting}
               >
@@ -269,7 +233,7 @@ export function CreateDestinationDialog() {
                 disabled={isSubmitting}
                 className="flex-1 bg-[#B5985A] hover:bg-[#B5985A]/80 text-white"
               >
-                {isSubmitting ? "Creating..." : "Create Destination"}
+                {isSubmitting ? "Updating..." : "Update Destination"}
               </Button>
             </div>
           </form>

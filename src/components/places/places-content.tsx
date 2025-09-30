@@ -8,11 +8,11 @@ import { CreateProviderDialog } from "@/components/places/create-provider-dialog
 import { ProviderFilters as ProviderFiltersComponent } from "@/components/places/provider-filters"
 import { ExportDialog } from "@/components/places/export-dialog"
 import { ImportDialog } from "@/components/places/import-dialog"
-import { useActivityProviders } from "@/hooks/use-activity-providers"
+import { useActivityProviders, useBulkDeleteProviders } from "@/hooks/use-activity-providers"
 import { ActivityProviderFilters, ActivityProviderListItem } from "@/types/activity-provider"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, FilterX, Download, Upload } from "lucide-react"
+import { Search, FilterX, Download, Upload, Trash2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { useDebounce } from "@/hooks/use-debounce"
@@ -23,6 +23,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { 
   useQueryStates, 
   parseAsArrayOf, 
@@ -69,6 +79,7 @@ export function PlacesContent() {
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [selectedProviderIds, setSelectedProviderIds] = useState<string[]>([])
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false)
 
   // Debounce search value
   const debouncedSearch = useDebounce(searchInput, 300)
@@ -121,6 +132,9 @@ export function PlacesContent() {
     10
   )
 
+  // Bulk delete mutation
+  const bulkDeleteMutation = useBulkDeleteProviders()
+
   // Handle filter changes
   const handleFiltersChange = (newFilters: ActivityProviderFilters) => {
     setIsFilterLoading(true)
@@ -170,11 +184,19 @@ export function PlacesContent() {
     setUrlState({ page: newPage })
   }
 
-  // Removed row click handler to prevent conflicts with inline editing
-  // Users should use the edit button in the actions column instead
+  const handleBulkDelete = async () => {
+    if (selectedProviderIds.length === 0) return
+    
+    try {
+      await bulkDeleteMutation.mutateAsync({ providerIds: selectedProviderIds })
+      setSelectedProviderIds([])
+      setShowBulkDeleteDialog(false)
+    } catch (error) {
+    }
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <motion.h1 
           initial={{ opacity: 0, x: -20 }}
@@ -188,6 +210,19 @@ export function PlacesContent() {
           animate={{ opacity: 1, x: 0 }}
           className="flex items-center gap-2"
         >
+          {selectedProviderIds.length > 0 && (
+            <Button 
+              variant="destructive" 
+              size="sm"
+              onClick={() => setShowBulkDeleteDialog(true)}
+              disabled={bulkDeleteMutation.isPending}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete Selected ({selectedProviderIds.length})
+            </Button>
+          )}
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="gap-2">
@@ -312,6 +347,35 @@ export function PlacesContent() {
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
       />
+
+      {/* Bulk Delete Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Selected Providers</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {selectedProviderIds.length} provider{selectedProviderIds.length !== 1 ? 's' : ''}? 
+              This action cannot be undone and will also remove any property relationships.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleteMutation.isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteMutation.isPending}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {bulkDeleteMutation.isPending ? (
+                "Deleting..."
+              ) : (
+                `Delete ${selectedProviderIds.length} Provider${selectedProviderIds.length !== 1 ? 's' : ''}`
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

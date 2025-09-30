@@ -163,7 +163,7 @@ export function LegalsContent() {
   const totalPages = Math.ceil(totalCount / urlState.pageSize)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <motion.h1 
           initial={{ opacity: 0, x: -20 }}
@@ -269,7 +269,7 @@ export function LegalsContent() {
                   <DropdownMenuItem 
                     onClick={() => {
                       // Handle bulk download
-                      console.log('Bulk download:', selectedDocumentIds)
+                      // TODO: Implement bulk download functionality
                     }}
                   >
                     Download Selected
@@ -277,7 +277,7 @@ export function LegalsContent() {
                   <DropdownMenuItem 
                     onClick={() => {
                       // Handle bulk delete
-                      console.log('Bulk delete:', selectedDocumentIds)
+                      // TODO: Implement bulk delete functionality
                     }}
                     className="text-red-600"
                   >

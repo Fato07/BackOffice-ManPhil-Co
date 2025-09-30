@@ -65,6 +65,35 @@ export function DataTableCompact<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [sorting, setSorting] = React.useState<SortingState>([])
 
+  // Sync external selectedRowIds with internal rowSelection state
+  React.useEffect(() => {
+    if (selectedRowIds && onSelectedRowsChange) {
+      const newRowSelection: Record<string, boolean> = {}
+      selectedRowIds.forEach((id) => {
+        // When using getRowId, the keys are the actual IDs, not indices
+        newRowSelection[id] = true
+      })
+      setRowSelection(newRowSelection)
+    }
+  }, [selectedRowIds, onSelectedRowsChange])
+
+  // Handle row selection changes
+  const handleRowSelectionChange = React.useCallback((updater: any) => {
+    setRowSelection((old) => {
+      const newSelection = typeof updater === 'function' ? updater(old) : updater
+      
+      // When using getRowId, the keys are already the row IDs
+      if (onSelectedRowsChange) {
+        const selectedIds = Object.keys(newSelection)
+          .filter(key => newSelection[key])
+        
+        onSelectedRowsChange(selectedIds)
+      }
+      
+      return newSelection
+    })
+  }, [onSelectedRowsChange])
+
   const table = useReactTable({
     data,
     columns,
@@ -75,7 +104,7 @@ export function DataTableCompact<TData, TValue>({
       columnFilters,
     },
     enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: handleRowSelectionChange,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
@@ -85,6 +114,7 @@ export function DataTableCompact<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
+    getRowId: (row: any) => row.id,
     initialState: {
       pagination: {
         pageSize,

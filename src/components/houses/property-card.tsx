@@ -4,6 +4,7 @@ import { PropertyListItem } from "@/types/property"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { 
   MapPin, 
   Bed, 
@@ -29,9 +30,18 @@ interface PropertyCardProps {
   onEdit?: () => void
   onDelete?: () => void
   className?: string
+  isSelected?: boolean
+  onSelectChange?: (selected: boolean) => void
 }
 
-export function PropertyCard({ property, onEdit, onDelete, className }: PropertyCardProps) {
+export function PropertyCard({ 
+  property, 
+  onEdit, 
+  onDelete, 
+  className,
+  isSelected = false,
+  onSelectChange 
+}: PropertyCardProps) {
   const router = useRouter()
   const mainPhoto = property.photos?.[0]
 
@@ -79,8 +89,20 @@ export function PropertyCard({ property, onEdit, onDelete, className }: Property
           </div>
         )}
         
-        {/* Status Badge */}
-        <div className="absolute top-3 left-3">
+        {/* Status Badge and Checkbox */}
+        <div className="absolute top-3 left-3 flex items-center gap-2">
+          {onSelectChange && (
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white/90 backdrop-blur-sm rounded p-1"
+            >
+              <Checkbox 
+                checked={isSelected}
+                onCheckedChange={onSelectChange}
+                className="h-4 w-4"
+              />
+            </div>
+          )}
           <Badge variant="outline" className={cn("backdrop-blur-sm", config.className)}>
             {config.label}
           </Badge>

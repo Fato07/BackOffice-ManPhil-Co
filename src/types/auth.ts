@@ -45,6 +45,11 @@ export enum Permission {
   LEGAL_DOCUMENT_CREATE = 'legal_document:create',
   LEGAL_DOCUMENT_EDIT = 'legal_document:edit',
   LEGAL_DOCUMENT_DELETE = 'legal_document:delete',
+  
+  // Activity provider permissions
+  ACTIVITY_PROVIDER_VIEW = 'activity_provider:view',
+  ACTIVITY_PROVIDER_EDIT = 'activity_provider:edit',
+  ACTIVITY_PROVIDER_DELETE = 'activity_provider:delete',
 }
 
 export interface RolePermissionMap {
@@ -80,6 +85,9 @@ export const ROLE_PERMISSIONS: RolePermissionMap = {
     Permission.LEGAL_DOCUMENT_CREATE,
     Permission.LEGAL_DOCUMENT_EDIT,
     Permission.LEGAL_DOCUMENT_DELETE,
+    Permission.ACTIVITY_PROVIDER_VIEW,
+    Permission.ACTIVITY_PROVIDER_EDIT,
+    Permission.ACTIVITY_PROVIDER_DELETE,
   ],
   [UserRole.MANAGER]: [
     Permission.PROPERTY_VIEW,
@@ -100,6 +108,9 @@ export const ROLE_PERMISSIONS: RolePermissionMap = {
     Permission.LEGAL_DOCUMENT_CREATE,
     Permission.LEGAL_DOCUMENT_EDIT,
     Permission.LEGAL_DOCUMENT_DELETE,
+    Permission.ACTIVITY_PROVIDER_VIEW,
+    Permission.ACTIVITY_PROVIDER_EDIT,
+    Permission.ACTIVITY_PROVIDER_DELETE,
   ],
   [UserRole.STAFF]: [
     Permission.PROPERTY_VIEW,
@@ -107,11 +118,13 @@ export const ROLE_PERMISSIONS: RolePermissionMap = {
     Permission.EQUIPMENT_REQUEST_VIEW,
     Permission.EQUIPMENT_REQUEST_CREATE,
     Permission.LEGAL_DOCUMENT_VIEW,
+    Permission.ACTIVITY_PROVIDER_VIEW,
   ],
   [UserRole.VIEWER]: [
     Permission.PROPERTY_VIEW,
     Permission.EQUIPMENT_REQUEST_VIEW,
     Permission.LEGAL_DOCUMENT_VIEW,
+    Permission.ACTIVITY_PROVIDER_VIEW,
   ],
 };
 
