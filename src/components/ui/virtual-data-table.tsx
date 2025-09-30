@@ -105,8 +105,8 @@ export function VirtualDataTable<TData, TValue>({
     }
   }
 
-  // Row renderer for react-window
-  const Row = React.memo(({ index, style }: { index: number; style: React.CSSProperties }) => {
+  // Row renderer for react-window v2
+  const Row = React.memo(({ index, style }: { index: number; style?: React.CSSProperties }) => {
     const row = filteredRows[index]
     
     return (
@@ -331,13 +331,14 @@ export function VirtualDataTable<TData, TValue>({
         {/* Virtual Body */}
         {filteredRows.length > 0 ? (
           <List
-            height={height}
-            itemCount={filteredRows.length}
-            itemSize={itemHeight}
-            width="100%"
-          >
-            {Row}
-          </List>
+            className="border-t"
+            defaultHeight={height}
+            rowCount={filteredRows.length}
+            rowHeight={itemHeight}
+            rowComponent={Row as any}
+            rowProps={{} as any}
+            overscanCount={5}
+          />
         ) : (
           <div className="flex items-center justify-center py-12">
             {emptyState || (
