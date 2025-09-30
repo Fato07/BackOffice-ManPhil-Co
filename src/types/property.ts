@@ -12,7 +12,10 @@ import {
   Resource,
   Photo,
   MarketingContent,
-  AccessibilityType
+  AccessibilityType,
+  PropertyPricing,
+  MinimumStayRule,
+  OperationalCost
 } from "@/generated/prisma"
 
 // Re-export Prisma types
@@ -94,6 +97,9 @@ export type PropertyWithRelations = Property & {
   resources?: Resource[]
   photos?: Photo[]
   marketingContent?: MarketingContent[]
+  pricing?: PropertyPricing | null
+  minimumStayRules?: MinimumStayRule[]
+  operationalCosts?: OperationalCost[]
 }
 
 // UI-specific types

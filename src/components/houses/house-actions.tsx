@@ -53,14 +53,21 @@ export function HouseActions({ property }: HouseActionsProps) {
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-6 w-6 p-0">
-            <span className="sr-only">Open menu</span>
-            <Edit className="h-3 w-3" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+      <div className="relative" data-no-row-click>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="ghost" 
+              className="h-6 w-6 p-0 [&_svg]:pointer-events-auto"
+              onClick={(e) => {
+                e.stopPropagation()
+              }}
+            >
+              <span className="sr-only">Open menu</span>
+              <Edit className="h-3 w-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[160px]">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem onClick={handleEdit}>
             <Edit className="mr-2 h-3 w-3" />
@@ -89,6 +96,7 @@ export function HouseActions({ property }: HouseActionsProps) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
 
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
         <AlertDialogContent>

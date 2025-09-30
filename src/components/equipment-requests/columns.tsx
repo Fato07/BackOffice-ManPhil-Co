@@ -25,17 +25,21 @@ function ActionsCell({ request }: { request: EquipmentRequestListItem }) {
   const router = useRouter()
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="h-6 w-6 p-0"
-        >
-          <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-3 w-3" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+    <div className="relative" data-no-row-click>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className="h-6 w-6 p-0 [&_svg]:pointer-events-auto"
+            onClick={(e) => {
+              e.stopPropagation()
+            }}
+          >
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-3 w-3" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[160px]">
         <DropdownMenuLabel className="text-xs">Actions</DropdownMenuLabel>
         <DropdownMenuItem asChild className="text-xs">
           <a href={`/equipment-requests/${request.id}`}>
@@ -68,6 +72,7 @@ function ActionsCell({ request }: { request: EquipmentRequestListItem }) {
         )}
       </DropdownMenuContent>
     </DropdownMenu>
+    </div>
   )
 }
 

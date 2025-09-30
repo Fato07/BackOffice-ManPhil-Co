@@ -99,22 +99,26 @@ export function ContactActions({
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="h-6 w-6 p-0"
-            disabled={deleteContactMutation.isPending}
-          >
-            <span className="sr-only">Open menu</span>
-            {deleteContactMutation.isPending ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              <MoreHorizontal className="h-3 w-3" />
-            )}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[200px]">
+      <div className="relative" data-no-row-click>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="h-6 w-6 p-0 [&_svg]:pointer-events-auto"
+              disabled={deleteContactMutation.isPending}
+              onClick={(e) => {
+                e.stopPropagation()
+              }}
+            >
+              <span className="sr-only">Open menu</span>
+              {deleteContactMutation.isPending ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <MoreHorizontal className="h-3 w-3" />
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[200px]">
           <DropdownMenuItem onClick={handleView}>
             <Eye className="mr-2 h-3 w-3" />
             View Details
@@ -179,6 +183,7 @@ export function ContactActions({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
