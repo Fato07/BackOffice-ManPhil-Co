@@ -12,7 +12,8 @@
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
     "setup:storage": "bun scripts/setup-storage.ts",
-    "postinstall": "prisma generate"
+    "supabase:link:staging": "supabase link --project-ref zfpbnqqejytfdigwcmsc",
+    "supabase:push:staging": "supabase db push"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.31.9",
