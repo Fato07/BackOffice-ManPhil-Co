@@ -560,7 +560,7 @@ function OperationalCostCard({
                   <SelectValue placeholder="Select who pays" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Le Collectionist">Le Collectionist</SelectItem>
+                  <SelectItem value="ManPhil & Co">ManPhil & Co</SelectItem>
                   <SelectItem value="Guest">Guest</SelectItem>
                   <SelectItem value="Owner">Owner</SelectItem>
                 </SelectContent>
@@ -768,7 +768,7 @@ function AddOperationalCostForm({
                 <SelectValue placeholder="Select who pays" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Le Collectionist">Le Collectionist</SelectItem>
+                <SelectItem value="ManPhil & Co">ManPhil & Co</SelectItem>
                 <SelectItem value="Guest">Guest</SelectItem>
                 <SelectItem value="Owner">Owner</SelectItem>
               </SelectContent>

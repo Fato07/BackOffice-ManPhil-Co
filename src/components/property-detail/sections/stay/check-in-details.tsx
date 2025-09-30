@@ -116,7 +116,7 @@ export function CheckInDetails({ property }: CheckInDetailsProps) {
           id="check-in-person"
           value={checkInPerson}
           onChange={(e) => setCheckInPerson(e.target.value)}
-          placeholder="e.g., Le Collectionist"
+          placeholder="e.g., ManPhil & Co Staff"
           disabled={!isEditing}
         />
       </div>

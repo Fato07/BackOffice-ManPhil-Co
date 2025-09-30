@@ -7,8 +7,6 @@ import {
   Clock,
   Moon,
   Calendar,
-  X,
-  Edit2,
   Info,
   History,
   CheckCircle
@@ -85,38 +83,12 @@ export function MinimumStayDetailsModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <DialogTitle className="text-xl font-semibold">
-                Minimum Stay Rule Details
-              </DialogTitle>
-              <DialogDescription className="mt-1">
-                {condition?.label || rule.bookingCondition} • {rule.minimumNights} night{rule.minimumNights > 1 ? 's' : ''} minimum
-              </DialogDescription>
-            </div>
-            <div className="flex items-center space-x-2">
-              {onEdit && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    onEdit(rule.id)
-                    onClose()
-                  }}
-                >
-                  <Edit2 className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
+          <DialogTitle className="text-xl font-semibold">
+            Minimum Stay Rule Details
+          </DialogTitle>
+          <DialogDescription className="mt-1">
+            {condition?.label || rule.bookingCondition} • {rule.minimumNights} night{rule.minimumNights > 1 ? 's' : ''} minimum
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 mt-6">

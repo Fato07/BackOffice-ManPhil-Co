@@ -12,8 +12,7 @@ import {
   Briefcase,
   Clock,
   FileText,
-  X,
-  Edit2
+  X
 } from "lucide-react"
 
 import {
@@ -100,22 +99,7 @@ export function OperationalCostDetailsModal({
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl">Operational Cost Details</DialogTitle>
-            {onEdit && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  onClose()
-                  onEdit(cost.id)
-                }}
-              >
-                <Edit2 className="w-4 h-4 mr-2" />
-                Edit
-              </Button>
-            )}
-          </div>
+          <DialogTitle className="text-xl">Operational Cost Details</DialogTitle>
           <DialogDescription>
             View detailed information about this operational cost.
           </DialogDescription>
@@ -157,7 +141,7 @@ export function OperationalCostDetailsModal({
                     <Badge 
                       variant="secondary" 
                       className={cn(
-                        cost.paidBy === "Le Collectionist" && "bg-blue-100 text-blue-800 border-blue-200",
+                        cost.paidBy === "ManPhil & Co" && "bg-blue-100 text-blue-800 border-blue-200",
                         cost.paidBy === "Guest" && "bg-green-100 text-green-800 border-green-200",
                         cost.paidBy === "Owner" && "bg-purple-100 text-purple-800 border-purple-200"
                       )}
