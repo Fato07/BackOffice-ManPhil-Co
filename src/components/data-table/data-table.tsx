@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { DataTablePagination } from "./data-table-pagination"
-import { DataTableToolbar } from "./data-table-toolbar"
 import { motion } from "framer-motion"
 
 interface DataTableProps<TData, TValue> {
@@ -47,6 +46,7 @@ interface DataTableProps<TData, TValue> {
   onPageChange?: (page: number) => void
   selectedRowIds?: string[]
   onSelectedRowsChange?: (selectedIds: string[]) => void
+  enableAnimations?: boolean // New prop to control animations
 }
 
 export function DataTable<TData, TValue>({
@@ -61,6 +61,7 @@ export function DataTable<TData, TValue>({
   onPageChange,
   selectedRowIds,
   onSelectedRowsChange,
+  enableAnimations = false, // Default to false for better performance
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -149,32 +150,57 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <motion.tr
-                  key={row.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: row.index * 0.02 }}
-                  whileHover={{ backgroundColor: "rgba(0, 0, 0, 0.02)", x: 2 }}
-                  data-state={row.getIsSelected() && "selected"}
-                  onClick={(e) => {
-                    // Don't trigger row click if clicking on a checkbox, button, or link
-                    const target = e.target as HTMLElement
-                    const isInteractiveElement = 
-                      target.tagName === 'INPUT' ||
-                      target.tagName === 'BUTTON' ||
-                      target.tagName === 'A' ||
-                      target.closest('button') ||
-                      target.closest('a') ||
-                      target.closest('[role="checkbox"]') ||
-                      target.closest('[data-no-row-click]')
-                    
-                    if (!isInteractiveElement && onRowClick) {
-                      onRowClick(row.original)
+              table.getRowModel().rows.map((row) => {
+                const RowComponent = enableAnimations ? motion.tr : 'tr'
+                const rowProps = enableAnimations
+                  ? {
+                      key: row.id,
+                      initial: { opacity: 0 },
+                      animate: { opacity: 1 },
+                      transition: { duration: 0.15 },
+                      "data-state": row.getIsSelected() && "selected",
+                      onClick: (e: React.MouseEvent) => {
+                        // Don't trigger row click if clicking on a checkbox, button, or link
+                        const target = e.target as HTMLElement
+                        const isInteractiveElement = 
+                          target.tagName === 'INPUT' ||
+                          target.tagName === 'BUTTON' ||
+                          target.tagName === 'A' ||
+                          target.closest('button') ||
+                          target.closest('a') ||
+                          target.closest('[role="checkbox"]') ||
+                          target.closest('[data-no-row-click]')
+                        
+                        if (!isInteractiveElement && onRowClick) {
+                          onRowClick(row.original)
+                        }
+                      },
+                      className: `border-b transition-colors ${onRowClick ? "cursor-pointer hover:bg-gray-50/50" : ""}`
                     }
-                  }}
-                  className={`border-b transition-colors ${onRowClick ? "cursor-pointer hover:bg-gray-50/50" : ""}`}
-                >
+                  : {
+                      key: row.id,
+                      "data-state": row.getIsSelected() && "selected",
+                      onClick: (e: React.MouseEvent) => {
+                        // Don't trigger row click if clicking on a checkbox, button, or link
+                        const target = e.target as HTMLElement
+                        const isInteractiveElement = 
+                          target.tagName === 'INPUT' ||
+                          target.tagName === 'BUTTON' ||
+                          target.tagName === 'A' ||
+                          target.closest('button') ||
+                          target.closest('a') ||
+                          target.closest('[role="checkbox"]') ||
+                          target.closest('[data-no-row-click]')
+                        
+                        if (!isInteractiveElement && onRowClick) {
+                          onRowClick(row.original)
+                        }
+                      },
+                      className: `border-b transition-colors ${onRowClick ? "cursor-pointer hover:bg-gray-50/50" : ""}`
+                    }
+                
+                return (
+                  <RowComponent {...rowProps}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell 
                       key={cell.id}
@@ -186,8 +212,9 @@ export function DataTable<TData, TValue>({
                       )}
                     </TableCell>
                   ))}
-                </motion.tr>
-              ))
+                  </RowComponent>
+                )
+              })
             ) : (
               <TableRow>
                 <TableCell
