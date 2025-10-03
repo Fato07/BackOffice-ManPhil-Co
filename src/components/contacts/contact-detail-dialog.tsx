@@ -92,7 +92,6 @@ export function ContactDetailDialog({
           ) : contact ? (
             <ScrollArea className="max-h-[calc(90vh-120px)]">
               <div className="px-6 pb-6 space-y-6">
-                {/* Header Section */}
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-2xl font-semibold">
@@ -131,7 +130,6 @@ export function ContactDetailDialog({
 
                 <Separator />
 
-                {/* Contact Information */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-sm">Contact Information</CardTitle>
@@ -168,7 +166,6 @@ export function ContactDetailDialog({
                   </CardContent>
                 </Card>
 
-                {/* Comments */}
                 {contact.comments && (
                   <Card>
                     <CardHeader>
@@ -182,7 +179,6 @@ export function ContactDetailDialog({
                   </Card>
                 )}
 
-                {/* Linked Properties */}
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-sm">
@@ -261,7 +257,6 @@ export function ContactDetailDialog({
         </DialogContent>
       </Dialog>
 
-      {/* Edit Dialog */}
       {showEditDialog && contact && (
         <EditContactDialog
           contactId={contactId}
@@ -270,7 +265,6 @@ export function ContactDetailDialog({
         />
       )}
 
-      {/* Link Property Dialog */}
       {showLinkDialog && (
         <LinkPropertyDialog
           contactId={contactId}

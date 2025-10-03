@@ -221,7 +221,6 @@ export function AuditLogTable({
         </Table>
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-2">
           <div className="flex-1 text-xs text-muted-foreground">
@@ -273,7 +272,6 @@ export function AuditLogTable({
         </div>
       )}
 
-      {/* Details Dialog */}
       {selectedLog && (
         <AuditLogDetailsDialog
           logId={selectedLog.id}

@@ -32,7 +32,7 @@ export async function GET(
 
     return NextResponse.json({ versions })
   } catch (error) {
-    console.error('Error in GET /api/legal-documents/[id]/versions:', error)
+    
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }
@@ -98,7 +98,7 @@ export async function POST(
 
     return NextResponse.json(result.data, { status: 201 })
   } catch (error) {
-    console.error('Error in POST /api/legal-documents/[id]/versions:', error)
+    
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }

@@ -251,10 +251,8 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Toolbar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          {/* Search */}
           {searchable && (
             <div className="relative max-w-sm">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -277,7 +275,6 @@ export function DataTable<TData, TValue>({
             </div>
           )}
 
-          {/* Filters */}
           {filterable && filterOptions.map((filterOption) => (
             <DropdownMenu key={String(filterOption.key)}>
               <DropdownMenuTrigger asChild>
@@ -367,7 +364,6 @@ export function DataTable<TData, TValue>({
         <div className="flex items-center space-x-2">
           {actions}
           
-          {/* Export */}
           {exportable && (
             <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="mr-2 h-4 w-4" />
@@ -375,7 +371,6 @@ export function DataTable<TData, TValue>({
             </Button>
           )}
 
-          {/* Column visibility */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="ml-auto">
@@ -409,7 +404,6 @@ export function DataTable<TData, TValue>({
         </div>
       </div>
 
-      {/* Table */}
       <div className="w-full">
         <Table>
           <TableHeader>
@@ -461,7 +455,6 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-      {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Rows per page</p>
@@ -627,7 +620,6 @@ function GroupedDataTable<TData, TValue>({
 }: GroupedDataTableInternalProps<TData, TValue>) {
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Toolbar - Same as regular table */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           {searchable && (
@@ -664,11 +656,9 @@ function GroupedDataTable<TData, TValue>({
         </div>
       </div>
 
-      {/* Grouped content */}
       <div className="space-y-6">
         {Object.entries(groupedData).map(([groupKey, group]: [string, any]) => (
           <div key={groupKey} className="w-full">
-            {/* Group header */}
             <div 
               className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50"
               onClick={() => toggleGroup(groupKey)}
@@ -687,7 +677,6 @@ function GroupedDataTable<TData, TValue>({
               </div>
             </div>
 
-            {/* Group content */}
             {expandedGroups[groupKey] && (
               <div>
                 <Table>

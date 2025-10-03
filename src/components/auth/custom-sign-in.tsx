@@ -49,11 +49,11 @@ export default function CustomSignIn() {
         router.push('/houses');
       } else if (result.status !== 'complete') {
         // Handle other statuses
-        console.error('Sign in not complete:', result);
+        
         toast.error('Sign in process incomplete. Please try again.');
       }
     } catch (err: any) {
-      console.error('Sign in error:', err);
+      
       
       if (err.errors) {
         const emailError = err.errors.find((e: any) => e.meta?.paramName === 'identifier');
@@ -78,13 +78,11 @@ export default function CustomSignIn() {
 
   return (
     <div className="w-full space-y-8">
-      {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-4xl font-serif text-[#0A0A0A]">Welcome Back</h1>
         <p className="text-gray-600 text-lg">Sign in to access your properties</p>
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
         <LuxuryInput
           label="Email address"
@@ -135,7 +133,6 @@ export default function CustomSignIn() {
         </LuxuryButton>
       </form>
 
-      {/* Footer */}
       <p className="text-center text-gray-600">
         Don't have an account?{' '}
         <Link href="/sign-up" className="text-[#B5985A] hover:text-[#B5985A]/80 font-medium transition-colors">

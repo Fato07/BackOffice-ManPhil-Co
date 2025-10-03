@@ -104,7 +104,6 @@ export function ExportDialog({ open, onOpenChange, selectedIds, filters }: Expor
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Export Type */}
           <div className="space-y-3">
             <Label className="text-base font-medium">What to export</Label>
             <RadioGroup value={exportType} onValueChange={setExportType as any}>
@@ -127,7 +126,6 @@ export function ExportDialog({ open, onOpenChange, selectedIds, filters }: Expor
             </RadioGroup>
           </div>
 
-          {/* Format */}
           <div className="space-y-3">
             <Label className="text-base font-medium">Format</Label>
             <RadioGroup value={format} onValueChange={setFormat as any}>
@@ -142,7 +140,6 @@ export function ExportDialog({ open, onOpenChange, selectedIds, filters }: Expor
             </RadioGroup>
           </div>
 
-          {/* Fields */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-base font-medium">Fields to include</Label>

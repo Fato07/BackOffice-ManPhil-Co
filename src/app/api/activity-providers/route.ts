@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       pageCount: result.pageCount
     })
   } catch (error) {
-    console.error("Error in GET /api/activity-providers:", error)
+    
     return NextResponse.json(
       { error: "Failed to fetch activity providers" },
       { status: 500 }
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result.data, { status: 201 })
   } catch (error) {
-    console.error("Error in POST /api/activity-providers:", error)
+    
     return NextResponse.json(
       { error: "Failed to create activity provider" },
       { status: 500 }

@@ -85,7 +85,6 @@ export function PricePeriodDetailsModal({
         </DialogHeader>
 
         <div className="space-y-6 mt-6">
-          {/* Header Info */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Badge variant="secondary" className={seasonColor}>
@@ -104,7 +103,6 @@ export function PricePeriodDetailsModal({
             </div>
           </div>
 
-          {/* Period Information */}
           <Card className="p-4">
             <h3 className="font-medium mb-4 flex items-center">
               <CalendarIcon className="w-4 h-4 mr-2" />
@@ -137,7 +135,6 @@ export function PricePeriodDetailsModal({
             </div>
           </Card>
 
-          {/* Pricing Breakdown */}
           <Card className="p-4">
             <h3 className="font-medium mb-4 flex items-center">
               <DollarSign className="w-4 h-4 mr-2" />
@@ -145,7 +142,6 @@ export function PricePeriodDetailsModal({
             </h3>
             
             <div className="space-y-4">
-              {/* Nightly Rates */}
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground mb-2">Nightly Rates</h4>
                 <div className="grid grid-cols-3 gap-4">
@@ -164,7 +160,6 @@ export function PricePeriodDetailsModal({
                 </div>
               </div>
 
-              {/* Weekly Rates */}
               {ownerWeekly > 0 && (
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-2">Weekly Rates</h4>
@@ -185,7 +180,6 @@ export function PricePeriodDetailsModal({
                 </div>
               )}
 
-              {/* Commission Details */}
               <div className="p-3 bg-amber-50 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
@@ -198,7 +192,6 @@ export function PricePeriodDetailsModal({
             </div>
           </Card>
 
-          {/* Revenue Projections */}
           <Card className="p-4">
             <h3 className="font-medium mb-4 flex items-center">
               <FileText className="w-4 h-4 mr-2" />
@@ -246,7 +239,6 @@ export function PricePeriodDetailsModal({
             </div>
           </Card>
 
-          {/* Metadata */}
           <Card className="p-4">
             <h3 className="font-medium mb-4 flex items-center">
               <Clock className="w-4 h-4 mr-2" />

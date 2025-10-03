@@ -6,38 +6,32 @@ export default function EditEquipmentRequestLoading() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex items-center gap-4">
           <Skeleton className="h-9 w-24" /> {/* Back button */}
           <Skeleton className="h-8 w-64" /> {/* Title */}
         </div>
 
         <Card className="p-6 space-y-6">
-          {/* Priority field */}
           <div className="space-y-2">
             <Skeleton className="h-4 w-16" />
             <Skeleton className="h-10 w-48" />
           </div>
 
-          {/* Reason field */}
           <div className="space-y-2">
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-20 w-full" />
           </div>
 
-          {/* Notes field */}
           <div className="space-y-2">
             <Skeleton className="h-4 w-16" />
             <Skeleton className="h-20 w-full" />
           </div>
 
-          {/* Internal notes field */}
           <div className="space-y-2">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-20 w-full" />
           </div>
 
-          {/* Items section */}
           <div className="space-y-4">
             <Skeleton className="h-5 w-32" />
             <div className="border rounded-lg p-4 space-y-3">
@@ -55,7 +49,6 @@ export default function EditEquipmentRequestLoading() {
           </div>
         </Card>
 
-        {/* Action buttons */}
         <div className="flex justify-end gap-2">
           <Skeleton className="h-10 w-24" />
           <Skeleton className="h-10 w-32" />

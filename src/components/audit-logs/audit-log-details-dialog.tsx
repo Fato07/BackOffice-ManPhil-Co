@@ -92,7 +92,6 @@ export function AuditLogDetailsDialog({
           </div>
         ) : log ? (
           <div className="space-y-6 py-4">
-            {/* Summary Section */}
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-muted-foreground">Summary</h3>
               <div className="grid grid-cols-2 gap-4">
@@ -155,7 +154,6 @@ export function AuditLogDetailsDialog({
 
             <Separator />
 
-            {/* Entity Details Section */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-muted-foreground">Entity Details</h3>
@@ -354,7 +352,6 @@ export function AuditLogDetailsDialog({
 
             <Separator />
 
-            {/* Changes Section */}
             {getBaseAction(log.action) === "update" && log.changes && (
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-muted-foreground">Changes</h3>

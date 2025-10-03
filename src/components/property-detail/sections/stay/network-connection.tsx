@@ -114,7 +114,6 @@ export function NetworkConnection({ property }: NetworkConnectionProps) {
         )}
       </div>
 
-      {/* Remote Work */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Globe className="h-5 w-5 text-gray-500" />
@@ -132,7 +131,6 @@ export function NetworkConnection({ property }: NetworkConnectionProps) {
         </div>
       </div>
 
-      {/* Mobile Network */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Smartphone className="h-5 w-5 text-gray-500" />
@@ -168,7 +166,6 @@ export function NetworkConnection({ property }: NetworkConnectionProps) {
         )}
       </div>
 
-      {/* Internet */}
       <div className="pt-6 border-t">
         <div className="flex items-center gap-2 mb-4">
           <Wifi className="h-5 w-5 text-gray-500" />

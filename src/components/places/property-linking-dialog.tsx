@@ -199,7 +199,7 @@ export function PropertyLinkingDialog({
         )
       }
     } catch (error) {
-      console.error("Failed to toggle property link:", error)
+      // Failed to toggle property link
     } finally {
       setIsUpdating(false)
     }
@@ -217,7 +217,7 @@ export function PropertyLinkingDialog({
       await onBulkLink(unlinkedSelected)
       setSelectedProperties(new Set())
     } catch (error) {
-      console.error("Failed to bulk link properties:", error)
+      // Failed to bulk link properties
     } finally {
       setIsUpdating(false)
     }
@@ -234,7 +234,7 @@ export function PropertyLinkingDialog({
       await onBulkUnlink(linkedSelected)
       setSelectedProperties(new Set())
     } catch (error) {
-      console.error("Failed to bulk unlink properties:", error)
+      // Failed to bulk unlink properties
     } finally {
       setIsUpdating(false)
     }
@@ -285,8 +285,7 @@ export function PropertyLinkingDialog({
             </div>
           </DialogHeader>
 
-          {/* Search and Filters */}
-          <div className="px-6 py-4 border-b bg-gray-50 dark:bg-gray-900">
+          <div className="px-6 py-4 border-b bg-gray-50">
             <div className="flex gap-4 items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -298,8 +297,7 @@ export function PropertyLinkingDialog({
                 />
               </div>
               
-              {/* Filter buttons */}
-              <div className="flex gap-1 bg-white dark:bg-gray-800 border rounded-lg p-1">
+              <div className="flex gap-1 bg-white border rounded-lg p-1">
                 {['all', 'linked', 'unlinked'].map((filterOption) => (
                   <Button
                     key={filterOption}
@@ -315,7 +313,6 @@ export function PropertyLinkingDialog({
               </div>
             </div>
 
-            {/* Stats and bulk actions */}
             <div className="flex items-center justify-between mt-4">
               <div className="flex gap-4 text-sm text-muted-foreground">
                 <span>{filteredProperties.length} properties</span>
@@ -355,11 +352,9 @@ export function PropertyLinkingDialog({
             </div>
           </div>
 
-          {/* Properties List */}
           <div className="flex-1 overflow-hidden">
             <div className="h-full overflow-y-auto">
-              {/* Select All Header */}
-              <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 border-b px-6 py-3">
+              <div className="sticky top-0 bg-gray-50 border-b px-6 py-3">
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -373,7 +368,6 @@ export function PropertyLinkingDialog({
                 </label>
               </div>
 
-              {/* Properties */}
               <div className="space-y-2 p-4">
                 <AnimatePresence>
                   {filteredProperties.map((property) => (
@@ -384,12 +378,11 @@ export function PropertyLinkingDialog({
                       exit={{ opacity: 0, y: -20 }}
                       className={cn(
                         "border rounded-lg p-4 transition-all hover:shadow-md",
-                        property.isLinked ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800" : "bg-white dark:bg-gray-800",
+                        property.isLinked ? "bg-green-50 border-green-200" : "bg-white",
                         selectedProperties.has(property.id) && "ring-2 ring-primary"
                       )}
                     >
                       <div className="flex items-start gap-4">
-                        {/* Checkbox */}
                         <input
                           type="checkbox"
                           checked={selectedProperties.has(property.id)}
@@ -397,13 +390,12 @@ export function PropertyLinkingDialog({
                           className="w-4 h-4 mt-1"
                         />
 
-                        {/* Property Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2">
                             <Home className="w-4 h-4 text-muted-foreground" />
                             <h3 className="font-medium text-sm">{property.name}</h3>
                             {property.isLinked && (
-                              <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-full text-xs font-medium">
+                              <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
                                 Linked
                               </span>
                             )}
@@ -425,7 +417,6 @@ export function PropertyLinkingDialog({
                             </div>
                           </div>
 
-                          {/* Distance and Time Inputs */}
                           {(property.isLinked || editingProperty === property.id) && (
                             <motion.div
                               initial={{ opacity: 0, height: 0 }}
@@ -490,7 +481,6 @@ export function PropertyLinkingDialog({
                           )}
                         </div>
 
-                        {/* Actions */}
                         <div className="flex items-center gap-2">
                           {!property.isLinked && editingProperty !== property.id && (
                             <Button

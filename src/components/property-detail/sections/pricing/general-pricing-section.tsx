@@ -107,7 +107,6 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
       </div>
 
       <div className="space-y-6">
-        {/* Last Update Info */}
         <Card className="p-4 bg-gradient-to-r from-teal-50 to-cyan-50 border-teal-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -134,7 +133,6 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
 
         {isEditing ? (
           <div className="space-y-6">
-            {/* Display Settings */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Settings className="w-4 h-4 text-teal-600" />
@@ -171,7 +169,6 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
               </div>
             </div>
 
-            {/* Financial Details */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Shield className="w-4 h-4 text-teal-600" />
@@ -212,7 +209,6 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
               </div>
             </div>
 
-            {/* Minimum Prices */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <CreditCard className="w-4 h-4 text-teal-600" />
@@ -260,7 +256,6 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
               </div>
             </div>
 
-            {/* Commission Rates */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Percent className="w-4 h-4 text-teal-600" />
@@ -342,7 +337,6 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
         ) : (
           /* View Mode */
           <div className="space-y-6">
-            {/* Display Settings */}
             <div>
               <Label className="text-sm text-gray-600 mb-3 block flex items-center gap-2">
                 <Settings className="w-4 h-4" />
@@ -368,7 +362,6 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
               </div>
             </div>
 
-            {/* Financial Details Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
               <div>
                 <Label className="text-sm text-gray-600">Security deposit</Label>
@@ -392,7 +385,6 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
               </div>
             </div>
 
-            {/* Minimum Prices */}
             <div>
               <Label className="text-sm text-gray-600 mb-3 block flex items-center gap-2">
                 <CreditCard className="w-4 h-4" />
@@ -422,7 +414,6 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
               </div>
             </div>
 
-            {/* Commission Rates */}
             <div>
               <Label className="text-sm text-gray-600 mb-3 block flex items-center gap-2">
                 <Percent className="w-4 h-4" />

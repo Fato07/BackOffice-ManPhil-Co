@@ -1,4 +1,4 @@
-import { ActivityProvider as PrismaActivityProvider, Property, Prisma } from '@/generated/prisma'
+import { ActivityProvider as PrismaActivityProvider, Property } from '@/generated/prisma'
 
 // Extended types with relations
 export interface ActivityProvider extends PrismaActivityProvider {
@@ -138,6 +138,6 @@ export interface ActivityProviderAuditLogEntry {
   action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LINK' | 'UNLINK'
   providerId: string
   providerName: string
-  changes?: Record<string, { old: any; new: any }>
-  metadata?: Record<string, any>
+  changes?: Record<string, { old: unknown; new: unknown }>
+  metadata?: Record<string, unknown>
 }

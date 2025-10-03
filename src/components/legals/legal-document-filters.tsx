@@ -132,7 +132,6 @@ export function LegalDocumentFilters({
               </Button>
             </div>
 
-          {/* Category filter */}
           <div className="space-y-2">
             <Label className="text-sm font-medium text-[#1c355e]">Category</Label>
             <Select
@@ -155,7 +154,6 @@ export function LegalDocumentFilters({
             </Select>
           </div>
 
-          {/* Status filter */}
           <div className="space-y-2">
             <Label className="text-sm font-medium text-[#1c355e]">Status</Label>
             <Select
@@ -178,7 +176,6 @@ export function LegalDocumentFilters({
             </Select>
           </div>
 
-          {/* Property filter */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2 text-sm font-medium text-[#1c355e]">
               <Building2 className="h-4 w-4 text-[#B5985A]" />
@@ -208,7 +205,6 @@ export function LegalDocumentFilters({
             </Select>
           </div>
 
-          {/* Expiring in days filter */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2 text-sm font-medium text-[#1c355e]">
               <Calendar className="h-4 w-4 text-[#B5985A]" />
@@ -236,7 +232,6 @@ export function LegalDocumentFilters({
             </Select>
           </div>
 
-          {/* Tags filter */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2 text-sm font-medium text-[#1c355e]">
               <Tag className="h-4 w-4 text-[#B5985A]" />

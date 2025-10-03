@@ -51,7 +51,7 @@ export async function updatePropertySurroundings(data: {
     revalidatePath(`/houses/${data.propertyId}`)
     return { success: true }
   } catch (error) {
-    console.error("Failed to update surroundings:", error)
+    
     return { success: false, error: "Failed to update surroundings" }
   }
 }
@@ -93,7 +93,7 @@ export async function updateCheckInDetails(data: {
     revalidatePath(`/houses/${data.propertyId}`)
     return { success: true }
   } catch (error) {
-    console.error("Failed to update check-in details:", error)
+    
     return { success: false, error: "Failed to update check-in details" }
   }
 }
@@ -131,7 +131,7 @@ export async function updateAccessInfo(data: {
     revalidatePath(`/houses/${data.propertyId}`)
     return { success: true }
   } catch (error) {
-    console.error("Failed to update access info:", error)
+    
     return { success: false, error: "Failed to update access info" }
   }
 }
@@ -169,7 +169,7 @@ export async function updateMaintenanceSchedules(data: {
     revalidatePath(`/houses/${data.propertyId}`)
     return { success: true }
   } catch (error) {
-    console.error("Failed to update maintenance schedules:", error)
+    
     return { success: false, error: "Failed to update maintenance schedules" }
   }
 }
@@ -224,7 +224,7 @@ export async function updateNetworkInfo(data: {
     revalidatePath(`/houses/${data.propertyId}`)
     return { success: true }
   } catch (error) {
-    console.error("Failed to update network info:", error)
+    
     return { success: false, error: "Failed to update network info" }
   }
 }
@@ -280,7 +280,7 @@ export async function updateSecurityInfo(data: {
     revalidatePath(`/houses/${data.propertyId}`)
     return { success: true }
   } catch (error) {
-    console.error("Failed to update security info:", error)
+    
     return { success: false, error: "Failed to update security info" }
   }
 }
@@ -340,7 +340,7 @@ export async function updateVillaBookComment(data: {
     revalidatePath(`/houses/${data.propertyId}`)
     return { success: true }
   } catch (error) {
-    console.error("Failed to update villa book comment:", error)
+    
     return { success: false, error: "Failed to update villa book comment" }
   }
 }

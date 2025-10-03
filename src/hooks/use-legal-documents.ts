@@ -11,6 +11,7 @@ import {
   deleteLegalDocument,
   uploadLegalDocumentVersion,
   bulkDeleteLegalDocuments,
+  bulkDownloadLegalDocuments,
   exportLegalDocuments
 } from '@/actions/legal-documents'
 import type { 
@@ -19,6 +20,7 @@ import type {
   UpdateLegalDocumentInput,
   UploadLegalDocumentVersionInput,
   BulkDeleteLegalDocumentsInput,
+  BulkDownloadLegalDocumentsInput,
   LegalDocumentExportInput
 } from '@/lib/validations/legal-document'
 
@@ -177,6 +179,24 @@ export function useBulkDeleteLegalDocuments() {
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to delete documents')
+    },
+  })
+}
+
+// Bulk download documents mutation
+export function useBulkDownloadLegalDocuments() {
+  return useMutation({
+    mutationFn: bulkDownloadLegalDocuments,
+    onSuccess: (result) => {
+      if (result.success && result.data) {
+        const { downloadUrl } = result.data
+        // Trigger download by opening the URL in a new window
+        window.open(downloadUrl, '_blank')
+        toast.success(`Download started for ${result.data.totalSize > 0 ? `${(result.data.totalSize / 1024 / 1024).toFixed(1)}MB` : 'selected documents'}`)
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to prepare download')
     },
   })
 }

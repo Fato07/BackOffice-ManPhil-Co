@@ -16,7 +16,7 @@ export async function GET() {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error("Database health check failed:", error);
+    
     
     return NextResponse.json(
       { 

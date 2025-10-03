@@ -24,7 +24,7 @@ export async function POST(
 
     return NextResponse.json(result.data, { status: 201 })
   } catch (error) {
-    console.error("Error in POST /api/activity-providers/[id]/link:", error)
+    
     return NextResponse.json(
       { error: "Failed to link provider to property" },
       { status: 500 }

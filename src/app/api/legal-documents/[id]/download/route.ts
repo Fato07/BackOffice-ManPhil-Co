@@ -68,7 +68,7 @@ export async function GET(
       .download(filePath)
 
     if (error) {
-      console.error('Error downloading file from Supabase:', error)
+      
       return NextResponse.json({ error: 'Failed to download file' }, { status: 500 })
     }
 
@@ -114,7 +114,7 @@ export async function GET(
       headers
     })
   } catch (error) {
-    console.error('Error in GET /api/legal-documents/[id]/download:', error)
+    
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }

@@ -119,7 +119,6 @@ export function ExportContactsDialog({ selectedContactIds = [], children }: Expo
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Export Scope */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">Export Scope</Label>
               <div className="p-3 bg-muted rounded-lg">
@@ -127,7 +126,6 @@ export function ExportContactsDialog({ selectedContactIds = [], children }: Expo
               </div>
             </div>
 
-            {/* File Format */}
             <FormField
               control={form.control}
               name="format"
@@ -161,7 +159,6 @@ export function ExportContactsDialog({ selectedContactIds = [], children }: Expo
               )}
             />
 
-            {/* Filter Options (only if not specific contacts) */}
             {!selectedContactIds.length && (
               <div className="space-y-4">
                 <Label className="text-sm font-medium">Filter Options</Label>
@@ -217,7 +214,6 @@ export function ExportContactsDialog({ selectedContactIds = [], children }: Expo
               </div>
             )}
 
-            {/* Field Selection */}
             <div className="space-y-4">
               <Label className="text-sm font-medium">Fields to Include</Label>
               <div className="grid grid-cols-2 gap-4">

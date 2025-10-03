@@ -35,7 +35,6 @@ function LegalsLoading() {
         </div>
         <Card>
           <div className="p-4 space-y-4">
-            {/* Table header */}
             <div className="flex items-center border-b pb-4">
               <Skeleton className="h-4 w-4 mr-4" />
               <div className="flex flex-1 gap-4">
@@ -47,7 +46,6 @@ function LegalsLoading() {
                 <Skeleton className="h-4 w-24 ml-auto" />
               </div>
             </div>
-            {/* Table rows */}
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex items-center py-2">
                 <Skeleton className="h-4 w-4 mr-4" />

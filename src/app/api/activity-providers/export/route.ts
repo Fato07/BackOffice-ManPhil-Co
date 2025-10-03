@@ -123,7 +123,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Invalid format. Use 'csv' or 'json'" }, { status: 400 })
     }
   } catch (error) {
-    console.error("Error exporting activity providers:", error)
+    
     return NextResponse.json(
       { error: "Failed to export activity providers" },
       { status: 500 }

@@ -79,7 +79,6 @@ export function EquipmentRequestForm({ request }: EquipmentRequestFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
@@ -93,7 +92,6 @@ export function EquipmentRequestForm({ request }: EquipmentRequestFormProps) {
         <h1 className="text-2xl font-bold">Edit Equipment Request</h1>
       </div>
 
-      {/* Property Info */}
       <Card className="p-6">
         <div className="grid gap-4 md:grid-cols-2">
           <div className="flex items-start gap-3">
@@ -116,7 +114,6 @@ export function EquipmentRequestForm({ request }: EquipmentRequestFormProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card className="p-6 space-y-6">
-            {/* Priority */}
             <FormField
               control={form.control}
               name="priority"
@@ -144,7 +141,6 @@ export function EquipmentRequestForm({ request }: EquipmentRequestFormProps) {
               )}
             />
 
-            {/* Reason */}
             <FormField
               control={form.control}
               name="reason"
@@ -166,7 +162,6 @@ export function EquipmentRequestForm({ request }: EquipmentRequestFormProps) {
               )}
             />
 
-            {/* Notes */}
             <FormField
               control={form.control}
               name="notes"
@@ -185,7 +180,6 @@ export function EquipmentRequestForm({ request }: EquipmentRequestFormProps) {
               )}
             />
 
-            {/* Internal Notes - Only visible with permission */}
             {canEditInternal && (
               <FormField
                 control={form.control}
@@ -211,7 +205,6 @@ export function EquipmentRequestForm({ request }: EquipmentRequestFormProps) {
 
             <Separator />
 
-            {/* Items */}
             <FormField
               control={form.control}
               name="items"
@@ -231,7 +224,6 @@ export function EquipmentRequestForm({ request }: EquipmentRequestFormProps) {
             />
           </Card>
 
-          {/* Actions */}
           <div className="flex justify-end gap-2">
             <Button
               type="button"

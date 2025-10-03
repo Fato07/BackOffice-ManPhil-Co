@@ -219,7 +219,6 @@ export function EquipmentSelect({
         )}
       </div>
 
-      {/* Display selected equipment by category */}
       <div className="space-y-3">
         {value.map((category, catIndex) => (
           <div key={catIndex} className="border rounded-lg p-3">

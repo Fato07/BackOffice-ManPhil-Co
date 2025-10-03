@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
       grouped: groupedDestinations,
     })
   } catch (error) {
-    console.error("Error fetching destinations:", error)
+    
     return NextResponse.json(
       { error: "Failed to fetch destinations" },
       { status: 500 }
@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(destination, { status: 201 })
   } catch (error) {
-    console.error("Error creating destination:", error)
+    
     return NextResponse.json(
       { error: "Failed to create destination" },
       { status: 500 }

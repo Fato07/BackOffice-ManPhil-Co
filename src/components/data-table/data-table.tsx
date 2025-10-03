@@ -152,7 +152,7 @@ export function DataTable<TData, TValue>({
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => {
                 const RowComponent = enableAnimations ? motion.tr : 'tr'
-                const rowProps = enableAnimations
+                const { key, ...rowProps } = enableAnimations
                   ? {
                       key: row.id,
                       initial: { opacity: 0 },
@@ -200,7 +200,7 @@ export function DataTable<TData, TValue>({
                     }
                 
                 return (
-                  <RowComponent {...rowProps}>
+                  <RowComponent key={key} {...rowProps}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell 
                       key={cell.id}

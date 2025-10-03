@@ -39,8 +39,8 @@ export default function RootLayout({
         <body className={`${inter.variable} ${playfair.variable} ${inter.className}`} suppressHydrationWarning>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem
+            defaultTheme="light"
+            enableSystem={false}
             disableTransitionOnChange
           >
             <NuqsAdapter>

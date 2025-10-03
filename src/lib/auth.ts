@@ -11,7 +11,7 @@ export async function getCurrentUser() {
     const user = await currentUser();
     return user;
   } catch (error) {
-    console.error("Error getting current user:", error);
+    
     return null;
   }
 }
@@ -25,7 +25,7 @@ export async function getCurrentUserId() {
     const { userId } = await auth();
     return userId;
   } catch (error) {
-    console.error("Error getting current user ID:", error);
+    
     return null;
   }
 }
@@ -56,7 +56,7 @@ export async function getUserRole(): Promise<UserRole | null> {
     const role = user.publicMetadata?.role as UserRole | undefined;
     return role || UserRole.VIEWER; // Default to VIEWER if no role set
   } catch (error) {
-    console.error("Error getting user role:", error);
+    
     return null;
   }
 }
@@ -71,7 +71,7 @@ export async function hasRole(role: string | UserRole): Promise<boolean> {
     const userRole = await getUserRole();
     return userRole === role;
   } catch (error) {
-    console.error("Error checking user role:", error);
+    
     return false;
   }
 }
@@ -89,7 +89,7 @@ export async function hasPermission(permission: Permission | string): Promise<bo
     const rolePermissions = ROLE_PERMISSIONS[role];
     return rolePermissions.includes(permission as Permission);
   } catch (error) {
-    console.error("Error checking permission:", error);
+    
     return false;
   }
 }
@@ -138,7 +138,7 @@ export async function getUserPermissions(): Promise<Permission[]> {
     
     return ROLE_PERMISSIONS[role];
   } catch (error) {
-    console.error("Error getting user permissions:", error);
+    
     return [];
   }
 }
@@ -152,7 +152,7 @@ export async function getUserEmail() {
     const user = await currentUser();
     return user?.emailAddresses[0]?.emailAddress || null;
   } catch (error) {
-    console.error("Error getting user email:", error);
+    
     return null;
   }
 }
@@ -171,7 +171,7 @@ export async function getUserFullName() {
     
     return `${firstName} ${lastName}`.trim() || user.username || "User";
   } catch (error) {
-    console.error("Error getting user full name:", error);
+    
     return null;
   }
 }

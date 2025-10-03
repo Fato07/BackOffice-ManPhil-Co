@@ -39,7 +39,7 @@ export async function GET(
 
     return NextResponse.json(result.data)
   } catch (error) {
-    console.error('Error in GET /api/legal-documents/[id]:', error)
+    
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }
@@ -94,7 +94,7 @@ export async function PATCH(
 
     return NextResponse.json(result.data)
   } catch (error) {
-    console.error('Error in PATCH /api/legal-documents/[id]:', error)
+    
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }
@@ -132,7 +132,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true }, { status: 204 })
   } catch (error) {
-    console.error('Error in DELETE /api/legal-documents/[id]:', error)
+    
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }

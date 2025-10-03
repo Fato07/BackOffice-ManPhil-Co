@@ -91,7 +91,7 @@ const formatDate = (date: Date | string | null | undefined, pattern: string): st
     if (isNaN(dateObj.getTime())) return "Invalid date"
     return format(dateObj, pattern)
   } catch (error) {
-    console.error('Date formatting error:', error)
+    
     return "Invalid date"
   }
 }
@@ -214,7 +214,6 @@ export function EditLegalDocumentDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl w-full bg-white p-0 sm:max-w-[90vw] lg:max-w-4xl">
         <div className="flex flex-col h-[85vh] max-h-[900px]">
-          {/* Header - Simplified */}
           <DialogHeader className="px-6 py-5">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
@@ -240,7 +239,6 @@ export function EditLegalDocumentDialog({
             </div>
           </DialogHeader>
 
-          {/* Tabs - Luxurious minimal design */}
           <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden relative">
             <TabsList className="flex w-full bg-white/50 backdrop-blur-sm border-b border-gray-200/50 rounded-none h-12 px-4 sm:px-6 gap-6 sm:gap-8">
               <TabsTrigger 
@@ -272,11 +270,9 @@ export function EditLegalDocumentDialog({
               </TabsTrigger>
             </TabsList>
 
-            {/* Scrollable content area */}
             <TabsContent value="details" className="flex-1 overflow-y-auto p-6 focus:outline-none animate-in fade-in-0 slide-in-from-bottom-1 duration-300">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Basic Information */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                     control={form.control}
@@ -315,7 +311,6 @@ export function EditLegalDocumentDialog({
                     />
                   </div>
 
-                  {/* Category, Status, and Property */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -373,7 +368,6 @@ export function EditLegalDocumentDialog({
                       )}
                     />
 
-                    {/* Property */}
                     <FormField
                       control={form.control}
                       name="propertyId"
@@ -422,7 +416,6 @@ export function EditLegalDocumentDialog({
                     />
                   </div>
 
-                  {/* Expiry and Reminder */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -499,7 +492,6 @@ export function EditLegalDocumentDialog({
                     />
                   </div>
 
-                  {/* Tags */}
                   <FormField
                     control={form.control}
                     name="tags"
@@ -655,7 +647,7 @@ export function EditLegalDocumentDialog({
                         try {
                           return JSON.stringify(document.metadata, null, 2)
                         } catch (error) {
-                          console.error('Error stringifying metadata:', error)
+                          
                           return 'Unable to display metadata'
                         }
                       })()}
@@ -666,7 +658,6 @@ export function EditLegalDocumentDialog({
             </TabsContent>
           </Tabs>
 
-          {/* Simplified footer */}
           <div className="border-t px-6 py-4 mt-auto">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -735,7 +726,6 @@ export function EditLegalDocumentDialog({
 
     </Dialog>
 
-      {/* Upload New Version Dialog */}
       <UploadVersionDialog
         documentId={documentId}
         documentName={document?.name || ""}

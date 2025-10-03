@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
       availableDestinations: destinations,
     })
   } catch (error) {
-    console.error("Error validating import:", error)
+    
     return NextResponse.json(
       { error: "Failed to validate import" },
       { status: 500 }

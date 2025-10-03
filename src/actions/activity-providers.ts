@@ -54,7 +54,7 @@ export async function getActivityProviders(params?: {
       totalCount,
       pageCount: Math.ceil(totalCount / pageSize)
     }
-  } catch (error) {
+  } catch (_error) {
     // Error handled by returning error response
     return {
       success: false,
@@ -80,7 +80,7 @@ export async function getActivityProvider(id: string) {
     }
 
     return { success: true, data: provider }
-  } catch (error) {
+  } catch (_error) {
     // Error handled by returning error response
     return { success: false, error: 'Failed to fetch activity provider' }
   }
@@ -112,7 +112,7 @@ export async function createActivityProvider(data: {
 
     revalidatePath('/places')
     return { success: true, data: provider }
-  } catch (error) {
+  } catch (_error) {
     // Error handled by returning error response
     return { success: false, error: 'Failed to create activity provider' }
   }
@@ -147,7 +147,7 @@ export async function updateActivityProvider(id: string, data: {
 
     revalidatePath('/places')
     return { success: true, data: provider }
-  } catch (error) {
+  } catch (_error) {
     // Error handled by returning error response
     return { success: false, error: 'Failed to update activity provider' }
   }
@@ -161,7 +161,7 @@ export async function deleteActivityProvider(id: string) {
 
     revalidatePath('/places')
     return { success: true }
-  } catch (error) {
+  } catch (_error) {
     // Error handled by returning error response
     return { success: false, error: 'Failed to delete activity provider' }
   }
@@ -185,7 +185,7 @@ export async function linkProviderToProperty(providerId: string, propertyId: str
 
     revalidatePath('/places')
     return { success: true, data: provider }
-  } catch (error) {
+  } catch (_error) {
     // Error handled by returning error response
     return { success: false, error: 'Failed to link provider to property' }
   }
@@ -209,7 +209,7 @@ export async function unlinkProviderFromProperty(providerId: string, propertyId:
 
     revalidatePath('/places')
     return { success: true, data: provider }
-  } catch (error) {
+  } catch (_error) {
     // Error handled by returning error response
     return { success: false, error: 'Failed to unlink provider from property' }
   }
@@ -269,19 +269,19 @@ export async function bulkDeleteActivityProviders(input: BulkDeleteProvidersData
       success: true,
       data: { deletedCount: result.count },
     }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const firstError = error.issues[0]
+  } catch (_error) {
+    if (_error instanceof z.ZodError) {
+      const firstError = _error.issues[0]
       return {
         success: false,
         error: `Validation error: ${firstError.path.join('.')} - ${firstError.message}`,
       }
     }
 
-    if (error instanceof Error) {
+    if (_error instanceof Error) {
       return {
         success: false,
-        error: error.message,
+        error: _error.message,
       }
     }
 

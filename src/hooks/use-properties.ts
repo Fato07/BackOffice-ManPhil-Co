@@ -139,7 +139,7 @@ export function useUpdateProperty() {
       toast.success("Property updated successfully")
     },
     onError: (error) => {
-      console.error("Property update error:", error)
+      
       if (error instanceof Error) {
         toast.error(`Failed to update property: ${error.message}`)
       } else {
@@ -208,7 +208,7 @@ export function useUpdatePropertySurroundings() {
       toast.success("Surroundings updated successfully")
     },
     onError: (error) => {
-      console.error("Surroundings update error:", error)
+      
       if (error instanceof Error) {
         toast.error(`Failed to update surroundings: ${error.message}`)
       } else {
@@ -233,7 +233,7 @@ export function useBulkDeleteProperties() {
       }
     },
     onError: (error) => {
-      console.error("Bulk delete error:", error)
+      
       toast.error("Failed to delete properties")
     },
   })

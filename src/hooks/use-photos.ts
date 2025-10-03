@@ -30,12 +30,9 @@ export function useUploadPhotos(propertyId: string) {
 
   return useMutation({
     mutationFn: async (files: File[]) => {
-      console.log(`[Frontend] Uploading ${files.length} photos for property ${propertyId}`)
-      
       const formData = new FormData()
       files.forEach((file) => {
         formData.append("files", file)
-        console.log(`[Frontend] Adding file: ${file.name}, size: ${file.size}, type: ${file.type}`)
       })
 
       const response = await fetch(`/api/properties/${propertyId}/photos`, {
@@ -44,7 +41,6 @@ export function useUploadPhotos(propertyId: string) {
       })
 
       const data = await response.json()
-      console.log("[Frontend] Upload response:", data)
 
       if (!response.ok) {
         // Handle detailed error response
@@ -69,14 +65,12 @@ export function useUploadPhotos(propertyId: string) {
       }
       
       if (data.errors && data.errors.length > 0) {
-        console.error("[Frontend] Upload errors:", data.errors)
         data.errors.forEach((error: string) => {
           toast.error(error)
         })
       }
     },
     onError: (error: Error) => {
-      console.error("[Frontend] Upload error:", error)
       toast.error(error.message || "Failed to upload photos")
     },
   })

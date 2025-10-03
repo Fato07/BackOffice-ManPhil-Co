@@ -13,7 +13,7 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error("Edit provider error:", error)
+    
   }, [error])
 
   return (

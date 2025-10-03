@@ -109,7 +109,7 @@ export function MapViewDialog({
       const data = await response.json()
       setSearchResults(data.features || [])
     } catch (error) {
-      console.error("Geocoding search failed:", error)
+      // Geocoding search failed
       setSearchResults([])
     } finally {
       setIsSearching(false)
@@ -149,7 +149,7 @@ export function MapViewDialog({
         setSelectedLocation(prev => prev ? { ...prev, address } : null)
       }
     } catch (error) {
-      console.error("Reverse geocoding failed:", error)
+      // Reverse geocoding failed
     }
   }, [])
 
@@ -211,7 +211,7 @@ export function MapViewDialog({
       )
       onOpenChange(false)
     } catch (error) {
-      console.error("Failed to update location:", error)
+      // Failed to update location
     } finally {
       setIsUpdating(false)
     }
@@ -351,8 +351,7 @@ export function MapViewDialog({
             </div>
           </DialogHeader>
 
-          {/* Search Bar */}
-          <div className="px-6 py-4 border-b bg-gray-50 dark:bg-gray-900">
+          <div className="px-6 py-4 border-b bg-gray-50">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -366,15 +365,14 @@ export function MapViewDialog({
               )}
             </div>
 
-            {/* Search Results */}
             {searchResults.length > 0 && (
               <div className="absolute z-10 w-full left-0 px-6">
-                <div className="bg-white dark:bg-gray-800 border rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
+                <div className="bg-white border rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
                   {searchResults.map((result, index) => (
                     <button
                       key={index}
                       onClick={() => handleSearchResultSelect(result)}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b last:border-b-0"
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b last:border-b-0"
                     >
                       <div className="font-medium text-sm">{result.text}</div>
                       <div className="text-xs text-muted-foreground">{result.place_name}</div>
@@ -385,7 +383,6 @@ export function MapViewDialog({
             )}
           </div>
 
-          {/* Map Container */}
           <div className="flex-1 relative">
             <Map
               ref={mapRef}
@@ -405,18 +402,14 @@ export function MapViewDialog({
                 showAccuracyCircle={false}
               />
 
-              {/* Current location marker */}
               {getCurrentLocationMarker()}
 
-              {/* Selected location marker */}
               {getSelectedLocationMarker()}
 
-              {/* Nearby property markers */}
               {getNearbyPropertyMarkers()}
             </Map>
 
-            {/* Map Instructions */}
-            <div className="absolute top-4 left-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-lg p-3 shadow-lg max-w-xs">
+            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg max-w-xs">
               <div className="flex items-center gap-2 text-sm font-medium mb-2">
                 <Crosshair className="w-4 h-4" />
                 Instructions
@@ -428,9 +421,8 @@ export function MapViewDialog({
               </ul>
             </div>
 
-            {/* Selected Location Info */}
             {selectedLocation && (
-              <div className="absolute bottom-4 left-4 right-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg p-4 shadow-lg">
+              <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg">
                 <div className="flex items-start gap-3">
                   <div className="bg-[#B5985A] p-2 rounded-full">
                     <MapPin className="w-4 h-4 text-white" />

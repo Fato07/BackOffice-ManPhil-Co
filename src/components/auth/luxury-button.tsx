@@ -74,7 +74,6 @@ const LuxuryButton = forwardRef<HTMLButtonElement, LuxuryButtonProps>(
         disabled={disabled || loading}
         {...props}
       >
-        {/* Background Animation Layer */}
         <span 
           className={cn(
             "absolute inset-0 transition-opacity duration-300",
@@ -85,14 +84,12 @@ const LuxuryButton = forwardRef<HTMLButtonElement, LuxuryButtonProps>(
           )}
         />
 
-        {/* Content */}
         <span className="relative flex items-center gap-2">
           {iconPosition === 'left' && renderIcon()}
           {children}
           {iconPosition === 'right' && renderIcon()}
         </span>
 
-        {/* Ripple Effect on Click */}
         <span 
           className={cn(
             "absolute inset-0 rounded-xl",

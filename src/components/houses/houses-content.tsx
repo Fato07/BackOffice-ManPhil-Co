@@ -324,7 +324,6 @@ export function HousesContent() {
         transition={{ delay: 0.1 }}
         className="space-y-4"
       >
-        {/* Search bar and Filters */}
         <div className="flex items-center gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -361,7 +360,6 @@ export function HousesContent() {
         </div>
       </motion.div>
 
-      {/* Results */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -466,7 +464,6 @@ export function HousesContent() {
         )}
       </motion.div>
 
-      {/* Export Dialog */}
       <ExportDialog
         open={showExportDialog}
         onOpenChange={setShowExportDialog}
@@ -474,13 +471,11 @@ export function HousesContent() {
         totalProperties={properties?.total || 0}
       />
 
-      {/* Import Dialog */}
       <ImportDialog
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
       />
 
-      {/* Bulk Delete Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -8,7 +8,8 @@ import { EditLegalDocumentDialog } from "@/components/legals/edit-legal-document
 import { LegalDocumentFilters } from "@/components/legals/legal-document-filters"
 import { ExportDialog } from "@/components/legals/export-dialog"
 import { ImportDialog } from "@/components/legals/import-dialog"
-import { useLegalDocuments } from "@/hooks/use-legal-documents"
+import { BulkOperationsDialog } from "@/components/legals/bulk-operations-dialog"
+import { useLegalDocuments, useBulkDeleteLegalDocuments, useBulkDownloadLegalDocuments } from "@/hooks/use-legal-documents"
 import { 
   LegalDocumentCategory, 
   LegalDocumentStatus,
@@ -16,7 +17,7 @@ import {
 } from "@/types/legal-document"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, FilterX, Download, Upload, Plus } from "lucide-react"
+import { Search, FilterX, Download, Upload, Plus, Trash2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { useDebounce } from "@/hooks/use-debounce"
@@ -80,6 +81,8 @@ export function LegalsContent() {
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([])
   const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null)
+  const [showBulkDialog, setShowBulkDialog] = useState(false)
+  const [bulkOperation, setBulkOperation] = useState<'download' | 'delete' | null>(null)
 
   // Debounce search value
   const debouncedSearch = useDebounce(searchInput, 300)
@@ -107,6 +110,10 @@ export function LegalsContent() {
 
   // Fetch documents
   const { data: result, isLoading, error } = useLegalDocuments(filters)
+  
+  // Bulk operations
+  const bulkDeleteMutation = useBulkDeleteLegalDocuments()
+  const bulkDownloadMutation = useBulkDownloadLegalDocuments()
 
   // Calculate active filters count
   const activeFiltersCount = useMemo(() => {
@@ -158,9 +165,49 @@ export function LegalsContent() {
     setUrlState({ sortBy, sortOrder })
   }
 
+  // Bulk operation handlers
+  const handleBulkDownload = () => {
+    setBulkOperation('download')
+    setShowBulkDialog(true)
+  }
+
+  const handleBulkDelete = () => {
+    setBulkOperation('delete')
+    setShowBulkDialog(true)
+  }
+
+  const handleBulkOperationConfirm = async (options?: { includeVersions?: boolean; format?: 'zip' | 'individual' }) => {
+    if (!bulkOperation) return
+
+    try {
+      if (bulkOperation === 'download') {
+        await bulkDownloadMutation.mutateAsync({
+          documentIds: selectedDocumentIds,
+          format: options?.format || 'zip',
+          includeVersions: options?.includeVersions || false
+        })
+      } else if (bulkOperation === 'delete') {
+        await bulkDeleteMutation.mutateAsync({
+          documentIds: selectedDocumentIds
+        })
+        // Clear selection after successful delete
+        setSelectedDocumentIds([])
+      }
+      
+      setShowBulkDialog(false)
+      setBulkOperation(null)
+    } catch (error) {
+      // Error is handled by the mutation hooks
+      
+    }
+  }
+
   const documents = result?.data?.documents || []
   const totalCount = result?.data?.totalCount || 0
   const totalPages = Math.ceil(totalCount / urlState.pageSize)
+  
+  // Get selected documents for bulk operations
+  const selectedDocuments = documents.filter(doc => selectedDocumentIds.includes(doc.id))
 
   return (
     <div className="space-y-6 p-6">
@@ -201,7 +248,6 @@ export function LegalsContent() {
         </div>
       </div>
 
-      {/* Search and filters */}
       <div className="space-y-4">
         <div className="flex items-center gap-4">
           <div className="relative flex-1 max-w-md">
@@ -235,7 +281,6 @@ export function LegalsContent() {
         </div>
       </div>
 
-      {/* Results count and table */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -267,20 +312,18 @@ export function LegalsContent() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem 
-                    onClick={() => {
-                      // Handle bulk download
-                      // TODO: Implement bulk download functionality
-                    }}
+                    onClick={handleBulkDownload}
+                    disabled={bulkDownloadMutation.isPending}
                   >
+                    <Download className="h-4 w-4 mr-2" />
                     Download Selected
                   </DropdownMenuItem>
                   <DropdownMenuItem 
-                    onClick={() => {
-                      // Handle bulk delete
-                      // TODO: Implement bulk delete functionality
-                    }}
-                    className="text-red-600"
+                    onClick={handleBulkDelete}
+                    disabled={bulkDeleteMutation.isPending}
+                    className="text-red-600 focus:text-red-600"
                   >
+                    <Trash2 className="h-4 w-4 mr-2" />
                     Delete Selected
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -296,10 +339,11 @@ export function LegalsContent() {
           page={urlState.page}
           pageCount={totalPages}
           onPageChange={handlePageChange}
+          selectedRowIds={selectedDocumentIds}
+          onSelectedRowsChange={setSelectedDocumentIds}
         />
       </motion.div>
 
-      {/* Dialogs */}
       <CreateDocumentDialog 
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
@@ -322,6 +366,22 @@ export function LegalsContent() {
               setEditingDocumentId(null)
             }
           }}
+        />
+      )}
+      
+      {showBulkDialog && bulkOperation && (
+        <BulkOperationsDialog
+          open={showBulkDialog}
+          onOpenChange={(open) => {
+            setShowBulkDialog(open)
+            if (!open) {
+              setBulkOperation(null)
+            }
+          }}
+          operation={bulkOperation}
+          selectedDocuments={selectedDocuments}
+          onConfirm={handleBulkOperationConfirm}
+          isLoading={bulkDownloadMutation.isPending || bulkDeleteMutation.isPending}
         />
       )}
     </div>

@@ -279,7 +279,6 @@ export function ServicesSection({ property }: ServicesSectionProps) {
       canEdit={canEdit}
     >
       <div className="space-y-8">
-        {/* Transport Services */}
         <div>
           <h3 className="text-base font-semibold mb-4">Transport Services</h3>
           <div className="space-y-4">
@@ -319,7 +318,6 @@ export function ServicesSection({ property }: ServicesSectionProps) {
           </div>
         </div>
 
-        {/* Meal Services */}
         <div>
           <h3 className="text-base font-semibold mb-4">Meal Services</h3>
           <div className="space-y-4">
@@ -374,7 +372,6 @@ export function ServicesSection({ property }: ServicesSectionProps) {
           </div>
         </div>
 
-        {/* Concierge Services */}
         <div>
           <h3 className="text-base font-semibold mb-4">Concierge Services</h3>
           <div className="space-y-4">
@@ -490,7 +487,6 @@ export function ServicesSection({ property }: ServicesSectionProps) {
           </div>
         </div>
 
-        {/* Additional Services */}
         <div>
           <h3 className="text-base font-semibold mb-4">Additional Services</h3>
           <div className="space-y-4">

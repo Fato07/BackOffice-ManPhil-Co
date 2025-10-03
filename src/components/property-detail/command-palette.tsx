@@ -84,7 +84,7 @@ export function CommandPalette({ propertyId }: CommandPaletteProps) {
 
     if (item.action === "logout") {
       // Handle logout
-      console.log("Logout")
+      
     } else if (item.href) {
       if (item.href.startsWith("/")) {
         router.push(item.href)

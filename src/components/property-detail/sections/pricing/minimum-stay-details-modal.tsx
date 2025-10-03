@@ -92,7 +92,6 @@ export function MinimumStayDetailsModal({
         </DialogHeader>
 
         <div className="space-y-6 mt-6">
-          {/* Header Info */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Badge 
@@ -113,7 +112,6 @@ export function MinimumStayDetailsModal({
             </div>
           </div>
 
-          {/* Booking Condition Details */}
           <Card className="p-4">
             <h3 className="font-medium mb-4 flex items-center">
               {condition?.icon || <Calendar className="w-4 h-4 mr-2" />}
@@ -153,7 +151,6 @@ export function MinimumStayDetailsModal({
             </div>
           </Card>
 
-          {/* Period Information */}
           <Card className="p-4">
             <h3 className="font-medium mb-4 flex items-center">
               <CalendarIcon className="w-4 h-4 mr-2" />
@@ -201,7 +198,6 @@ export function MinimumStayDetailsModal({
             )}
           </Card>
 
-          {/* Impact Analysis */}
           <Card className="p-4">
             <h3 className="font-medium mb-4 flex items-center">
               <CheckCircle className="w-4 h-4 mr-2" />
@@ -247,7 +243,6 @@ export function MinimumStayDetailsModal({
             </div>
           </Card>
 
-          {/* Metadata */}
           <Card className="p-4">
             <h3 className="font-medium mb-4 flex items-center">
               <History className="w-4 h-4 mr-2" />

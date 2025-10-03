@@ -147,7 +147,6 @@ export function StaySection({ property }: StaySectionProps) {
 
   return (
     <div className="space-y-6">
-      {/* Main Section Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <Home className="h-6 w-6 text-indigo-600" />
@@ -161,7 +160,6 @@ export function StaySection({ property }: StaySectionProps) {
         <CompletionBadge completedCount={completedCount} totalCount={totalCount} />
       </div>
 
-      {/* Subsections with Progressive Disclosure */}
       <div className="space-y-3">
         {subsections.map(subsection => {
           const Icon = subsection.icon
@@ -171,7 +169,6 @@ export function StaySection({ property }: StaySectionProps) {
 
           return (
             <GlassCard key={subsection.id} variant="luxury" className="overflow-hidden">
-              {/* Subsection Header */}
               <button
                 onClick={() => toggleSection(subsection.id)}
                 className={cn(
@@ -198,7 +195,6 @@ export function StaySection({ property }: StaySectionProps) {
                 )} />
               </button>
 
-              {/* Subsection Content */}
               {isExpanded && (
                 <div className="border-t">
                   <Component property={property} />

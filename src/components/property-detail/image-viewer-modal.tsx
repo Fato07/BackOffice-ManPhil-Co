@@ -104,10 +104,8 @@ export function ImageViewerModal({
         className="!max-w-[100vw] !w-screen !h-screen !m-0 !translate-x-[-50%] !translate-y-[-50%] !left-[50%] !top-[50%] p-0 bg-black/95 backdrop-blur-2xl border-0 rounded-none" 
         showCloseButton={false}
       >
-        {/* Visually hidden title for accessibility */}
         <DialogTitle className="sr-only">Property Image Gallery - Viewing {currentIndex + 1} of {photos.length}</DialogTitle>
         
-        {/* Header Controls */}
         <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/70 to-transparent p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -162,9 +160,7 @@ export function ImageViewerModal({
           </div>
         </div>
 
-        {/* Main Image */}
         <div className="relative w-full h-full flex items-center justify-center">
-          {/* Navigation Buttons */}
           {photos.length > 1 && (
             <>
               <Button
@@ -189,7 +185,6 @@ export function ImageViewerModal({
             </>
           )}
 
-          {/* Image Container */}
           <div
             className={cn(
               "relative transition-all duration-300",
@@ -210,7 +205,6 @@ export function ImageViewerModal({
           </div>
         </div>
 
-        {/* Caption */}
         {currentPhoto.caption && (
           <div className="absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-black/70 to-transparent p-6">
             <p className="text-white text-center text-lg font-light">
@@ -219,7 +213,6 @@ export function ImageViewerModal({
           </div>
         )}
 
-        {/* Thumbnail Grid */}
         {showThumbnails && (
           <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-xl overflow-auto">
             <div className="p-8">

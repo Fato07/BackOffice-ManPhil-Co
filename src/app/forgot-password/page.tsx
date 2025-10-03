@@ -13,7 +13,6 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Side - Luxury Image */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-[#0A0A0A]">
         <div className="absolute inset-0 bg-gradient-to-br from-[#1c355e]/80 via-[#0A0A0A]/50 to-[#B5985A]/30"></div>
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
@@ -73,12 +72,10 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
 
-        {/* Decorative Elements */}
         <div className="absolute top-20 right-20 w-32 h-32 bg-[#B5985A]/20 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 left-20 w-40 h-40 bg-[#1c355e]/30 rounded-full blur-3xl"></div>
       </div>
 
-      {/* Right Side - Forgot Password Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-[#FAFAF8]">
         <div className="w-full max-w-md">
           <div className={`lg:hidden text-center mb-8 ${mounted ? 'animate-slide-up' : 'opacity-0'}`}>

@@ -77,7 +77,6 @@ export default function SocialLoginButton({
         className
       )}
     >
-      {/* Hover Effect */}
       <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#B5985A]/0 via-[#B5985A]/5 to-[#B5985A]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
       <span className="relative flex items-center gap-3">

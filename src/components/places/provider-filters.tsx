@@ -94,7 +94,6 @@ export function ProviderFilters({ filters, onFiltersChange }: ProviderFiltersPro
       <CollapsibleContent className="space-y-4 pt-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 border rounded-lg">
           
-          {/* Type Filter */}
           <div className="space-y-2">
             <Label>Type</Label>
             <Select 
@@ -115,7 +114,6 @@ export function ProviderFilters({ filters, onFiltersChange }: ProviderFiltersPro
             </Select>
           </div>
 
-          {/* Contact Info Filters */}
           <div className="space-y-3">
             <Label>Contact Information</Label>
             <div className="space-y-2">
@@ -152,7 +150,6 @@ export function ProviderFilters({ filters, onFiltersChange }: ProviderFiltersPro
             </div>
           </div>
 
-          {/* Sort Options */}
           <div className="space-y-2">
             <Label>Sort by</Label>
             <Select 
@@ -184,11 +181,9 @@ export function ProviderFilters({ filters, onFiltersChange }: ProviderFiltersPro
             </Select>
           </div>
 
-          {/* Tags */}
           <div className="space-y-2">
             <Label>Tags</Label>
             <div className="space-y-2">
-              {/* Selected Tags */}
               {filters.tags && filters.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {filters.tags.map((tag) => (
@@ -207,7 +202,6 @@ export function ProviderFilters({ filters, onFiltersChange }: ProviderFiltersPro
                 </div>
               )}
               
-              {/* Common Tags */}
               <div className="flex flex-wrap gap-1">
                 {COMMON_TAGS
                   .filter(tag => !filters.tags?.includes(tag))

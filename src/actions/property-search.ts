@@ -90,7 +90,7 @@ export async function searchProperties({
       totalPages,
     }
   } catch (error) {
-    console.error("Property search error:", error)
+    
     return {
       success: false,
       error: "Failed to search properties",
@@ -173,7 +173,7 @@ async function searchPropertiesWithFilters({
       totalPages,
     }
   } catch (error) {
-    console.error("Property filter error:", error)
+    
     return {
       success: false,
       error: "Failed to filter properties",

@@ -8,6 +8,7 @@ import {
   PropertyContact,
   ContactType,
   Booking,
+  BookingType,
   PriceRange,
   Resource,
   Photo,

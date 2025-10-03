@@ -184,10 +184,8 @@ export function OperationalCostsSection({ propertyId, operationalCosts }: Operat
           </div>
         </div>
 
-        {/* Only show editing controls inside PropertySection */}
         {isEditing && (
           <div className="space-y-4">
-            {/* Add New Cost Button */}
             <div className="flex justify-end">
               <Button
                 variant="outline"
@@ -206,10 +204,8 @@ export function OperationalCostsSection({ propertyId, operationalCosts }: Operat
         )}
       </PropertySection>
 
-      {/* Content outside PropertySection - not affected by isSaving changes */}
       <div className="bg-white rounded-lg shadow-sm">
         <div className="px-6 py-6 space-y-6">
-        {/* Summary Statistics */}
         {stats && !isEditing && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card className="p-4 bg-gradient-to-br from-white to-rose-50 border-rose-200 hover:shadow-md transition-shadow">
@@ -262,7 +258,6 @@ export function OperationalCostsSection({ propertyId, operationalCosts }: Operat
           </div>
         )}
 
-        {/* Cost breakdown by payer */}
         {stats && Object.keys(stats.costsByPaidBy).length > 0 && !isEditing && (
           <Card className="p-4 bg-gradient-to-br from-white to-gray-50">
             <h4 className="text-sm font-medium text-gray-600 mb-3">Cost Distribution by Payer</h4>
@@ -277,7 +272,6 @@ export function OperationalCostsSection({ propertyId, operationalCosts }: Operat
           </Card>
         )}
 
-        {/* Operational Costs Table - Now outside PropertySection! */}
         <OperationalCostsTable
           operationalCosts={operationalCosts}
           isEditing={isEditing}
@@ -289,8 +283,6 @@ export function OperationalCostsSection({ propertyId, operationalCosts }: Operat
         </div>
       </div>
 
-      {/* Modals and Dialogs */}
-      {/* Add New Cost Dialog */}
       <Dialog open={isAddingNew} onOpenChange={setIsAddingNew}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -309,7 +301,6 @@ export function OperationalCostsSection({ propertyId, operationalCosts }: Operat
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirmation dialog */}
       <Dialog open={!!deletingId} onOpenChange={(open) => !open && setDeletingId(null)}>
         <DialogContent>
           <DialogHeader>
@@ -338,7 +329,6 @@ export function OperationalCostsSection({ propertyId, operationalCosts }: Operat
         </DialogContent>
       </Dialog>
 
-      {/* Details Modal */}
       <OperationalCostDetailsModal
         cost={selectedCost}
         open={showDetailsModal}
@@ -360,7 +350,6 @@ function OperationalCostViewCard({ cost }: { cost: OperationalCost }) {
   return (
     <Card className="p-6 hover:shadow-md transition-shadow">
       <div className="space-y-4">
-        {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className={cn("p-2 rounded-lg", costType?.color || "bg-gray-100")}>
@@ -376,7 +365,6 @@ function OperationalCostViewCard({ cost }: { cost: OperationalCost }) {
           </Badge>
         </div>
 
-        {/* Pricing */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-xs text-gray-600">Estimated price</p>
@@ -392,7 +380,6 @@ function OperationalCostViewCard({ cost }: { cost: OperationalCost }) {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-between pt-2 border-t">
           <div className="flex items-center gap-2">
             <User className="w-4 h-4 text-gray-400" />
@@ -408,7 +395,6 @@ function OperationalCostViewCard({ cost }: { cost: OperationalCost }) {
           )}
         </div>
 
-        {/* Comment if exists */}
         {cost.comment && (
           <div className="p-3 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-600">{cost.comment}</p>
@@ -457,7 +443,6 @@ function OperationalCostCard({
     return (
       <Card className="p-6 border-2 border-rose-300 bg-rose-50/30">
         <div className="space-y-6">
-          {/* Header */}
           <div className="flex items-start justify-between">
             <h4 className="text-lg font-medium text-gray-900">Edit Operational Cost</h4>
             <div className="flex gap-2">
@@ -481,7 +466,6 @@ function OperationalCostCard({
             </div>
           </div>
 
-          {/* Form fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label>Cost Type</Label>
@@ -588,7 +572,6 @@ function OperationalCostCard({
   return (
     <Card className="p-6 hover:shadow-md transition-shadow">
       <div className="space-y-4">
-        {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className={cn("p-2 rounded-lg", costType?.color || "bg-gray-100")}>
@@ -624,7 +607,6 @@ function OperationalCostCard({
           </div>
         </div>
 
-        {/* Pricing */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-xs text-gray-600">Estimated price</p>
@@ -640,7 +622,6 @@ function OperationalCostCard({
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-between pt-2 border-t">
           <div className="flex items-center gap-2">
             <User className="w-4 h-4 text-gray-400" />
@@ -656,7 +637,6 @@ function OperationalCostCard({
           )}
         </div>
 
-        {/* Comment if exists */}
         {cost.comment && (
           <div className="p-3 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-600">{cost.comment}</p>
@@ -689,7 +669,6 @@ function AddOperationalCostForm({
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-6" id="add-operational-cost-form">
-        {/* Form fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <Label>Cost Type</Label>

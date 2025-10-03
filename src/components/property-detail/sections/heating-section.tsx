@@ -171,7 +171,6 @@ export function HeatingSection({ property }: HeatingSectionProps) {
       canEdit={canEdit}
     >
       <div className="space-y-8">
-        {/* Heating System Type */}
         <div>
           <h3 className="text-base font-semibold mb-4">Heating System</h3>
           <div className="space-y-4">
@@ -251,7 +250,6 @@ export function HeatingSection({ property }: HeatingSectionProps) {
           </div>
         </div>
 
-        {/* Temperature Control */}
         <div>
           <h3 className="text-base font-semibold mb-4">Temperature Control</h3>
           <div>
@@ -286,7 +284,6 @@ export function HeatingSection({ property }: HeatingSectionProps) {
           </div>
         </div>
 
-        {/* Energy Information */}
         <div>
           <h3 className="text-base font-semibold mb-4">Energy Information</h3>
           <div className="space-y-4">
@@ -337,7 +334,6 @@ export function HeatingSection({ property }: HeatingSectionProps) {
           </div>
         </div>
 
-        {/* Heating Schedule */}
         <div>
           <h3 className="text-base font-semibold mb-4">Heating Schedule</h3>
           <div className="space-y-4">
@@ -364,7 +360,6 @@ export function HeatingSection({ property }: HeatingSectionProps) {
           </div>
         </div>
 
-        {/* Room-specific Heating */}
         <div>
           <h3 className="text-base font-semibold mb-4">Room-specific Heating</h3>
           <div className="space-y-4">
@@ -463,7 +458,6 @@ export function HeatingSection({ property }: HeatingSectionProps) {
           </div>
         </div>
 
-        {/* Additional Notes */}
         <div>
           <Label>Additional heating notes</Label>
           <Textarea

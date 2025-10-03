@@ -218,7 +218,6 @@ export function ContactsSection({ property }: ContactsSectionProps) {
         <div className="space-y-6">
           {isEditing ? (
             <>
-              {/* Edit Mode - List View */}
               <div className="space-y-3">
                 {(contacts || []).map((contact, index) => {
                   const Icon = contactTypeIcons[contact.type]

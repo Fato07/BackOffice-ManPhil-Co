@@ -9,8 +9,22 @@ import LuxuryButton from './luxury-button';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
+// Type definitions for Clerk errors
+interface ClerkError {
+  code?: string;
+  longMessage?: string;
+  meta?: {
+    paramName?: string;
+  };
+}
+
+interface ClerkErrorResponse {
+  errors?: ClerkError[];
+  message?: string;
+}
+
 export default function CustomSignUp() {
-  const { isLoaded, signUp, setActive } = useSignUp();
+  const { isLoaded, signUp } = useSignUp();
   const router = useRouter();
   
   const [firstName, setFirstName] = useState('');
@@ -35,7 +49,7 @@ export default function CustomSignUp() {
     // Clear previous errors
     setErrors({});
     
-    // Validate
+    // Validate form fields
     let hasErrors = false;
     
     if (!firstName) {
@@ -74,6 +88,7 @@ export default function CustomSignUp() {
     setLoading(true);
     
     try {
+      // Clerk automatically handles CAPTCHA validation when this element exists: <div id="clerk-captcha"></div>
       await signUp.create({
         firstName,
         lastName,
@@ -86,11 +101,13 @@ export default function CustomSignUp() {
       
       // Navigate to verification page
       router.push('/sign-up/verify-email');
-    } catch (err: any) {
-      console.error('Sign up error:', err);
+    } catch (err: unknown) {
       
-      if (err.errors) {
-        err.errors.forEach((error: any) => {
+      
+      // Handle Clerk errors with proper typing
+      const clerkError = err as ClerkErrorResponse;
+      if (clerkError?.errors) {
+        clerkError.errors.forEach((error: ClerkError) => {
           if (error.meta?.paramName === 'email_address') {
             setErrors(prev => ({ ...prev, email: error.longMessage || 'Invalid email' }));
           } else if (error.meta?.paramName === 'password') {
@@ -100,26 +117,32 @@ export default function CustomSignUp() {
           } else if (error.meta?.paramName === 'last_name') {
             setErrors(prev => ({ ...prev, lastName: error.longMessage || 'Invalid last name' }));
           } else {
+            // Handle CAPTCHA errors and other general errors
             toast.error(error.longMessage || 'An error occurred during sign up');
           }
         });
       } else {
-        toast.error('An unexpected error occurred. Please try again.');
+        // Handle cases where error structure is different
+        const errorMessage = clerkError?.message || String(err);
+        if (errorMessage.toLowerCase().includes('captcha')) {
+          toast.error('Please complete the CAPTCHA verification and try again.');
+        } else {
+          toast.error('An unexpected error occurred. Please try again.');
+        }
       }
     } finally {
+      // Always reset loading state
       setLoading(false);
     }
   };
 
   return (
     <div className="w-full space-y-8">
-      {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-4xl font-serif text-[#0A0A0A]">Create Your Account</h1>
-        <p className="text-gray-600 text-lg">Join ManPhil&Co's elite property management platform</p>
+        <p className="text-gray-600 text-lg">Join ManPhil&Co&apos;s elite property management platform</p>
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="grid grid-cols-2 gap-4">
           <LuxuryInput
@@ -198,6 +221,14 @@ export default function CustomSignUp() {
           </label>
         </div>
 
+        <div 
+          id="clerk-captcha" 
+          data-cl-theme="auto"
+          data-cl-size="normal"
+          data-cl-language="auto"
+          className="flex justify-center"
+        />
+
         <LuxuryButton
           type="submit"
           className="w-full"
@@ -208,7 +239,6 @@ export default function CustomSignUp() {
         </LuxuryButton>
       </form>
 
-      {/* Footer */}
       <p className="text-center text-gray-600">
         Already have an account?{' '}
         <Link href="/sign-in" className="text-[#B5985A] hover:text-[#B5985A]/80 font-medium transition-colors">

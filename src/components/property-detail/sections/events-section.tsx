@@ -181,7 +181,6 @@ export function EventsSection({ property }: EventsSectionProps) {
       canEdit={canEdit}
     >
       <div className="space-y-8">
-        {/* Basic Event Settings */}
         <div className="space-y-4">
           <div className="flex items-center space-x-3">
             <Checkbox
@@ -208,7 +207,6 @@ export function EventsSection({ property }: EventsSectionProps) {
 
         {form.watch("eventsAllowed") && (
           <>
-            {/* Additional Event Notes - Moved to top for better visibility */}
             <Card className="p-6 bg-muted/30 border-muted">
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
@@ -236,7 +234,6 @@ export function EventsSection({ property }: EventsSectionProps) {
               </div>
             </Card>
 
-            {/* Event Types */}
             <div>
               <h3 className="text-base font-semibold mb-4">Event Types</h3>
               <div className="space-y-4">
@@ -291,7 +288,6 @@ export function EventsSection({ property }: EventsSectionProps) {
               </div>
             </div>
 
-            {/* Facilities */}
             <div>
               <h3 className="text-base font-semibold mb-4">Available Facilities</h3>
               <div className="grid grid-cols-2 gap-4">
@@ -372,7 +368,6 @@ export function EventsSection({ property }: EventsSectionProps) {
               </div>
             </div>
 
-            {/* Restrictions */}
             <div>
               <h3 className="text-base font-semibold mb-4">Event Restrictions</h3>
               <div className="space-y-4">
@@ -448,7 +443,6 @@ export function EventsSection({ property }: EventsSectionProps) {
               </div>
             </div>
 
-            {/* Preferred Vendors */}
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-semibold">Preferred Vendors</h3>

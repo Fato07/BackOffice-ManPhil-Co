@@ -6,19 +6,16 @@ export default function EquipmentRequestLoading() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex items-center gap-4">
           <Skeleton className="h-9 w-24" /> {/* Back button */}
           <Skeleton className="h-8 w-48" /> {/* Title */}
         </div>
 
-        {/* Status and Priority badges */}
         <div className="flex gap-2">
           <Skeleton className="h-6 w-20" />
           <Skeleton className="h-6 w-16" />
         </div>
 
-        {/* Main info card */}
         <Card className="p-6 space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
@@ -43,7 +40,6 @@ export default function EquipmentRequestLoading() {
           </div>
         </Card>
 
-        {/* Items section */}
         <Card className="p-6 space-y-4">
           <Skeleton className="h-6 w-32" />
           <div className="space-y-3">
@@ -62,13 +58,11 @@ export default function EquipmentRequestLoading() {
           </div>
         </Card>
 
-        {/* Notes section */}
         <Card className="p-6 space-y-4">
           <Skeleton className="h-6 w-24" />
           <Skeleton className="h-20 w-full" />
         </Card>
 
-        {/* Action buttons */}
         <div className="flex justify-end gap-2">
           <Skeleton className="h-9 w-32" />
           <Skeleton className="h-9 w-24" />

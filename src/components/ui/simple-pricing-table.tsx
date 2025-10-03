@@ -70,10 +70,8 @@ export function SimplePricingTable<TData, TValue>({
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Toolbar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          {/* Search */}
           {searchable && (
             <div className="relative max-w-sm">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -100,7 +98,6 @@ export function SimplePricingTable<TData, TValue>({
         <div className="flex items-center space-x-2">
           {actions}
           
-          {/* Export */}
           {exportable && (
             <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="mr-2 h-4 w-4" />
@@ -110,7 +107,6 @@ export function SimplePricingTable<TData, TValue>({
         </div>
       </div>
 
-      {/* Table */}
       <div className="w-full [&>div]:overflow-visible">
         <Table>
           <TableHeader>

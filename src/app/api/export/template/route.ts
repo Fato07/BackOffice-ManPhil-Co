@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
       },
     })
   } catch (error) {
-    console.error("Error generating template:", error)
+    
     return NextResponse.json(
       { error: "Failed to generate template" },
       { status: 500 }

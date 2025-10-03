@@ -47,7 +47,7 @@ export async function GET(
 
     return NextResponse.json(destination)
   } catch (error) {
-    console.error("Error fetching destination:", error)
+    
     return NextResponse.json(
       { error: "Failed to fetch destination" },
       { status: 500 }
@@ -68,11 +68,6 @@ export async function PUT(
 
     const { id } = await params
 
-    // TODO: Add role check for admin once RBAC is implemented
-    // const user = await getUser(userId)
-    // if (!hasRole(user, 'admin')) {
-    //   return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    // }
 
     const body = await req.json()
     const validatedData = updateDestinationSchema.parse(body)
@@ -119,11 +114,6 @@ export async function DELETE(
 
     const { id } = await params
 
-    // TODO: Add role check for admin once RBAC is implemented
-    // const user = await getUser(userId)
-    // if (!hasRole(user, 'admin')) {
-    //   return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    // }
 
     // Check if destination has properties
     const destination = await prisma.destination.findUnique({
@@ -160,7 +150,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Error deleting destination:", error)
+    
     return NextResponse.json(
       { error: "Failed to delete destination" },
       { status: 500 }

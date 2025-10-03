@@ -138,10 +138,8 @@ export function VirtualDataTable<TData, TValue>({
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Toolbar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          {/* Search */}
           {searchable && (
             <div className="relative max-w-sm">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -164,7 +162,6 @@ export function VirtualDataTable<TData, TValue>({
             </div>
           )}
 
-          {/* Filters */}
           {filterable && filterOptions.map((filterOption) => (
             <DropdownMenu key={String(filterOption.key)}>
               <DropdownMenuTrigger asChild>
@@ -250,7 +247,6 @@ export function VirtualDataTable<TData, TValue>({
             </DropdownMenu>
           ))}
 
-          {/* Results count */}
           <div className="text-sm text-muted-foreground">
             {filteredRows.length} of {data.length} items
           </div>
@@ -259,7 +255,6 @@ export function VirtualDataTable<TData, TValue>({
         <div className="flex items-center space-x-2">
           {actions}
           
-          {/* Export */}
           {exportable && (
             <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="mr-2 h-4 w-4" />
@@ -267,7 +262,6 @@ export function VirtualDataTable<TData, TValue>({
             </Button>
           )}
 
-          {/* Column visibility */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="ml-auto">
@@ -301,9 +295,7 @@ export function VirtualDataTable<TData, TValue>({
         </div>
       </div>
 
-      {/* Virtual Table */}
       <div className="rounded-md border">
-        {/* Header */}
         <div className="border-b border-border bg-muted/50">
           {table.getHeaderGroups().map((headerGroup) => (
             <div key={headerGroup.id} className="flex">
@@ -328,7 +320,6 @@ export function VirtualDataTable<TData, TValue>({
           ))}
         </div>
 
-        {/* Virtual Body */}
         {filteredRows.length > 0 ? (
           <List
             className="border-t"

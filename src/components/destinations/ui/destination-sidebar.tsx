@@ -56,7 +56,6 @@ export function DestinationSidebar({
 
   return (
     <>
-      {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: isOpen ? 1 : 0 }}
@@ -69,7 +68,6 @@ export function DestinationSidebar({
         onClick={onClose}
       />
 
-      {/* Drawer */}
       <motion.div
       initial={{ x: "100%" }}
       animate={{ x: isOpen ? 0 : "100%" }}
@@ -81,7 +79,6 @@ export function DestinationSidebar({
         "overflow-y-auto"
       )}
     >
-      {/* Header */}
       <div className="sticky top-0 bg-black/50 backdrop-blur-xl border-b border-white/10 p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold text-white">
@@ -98,9 +95,7 @@ export function DestinationSidebar({
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-6 space-y-6">
-        {/* Location Info */}
         <div className="space-y-3">
           <div className="flex items-center gap-3 text-gray-300">
             <MapPin className="h-4 w-4 text-[#B5985A]" />
@@ -113,7 +108,6 @@ export function DestinationSidebar({
           )}
         </div>
 
-        {/* Stats */}
         <div className="bg-white/5 rounded-lg p-4 border border-white/10">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-[#B5985A]/20 rounded-lg">
@@ -128,7 +122,6 @@ export function DestinationSidebar({
           </div>
         </div>
 
-        {/* Hero Image */}
         <div className="aspect-video rounded-lg bg-white/5 border border-white/10 overflow-hidden">
           {destination.imageUrl ? (
             <img
@@ -144,7 +137,6 @@ export function DestinationSidebar({
           )}
         </div>
 
-        {/* Description Placeholder */}
         <div className="space-y-2">
           <h3 className="text-white font-medium">Description</h3>
           <p className="text-gray-400 text-sm">
@@ -152,7 +144,6 @@ export function DestinationSidebar({
           </p>
         </div>
 
-        {/* Properties Preview */}
         {destination._count?.properties && destination._count.properties > 0 && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -206,7 +197,6 @@ export function DestinationSidebar({
           </div>
         )}
 
-        {/* Actions */}
         <div className="space-y-2 pt-4">
           <Button
             className="w-full bg-[#B5985A] hover:bg-[#9A7F4A] transition-colors duration-200"
@@ -237,14 +227,12 @@ export function DestinationSidebar({
       </div>
     </motion.div>
 
-      {/* Edit Destination Dialog */}
       <EditDestinationDialog
         destination={destination}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
       />
 
-      {/* Delete Destination Dialog */}
       <DeleteDestinationDialog
         destination={destination}
         open={deleteDialogOpen}

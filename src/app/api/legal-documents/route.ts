@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result.data)
   } catch (error) {
-    console.error('Error in GET /api/legal-documents:', error)
+    
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result.data, { status: 201 })
   } catch (error) {
-    console.error('Error in POST /api/legal-documents:', error)
+    
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }

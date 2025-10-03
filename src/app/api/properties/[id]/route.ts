@@ -57,7 +57,7 @@ export async function GET(
 
     return NextResponse.json(property)
   } catch (error) {
-    console.error("Error fetching property:", error)
+    
     return NextResponse.json(
       { error: "Failed to fetch property" },
       { status: 500 }
@@ -164,7 +164,7 @@ export async function PUT(
 
     return NextResponse.json(updatedProperty)
   } catch (error) {
-    console.error("Error updating property:", error)
+    
     
     if (error instanceof Error && error.message.includes("validation")) {
       return NextResponse.json(
@@ -295,7 +295,7 @@ export async function PATCH(
 
     return NextResponse.json(updatedProperty)
   } catch (error) {
-    console.error("Error updating property:", error)
+    
     
     // Provide more detailed error information for debugging
     if (error instanceof Error) {
@@ -397,7 +397,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true }, { status: 200 })
   } catch (error) {
-    console.error("Error deleting property:", error)
+    
     return NextResponse.json(
       { error: "Failed to delete property" },
       { status: 500 }

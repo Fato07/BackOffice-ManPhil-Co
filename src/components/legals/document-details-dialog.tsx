@@ -88,7 +88,6 @@ export function DocumentDetailsDialog({
 
         <ScrollArea className="max-h-[calc(90vh-8rem)] pr-4">
           <div className="space-y-6">
-            {/* Status and category */}
             <div className="flex items-center gap-4">
               <Badge 
                 variant={
@@ -110,7 +109,6 @@ export function DocumentDetailsDialog({
               )}
             </div>
 
-            {/* Key information */}
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
@@ -169,7 +167,6 @@ export function DocumentDetailsDialog({
               </div>
             </div>
 
-            {/* Tags */}
             {document.tags && document.tags.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -188,7 +185,6 @@ export function DocumentDetailsDialog({
 
             <Separator />
 
-            {/* Version history */}
             {document.versions && document.versions.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
@@ -229,7 +225,6 @@ export function DocumentDetailsDialog({
               </div>
             )}
 
-            {/* Actions */}
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Close

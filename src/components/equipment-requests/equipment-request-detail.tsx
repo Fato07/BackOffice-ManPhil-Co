@@ -75,7 +75,6 @@ export function EquipmentRequestDetail({ request }: EquipmentRequestDetailProps)
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
@@ -120,7 +119,6 @@ export function EquipmentRequestDetail({ request }: EquipmentRequestDetailProps)
         </div>
       </div>
 
-      {/* Status and Priority */}
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="secondary" className={cn(statusColors[request.status], "text-sm py-1 px-3")}>
           {request.status.replace('_', ' ')}
@@ -136,7 +134,6 @@ export function EquipmentRequestDetail({ request }: EquipmentRequestDetailProps)
         )}
       </div>
 
-      {/* Main Info Card */}
       <Card className="p-6 space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-4">
@@ -199,7 +196,6 @@ export function EquipmentRequestDetail({ request }: EquipmentRequestDetailProps)
           </div>
         </div>
 
-        {/* Timeline */}
         {(request.approvedAt || request.completedAt) && (
           <>
             <Separator />
@@ -229,7 +225,6 @@ export function EquipmentRequestDetail({ request }: EquipmentRequestDetailProps)
         )}
       </Card>
 
-      {/* Items Section */}
       <Card className="p-6 space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Package className="h-5 w-5" />
@@ -238,7 +233,6 @@ export function EquipmentRequestDetail({ request }: EquipmentRequestDetailProps)
         <EquipmentRequestItemsTable items={request.items} />
       </Card>
 
-      {/* Reason and Notes */}
       {(request.reason || request.notes) && (
         <Card className="p-6 space-y-4">
           <h2 className="text-lg font-semibold">Additional Information</h2>
@@ -259,7 +253,6 @@ export function EquipmentRequestDetail({ request }: EquipmentRequestDetailProps)
         </Card>
       )}
 
-      {/* Internal Notes - Only visible with permission */}
       {canViewInternal && request.internalNotes && (
         <Card className="p-6 space-y-4 border-orange-200 bg-orange-50/50">
           <h2 className="text-lg font-semibold text-orange-800">Internal Notes</h2>
@@ -267,7 +260,6 @@ export function EquipmentRequestDetail({ request }: EquipmentRequestDetailProps)
         </Card>
       )}
 
-      {/* Rejection Reason */}
       {request.status === "REJECTED" && request.rejectedReason && (
         <Card className="p-6 space-y-4 border-red-200 bg-red-50/50">
           <h2 className="text-lg font-semibold text-red-800 flex items-center gap-2">
@@ -278,7 +270,6 @@ export function EquipmentRequestDetail({ request }: EquipmentRequestDetailProps)
         </Card>
       )}
 
-      {/* Status Actions */}
       <div className="flex justify-end">
         <EquipmentRequestStatusActions request={request} />
       </div>
