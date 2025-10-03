@@ -245,7 +245,6 @@ export function CreateDestinationDialog() {
               />
             </div>
             
-            {/* Image Upload Section */}
             <div className="pt-2">
               <Separator className="bg-white/10" />
             </div>

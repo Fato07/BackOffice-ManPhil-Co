@@ -133,7 +133,7 @@ export async function getEquipmentRequests(
       totalPages: Math.ceil(total / limit),
     }
   } catch (error) {
-    console.error("Error fetching equipment requests:", error)
+    
     throw new Error("Failed to fetch equipment requests")
   }
 }
@@ -182,7 +182,7 @@ export async function getEquipmentRequestById(id: string) {
       items: request.items as unknown as EquipmentRequestItem[]
     }
   } catch (error) {
-    console.error("Error fetching equipment request:", error)
+    
     throw new Error("Failed to fetch equipment request")
   }
 }
@@ -245,7 +245,7 @@ export async function createEquipmentRequest(data: CreateEquipmentRequestInput) 
 
     return { success: true, data: request }
   } catch (error) {
-    console.error("Error creating equipment request:", error)
+    
     throw new Error("Failed to create equipment request")
   }
 }
@@ -308,7 +308,7 @@ export async function updateEquipmentRequest(
 
     return { success: true, data: request }
   } catch (error) {
-    console.error("Error updating equipment request:", error)
+    
     throw new Error("Failed to update equipment request")
   }
 }
@@ -394,7 +394,7 @@ export async function updateEquipmentRequestStatus(
 
     return { success: true, data: request }
   } catch (error) {
-    console.error("Error updating equipment request status:", error)
+    
     throw new Error("Failed to update equipment request status")
   }
 }
@@ -449,7 +449,7 @@ export async function deleteEquipmentRequest(id: string) {
 
     return { success: true }
   } catch (error) {
-    console.error("Error deleting equipment request:", error)
+    
     throw new Error("Failed to delete equipment request")
   }
 }

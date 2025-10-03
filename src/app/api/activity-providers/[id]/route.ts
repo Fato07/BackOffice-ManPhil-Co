@@ -26,7 +26,7 @@ export async function GET(
 
     return NextResponse.json(result.data)
   } catch (error) {
-    console.error("Error in GET /api/activity-providers/[id]:", error)
+    
     return NextResponse.json(
       { error: "Failed to fetch activity provider" },
       { status: 500 }
@@ -53,7 +53,7 @@ export async function PATCH(
 
     return NextResponse.json(result.data)
   } catch (error) {
-    console.error("Error in PATCH /api/activity-providers/[id]:", error)
+    
     return NextResponse.json(
       { error: "Failed to update activity provider" },
       { status: 500 }
@@ -78,7 +78,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Error in DELETE /api/activity-providers/[id]:", error)
+    
     return NextResponse.json(
       { error: "Failed to delete activity provider" },
       { status: 500 }

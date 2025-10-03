@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Permission } from "@/types/auth"
 import {
   getPropertyPricing,
   updatePropertyPricing,
@@ -17,10 +19,13 @@ import {
 
 // Query hook for fetching all pricing data
 export function usePropertyPricing(propertyId: string) {
+  const { hasPermission } = usePermissions()
+  const hasFinancialView = hasPermission(Permission.FINANCIAL_VIEW)
+  
   return useQuery({
     queryKey: ["property-pricing", propertyId],
     queryFn: () => getPropertyPricing(propertyId),
-    enabled: !!propertyId
+    enabled: !!propertyId && hasFinancialView
   })
 }
 

@@ -134,7 +134,6 @@ export function CreateDocumentDialog({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-            {/* File upload section */}
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Upload File</h3>
               <FormField
@@ -166,7 +165,6 @@ export function CreateDocumentDialog({
               />
             </div>
 
-            {/* Document Information */}
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -204,7 +202,6 @@ export function CreateDocumentDialog({
               </div>
             </div>
 
-            {/* Classification */}
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -248,7 +245,6 @@ export function CreateDocumentDialog({
               </div>
             </div>
 
-            {/* Management Details */}
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField
@@ -362,7 +358,6 @@ export function CreateDocumentDialog({
               </div>
             </div>
 
-            {/* Tags Section */}
             <div className="space-y-2">
               <FormField
               control={form.control}

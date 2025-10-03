@@ -105,7 +105,6 @@ export function SurroundingsSection({ property }: SurroundingsSectionProps) {
       <div className="space-y-6">
         {isEditing ? (
           <>
-            {/* Edit Mode */}
             <div>
               <Label className="text-base font-semibold mb-3 block">
                 Property Surroundings

@@ -7,12 +7,10 @@ import Image from "next/image";
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white overflow-hidden">
-      {/* Luxury Background Pattern */}
       <div className="fixed inset-0 opacity-10">
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
       </div>
 
-      {/* Navigation */}
       <nav className="relative z-50 border-b border-white/10 backdrop-blur-md bg-black/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
@@ -57,7 +55,6 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section className="relative py-32 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
           <div className="animate-fade-in">
@@ -103,12 +100,10 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Floating Elements */}
         <div className="absolute top-20 left-10 w-20 h-20 bg-[#B5985A]/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 right-10 w-32 h-32 bg-[#1c355e]/30 rounded-full blur-3xl animate-pulse [animation-delay:1s]"></div>
       </section>
 
-      {/* Stats Section */}
       <section className="py-20 border-y border-white/10 backdrop-blur-sm bg-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -120,7 +115,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section */}
       <section className="py-32 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -157,7 +151,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonial Section */}
       <section className="py-32 bg-gradient-to-b from-transparent via-[#1c355e]/10 to-transparent">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="mb-8">
@@ -177,7 +170,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-32 relative">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h3 className="text-5xl md:text-6xl font-serif font-light mb-6">
@@ -199,7 +191,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="border-t border-white/10 backdrop-blur-sm bg-black/20 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">

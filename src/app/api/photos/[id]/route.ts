@@ -81,7 +81,7 @@ export async function PATCH(
 
     return NextResponse.json({ photo: updatedPhoto })
   } catch (error) {
-    console.error("Update photo error:", error)
+    
     return NextResponse.json(
       { error: "Failed to update photo" },
       { status: 500 }
@@ -131,7 +131,7 @@ export async function DELETE(
       .remove([filePath])
 
     if (storageError) {
-      console.error("Storage delete error:", storageError)
+      
     }
 
     // Delete from database
@@ -165,7 +165,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Delete photo error:", error)
+    
     return NextResponse.json(
       { error: "Failed to delete photo" },
       { status: 500 }

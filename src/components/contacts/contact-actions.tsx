@@ -79,7 +79,7 @@ export function ContactActions({
       setShowDeleteDialog(false)
     } catch (error) {
       // Error handling is done in the mutation
-      console.error('Delete failed:', error)
+      
     }
   }
 

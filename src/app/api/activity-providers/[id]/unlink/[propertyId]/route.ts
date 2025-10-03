@@ -23,7 +23,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Error in DELETE /api/activity-providers/[id]/unlink/[propertyId]:", error)
+    
     return NextResponse.json(
       { error: "Failed to unlink provider from property" },
       { status: 500 }

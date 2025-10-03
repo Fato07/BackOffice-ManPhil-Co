@@ -97,7 +97,6 @@ export function ContactFilters({ filters, onFiltersChange }: ContactFiltersProps
               </p>
             </div>
 
-            {/* Category Filter Tabs */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Category</label>
               <div className="flex flex-wrap gap-2">
@@ -126,7 +125,6 @@ export function ContactFilters({ filters, onFiltersChange }: ContactFiltersProps
               </div>
             </div>
 
-            {/* Language Filter */}
             <div className="space-y-2">
               <label className="text-sm font-medium flex items-center gap-2">
                 <Globe className="h-4 w-4" />
@@ -150,7 +148,6 @@ export function ContactFilters({ filters, onFiltersChange }: ContactFiltersProps
               </Select>
             </div>
 
-            {/* Linked Properties Filter */}
             <div className="space-y-2">
               <label className="text-sm font-medium flex items-center gap-2">
                 <Home className="h-4 w-4" />
@@ -171,7 +168,6 @@ export function ContactFilters({ filters, onFiltersChange }: ContactFiltersProps
               </div>
             </div>
 
-            {/* Clear Filters */}
             {activeFilterCount > 0 && (
               <div className="pt-2 border-t">
                 <Button
@@ -189,7 +185,6 @@ export function ContactFilters({ filters, onFiltersChange }: ContactFiltersProps
         </PopoverContent>
       </Popover>
 
-      {/* Active Filters Display */}
       {activeFilterCount > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
           {filters.category && filters.category !== 'ALL' && (

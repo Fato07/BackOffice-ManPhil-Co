@@ -127,7 +127,6 @@ export function AuditLogFiltersComponent({
         <ScrollArea className="h-[calc(100vh-160px)]">
           <div className="space-y-4 p-4 pb-8">
 
-          {/* Entity Type */}
           <div className="space-y-2">
             <Label>Entity Type</Label>
             <Select
@@ -147,7 +146,6 @@ export function AuditLogFiltersComponent({
             </Select>
           </div>
 
-          {/* Action */}
           <div className="space-y-2">
             <Label>Action</Label>
             <Select
@@ -166,7 +164,6 @@ export function AuditLogFiltersComponent({
             </Select>
           </div>
 
-          {/* Entity ID */}
           <div className="space-y-2">
             <Label>Entity ID</Label>
             <Input
@@ -176,7 +173,6 @@ export function AuditLogFiltersComponent({
             />
           </div>
 
-          {/* Start Date */}
           <div className="space-y-2">
             <Label>Start Date</Label>
             <Popover>
@@ -203,7 +199,6 @@ export function AuditLogFiltersComponent({
             </Popover>
           </div>
 
-          {/* End Date */}
           <div className="space-y-2">
             <Label>End Date</Label>
             <Popover>
@@ -233,7 +228,6 @@ export function AuditLogFiltersComponent({
           </div>
         </ScrollArea>
 
-        {/* Fixed footer with action buttons */}
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t">
           <div className="flex gap-2">
             <Button

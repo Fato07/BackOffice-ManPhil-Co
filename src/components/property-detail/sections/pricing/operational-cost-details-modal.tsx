@@ -106,7 +106,6 @@ export function OperationalCostDetailsModal({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Cost Type */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
               <div className={cn("p-3 rounded-lg", costType?.color || "bg-gray-100")}>
@@ -156,7 +155,6 @@ export function OperationalCostDetailsModal({
 
           <Separator />
 
-          {/* Pricing Details */}
           <div className="space-y-4">
             <h4 className="font-medium">Pricing Information</h4>
             <div className="grid grid-cols-2 gap-4">
@@ -190,7 +188,6 @@ export function OperationalCostDetailsModal({
             </div>
           </div>
 
-          {/* Notes */}
           {cost.comment && (
             <>
               <Separator />
@@ -206,7 +203,6 @@ export function OperationalCostDetailsModal({
             </>
           )}
 
-          {/* Metadata */}
           <Separator />
           <div className="space-y-3">
             <h4 className="font-medium flex items-center gap-2">

@@ -316,7 +316,6 @@ export function DestinationTree({
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Search and controls */}
       <div className="space-y-2">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -360,7 +359,6 @@ export function DestinationTree({
         </div>
       </div>
 
-      {/* Tree view */}
       <ScrollArea className="h-[400px] rounded-md border">
         <div className="p-2">
           {filteredTree.length === 0 ? (
@@ -382,7 +380,6 @@ export function DestinationTree({
         </div>
       </ScrollArea>
 
-      {/* Selected destinations summary */}
       {selectedDestinations.length > 0 && (
         <div className="space-y-2">
           <p className="text-sm font-medium">

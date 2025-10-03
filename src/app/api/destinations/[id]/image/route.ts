@@ -37,11 +37,11 @@ export async function POST(
     }
 
     const { id } = await context.params
-    console.log(`[Destination Image Upload] Starting upload for destination: ${id}`)
+    
     
     // Check if Supabase is configured
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.error("[Destination Image Upload] Supabase environment variables not configured")
+      
       return NextResponse.json(
         { error: "Storage service not configured. Please set up Supabase environment variables." },
         { status: 500 }
@@ -65,7 +65,7 @@ export async function POST(
       return NextResponse.json({ error: "No file provided" }, { status: 400 })
     }
     
-    console.log(`[Destination Image Upload] Processing file: ${file.name}, size: ${file.size}, type: ${file.type}`)
+    
     
     // Validate file type
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
@@ -89,14 +89,14 @@ export async function POST(
       const urlParts = destination.imageUrl.split('/')
       const existingFileName = urlParts.slice(-2).join('/')
       
-      console.log(`[Destination Image Upload] Deleting existing image: ${existingFileName}`)
+      
       
       const { error: deleteError } = await supabase.storage
         .from(BUCKET_NAME)
         .remove([existingFileName])
       
       if (deleteError) {
-        console.error(`[Destination Image Upload] Error deleting existing image:`, deleteError)
+        
       }
     }
 
@@ -106,7 +106,7 @@ export async function POST(
     const fileExt = file.name.split('.').pop()
     const fileName = `${id}/hero-${timestamp}-${randomString}.${fileExt}`
     
-    console.log(`[Destination Image Upload] Uploading to Supabase: ${fileName}`)
+    
 
     // Upload to Supabase Storage
     const buffer = await file.arrayBuffer()
@@ -119,7 +119,7 @@ export async function POST(
       })
 
     if (error) {
-      console.error(`[Destination Image Upload] Supabase upload error:`, error)
+      
       
       // Check if it's a bucket not found error
       if (error.message?.includes("bucket") || (error instanceof StorageApiError && error.statusCode === '404')) {
@@ -135,7 +135,7 @@ export async function POST(
       )
     }
     
-    console.log(`[Destination Image Upload] Successfully uploaded to Supabase: ${fileName}`)
+    
 
     // Get public URL
     const { data: { publicUrl } } = supabase.storage
@@ -151,7 +151,7 @@ export async function POST(
       }
     })
 
-    console.log(`[Destination Image Upload] Upload complete for destination: ${id}`)
+    
 
     // Log the action
     await prisma.auditLog.create({
@@ -174,7 +174,7 @@ export async function POST(
     })
     
   } catch (error) {
-    console.error("[Destination Image Upload] Unexpected error:", error)
+    
     return NextResponse.json(
       { 
         error: "Failed to upload image",
@@ -231,7 +231,7 @@ export async function DELETE(
       .remove([fileName])
     
     if (deleteError) {
-      console.error("Error deleting image from storage:", deleteError)
+      
     }
 
     // Update database
@@ -260,7 +260,7 @@ export async function DELETE(
     return NextResponse.json({ success: true })
     
   } catch (error) {
-    console.error("Delete destination image error:", error)
+    
     return NextResponse.json(
       { error: "Failed to delete image" },
       { status: 500 }

@@ -129,7 +129,6 @@ export function SecurityDetails({ property }: SecurityDetailsProps) {
         )}
       </div>
 
-      {/* Surveillance */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Camera className="h-5 w-5 text-gray-500" />
@@ -171,7 +170,6 @@ export function SecurityDetails({ property }: SecurityDetailsProps) {
         </div>
       </div>
 
-      {/* Rescue */}
       <div className="pt-6 border-t">
         <div className="flex items-center gap-2 mb-4">
           <Hospital className="h-5 w-5 text-gray-500" />
@@ -241,7 +239,6 @@ export function SecurityDetails({ property }: SecurityDetailsProps) {
         </div>
       </div>
 
-      {/* Electric Meter */}
       <div className="pt-6 border-t">
         <h5 className="font-medium mb-3">Electric meter</h5>
         <div className="space-y-4">
@@ -271,7 +268,6 @@ export function SecurityDetails({ property }: SecurityDetailsProps) {
         </div>
       </div>
 
-      {/* Fire Safety */}
       <div className="pt-6 border-t">
         <h5 className="font-medium mb-3">Fire safety</h5>
         <div className="space-y-4">
@@ -326,7 +322,6 @@ export function SecurityDetails({ property }: SecurityDetailsProps) {
         </div>
       </div>
 
-      {/* Specific Security Measures */}
       <div className="pt-6 border-t">
         <Label className="flex items-center gap-2">
           <Shield className="h-4 w-4 text-gray-500" />

@@ -171,10 +171,8 @@ export function PricePeriodsSection({ propertyId, priceRanges, hasLegacyData }: 
           </div>
         </div>
 
-        {/* Only show editing controls inside PropertySection */}
         {isEditing && (
           <div className="space-y-4">
-            {/* Add New Period Button */}
             <div className="flex justify-end">
               <Button
                 variant="outline"
@@ -193,10 +191,8 @@ export function PricePeriodsSection({ propertyId, priceRanges, hasLegacyData }: 
         )}
       </PropertySection>
 
-      {/* Content outside PropertySection - not affected by isSaving changes */}
       <div className="bg-white rounded-lg shadow-sm">
         <div className="px-6 py-6 space-y-6">
-        {/* Migration banner for legacy data */}
         {hasLegacy && (
           <Card className="p-4 bg-amber-50 border-amber-200">
             <div className="flex items-center justify-between">
@@ -222,7 +218,6 @@ export function PricePeriodsSection({ propertyId, priceRanges, hasLegacyData }: 
           </Card>
         )}
 
-        {/* Summary Statistics */}
         {stats && !isEditing && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card className="p-4 bg-gradient-to-br from-white to-emerald-50 border-emerald-200 hover:shadow-md transition-shadow">
@@ -281,7 +276,6 @@ export function PricePeriodsSection({ propertyId, priceRanges, hasLegacyData }: 
           </div>
         )}
 
-        {/* Price Periods Table - Now outside PropertySection! */}
         <PricePeriodsTable
           priceRanges={priceRanges}
           isEditing={isEditing}
@@ -294,8 +288,6 @@ export function PricePeriodsSection({ propertyId, priceRanges, hasLegacyData }: 
         </div>
       </div>
 
-      {/* Modals and Dialogs */}
-      {/* Add New Period Dialog */}
       <Dialog open={isAddingNew} onOpenChange={setIsAddingNew}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -314,7 +306,6 @@ export function PricePeriodsSection({ propertyId, priceRanges, hasLegacyData }: 
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirmation dialog */}
       <Dialog open={!!deletingId} onOpenChange={(open) => !open && setDeletingId(null)}>
         <DialogContent>
           <DialogHeader>
@@ -343,7 +334,6 @@ export function PricePeriodsSection({ propertyId, priceRanges, hasLegacyData }: 
         </DialogContent>
       </Dialog>
 
-      {/* Details Modal */}
       <PricePeriodDetailsModal
         priceRange={selectedPeriod}
         open={showDetailsModal}
@@ -367,7 +357,6 @@ function PriceRangeViewCard({ priceRange }: { priceRange: PriceRange }) {
   return (
     <Card className="p-6 hover:shadow-md transition-shadow">
       <div className="space-y-4">
-        {/* Header */}
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -391,7 +380,6 @@ function PriceRangeViewCard({ priceRange }: { priceRange: PriceRange }) {
           </Badge>
         </div>
 
-        {/* Pricing Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="space-y-1">
             <p className="text-xs text-gray-600">Owner price/night</p>
@@ -453,7 +441,6 @@ function PriceRangeCard({
       <Form {...form}>
         <Card className="p-6 border-2 border-emerald-300 bg-emerald-50/30">
           <div className="space-y-6">
-          {/* Header with name input */}
           <div className="flex items-start justify-between">
             <div className="flex-1 space-y-4">
               <div>
@@ -497,7 +484,6 @@ function PriceRangeCard({
             </div>
           </div>
 
-          {/* Date range */}
           <div className="space-y-4">
             <Label>Date Period</Label>
             <div className="flex items-center gap-3">
@@ -537,7 +523,6 @@ function PriceRangeCard({
             </div>
           </div>
 
-          {/* Pricing inputs */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label className="flex items-center gap-2">
@@ -589,7 +574,6 @@ function PriceRangeCard({
             </div>
           </div>
 
-          {/* Calculated public prices */}
           <div className="p-4 bg-white rounded-lg border border-emerald-200">
             <p className="text-sm font-medium text-gray-600 mb-3">Calculated Public Prices</p>
             <div className="grid grid-cols-2 gap-4">
@@ -622,7 +606,6 @@ function PriceRangeCard({
   return (
     <Card className="p-6 hover:shadow-md transition-shadow">
       <div className="space-y-4">
-        {/* Header */}
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -666,7 +649,6 @@ function PriceRangeCard({
           </div>
         </div>
 
-        {/* Pricing Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="space-y-1">
             <p className="text-xs text-gray-600">Owner price/night</p>
@@ -716,7 +698,6 @@ function AddPricePeriodForm({
     <>
       <Form {...form}>
         <form onSubmit={handleSubmit} className="space-y-6" id="add-price-period-form">
-        {/* Form fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <Label htmlFor="new-name">Period Name</Label>
@@ -744,7 +725,6 @@ function AddPricePeriodForm({
           </div>
         </div>
 
-        {/* Date range */}
         <div className="space-y-4">
           <Label>Date Period</Label>
           <div className="flex items-center gap-3">
@@ -784,7 +764,6 @@ function AddPricePeriodForm({
           </div>
         </div>
 
-        {/* Pricing inputs */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <Label className="flex items-center gap-2">
@@ -838,7 +817,6 @@ function AddPricePeriodForm({
           </div>
         </div>
 
-        {/* Calculated public prices */}
         <div className="p-4 bg-white rounded-lg border border-emerald-200">
           <p className="text-sm font-medium text-gray-600 mb-3">Calculated Public Prices</p>
           <div className="grid grid-cols-2 gap-4">

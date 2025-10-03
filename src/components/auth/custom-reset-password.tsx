@@ -107,7 +107,7 @@ export default function CustomResetPassword() {
         toast.error('Password reset failed. Please try again.');
       }
     } catch (err: any) {
-      console.error('Password reset error:', err);
+      
       
       if (err.errors) {
         err.errors.forEach((error: any) => {
@@ -159,7 +159,6 @@ export default function CustomResetPassword() {
 
   return (
     <div className="w-full space-y-8">
-      {/* Back Link */}
       <Link 
         href="/forgot-password" 
         className="inline-flex items-center text-sm text-gray-600 hover:text-[#B5985A] transition-colors"
@@ -168,7 +167,6 @@ export default function CustomResetPassword() {
         Back
       </Link>
 
-      {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-4xl font-serif text-[#0A0A0A]">Create New Password</h1>
         <p className="text-gray-600 text-lg">
@@ -181,7 +179,6 @@ export default function CustomResetPassword() {
         )}
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
         <LuxuryInput
           label="Verification code"
@@ -216,7 +213,6 @@ export default function CustomResetPassword() {
           disabled={loading}
         />
 
-        {/* Password Requirements */}
         <div className="text-xs text-gray-500 space-y-1">
           <p className="font-medium">Password must contain:</p>
           <ul className="list-disc list-inside space-y-0.5 ml-2">
@@ -237,7 +233,6 @@ export default function CustomResetPassword() {
         </LuxuryButton>
       </form>
 
-      {/* Resend Code */}
       <div className="text-center">
         <p className="text-sm text-gray-600">
           Didn't receive the code?{' '}

@@ -75,11 +75,9 @@ function SortablePhotoCard({
   return (
     <div ref={setNodeRef} style={style} className="relative">
       <Card className="group relative overflow-hidden rounded-2xl bg-white/95 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] golden-glow">
-        {/* Luxury gradient overlay */}
         <div className="absolute inset-0 luxury-gradient pointer-events-none" />
         <div className="absolute inset-0 animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
-        {/* Success indicator with golden ring */}
         {isRecentlyUploaded && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 animate-success-fade pointer-events-none">
             <div className="absolute w-32 h-32 rounded-full border-4 border-amber-400/60 animate-ring-expand" />
@@ -94,9 +92,7 @@ function SortablePhotoCard({
             className="w-full aspect-[4/3] object-cover transition-transform duration-700 group-hover:scale-105"
           />
           
-          {/* Premium hover overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 backdrop-blur-[2px]">
-            {/* Drag handle with glass effect */}
             <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-y-2 group-hover:translate-y-0">
               <div
                 {...attributes}
@@ -107,7 +103,6 @@ function SortablePhotoCard({
               </div>
             </div>
             
-            {/* View button - always visible */}
             <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
               <Button 
                 size="icon" 
@@ -120,7 +115,6 @@ function SortablePhotoCard({
               </Button>
             </div>
             
-            {/* Action buttons with glass effect */}
             {canEdit !== false && (
               <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-y-2 group-hover:translate-y-0 flex gap-2">
                 <Button 
@@ -156,7 +150,6 @@ function SortablePhotoCard({
           </div>
         </div>
         
-        {/* Premium content area */}
         <div className="relative z-10 bg-gradient-to-b from-white/50 to-gray-50/30 backdrop-blur-sm">
           <CardContent className="p-4">
             <p className="text-sm font-medium text-gray-800 truncate tracking-wide">
@@ -312,7 +305,6 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
         </h2>
       </div>
 
-      {/* Upload Drop Zone */}
       {canEdit && (
         <div className="relative">
           <FileDropzone
@@ -358,7 +350,6 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
             }}
           />
           
-          {/* Upload Progress Overlay */}
           {uploadingFiles.length > 0 && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl border-2 border-amber-400/50 z-10">
               <div className="flex flex-col items-center gap-4 px-6 py-8">
@@ -391,7 +382,6 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
         </div>
       )}
 
-      {/* Category Filter */}
       <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
         <TabsList>
           <TabsTrigger value="ALL">All ({photos.length})</TabsTrigger>
@@ -403,7 +393,6 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
         </TabsList>
       </Tabs>
 
-      {/* Photos Grid */}
       {isLoading ? (
         <div className="grid grid-cols-4 gap-4">
           {[...Array(8)].map((_, i) => (
@@ -426,7 +415,6 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
             strategy={verticalListSortingStrategy}
           >
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {/* Placeholder cards for uploading files */}
               {uploadingFiles.map((file, index) => (
                 <Card 
                   key={`uploading-${index}`} 
@@ -454,7 +442,6 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
                 </Card>
               ))}
               
-              {/* Existing photos */}
               {filteredPhotos.map((photo) => (
                 <SortablePhotoCard
                   key={photo.id}
@@ -472,7 +459,6 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
         </DndContext>
       )}
 
-      {/* Edit Photo Dialog */}
       <Dialog open={!!editingPhoto} onOpenChange={(open) => !open && setEditingPhoto(null)}>
         <DialogContent>
           <DialogHeader>
@@ -534,7 +520,6 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={!!deletingPhoto} onOpenChange={(open) => !open && setDeletingPhoto(null)}>
         <DialogContent>
           <DialogHeader>
@@ -563,7 +548,6 @@ export function PhotosSection({ propertyId }: PhotosSectionProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Image Viewer Modal */}
       <ImageViewerModal
         isOpen={viewerOpen}
         onClose={() => setViewerOpen(false)}

@@ -97,7 +97,7 @@ export function useUpdateProvider() {
       toast.success("Activity provider updated successfully")
     },
     onError: (error) => {
-      console.error("Activity provider update error:", error)
+      
       if (error instanceof Error) {
         toast.error(`Failed to update activity provider: ${error.message}`)
       } else {

@@ -121,7 +121,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Invalid format. Use 'csv', 'excel', or 'json'" }, { status: 400 })
     }
   } catch (error) {
-    console.error("Error exporting contacts:", error)
+    
     return NextResponse.json(
       { error: "Failed to export contacts" },
       { status: 500 }

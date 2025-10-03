@@ -139,7 +139,7 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
       setImportResult(result)
 
     } catch (error) {
-      console.error('Import error:', error)
+      
       setImportResult({
         success: false,
         error: error instanceof Error ? error.message : 'Import failed'
@@ -181,7 +181,6 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
         <div className="space-y-6">
           {!importResult && (
             <>
-              {/* File Upload */}
               <div className="space-y-3">
                 <Label>Select File</Label>
                 <div className="flex items-center gap-2">
@@ -211,7 +210,6 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
                 </p>
               </div>
 
-              {/* Options */}
               <div className="space-y-3">
                 <Label>Import Options</Label>
                 <div className="flex items-center space-x-2">
@@ -226,7 +224,6 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
                 </div>
               </div>
 
-              {/* CSV Format Info */}
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-xs">
@@ -235,7 +232,6 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
                 </AlertDescription>
               </Alert>
 
-              {/* Processing Progress */}
               {isProcessing && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -248,7 +244,6 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
             </>
           )}
 
-          {/* Import Results */}
           {importResult && (
             <div className="space-y-3">
               {importResult.success ? (

@@ -347,7 +347,7 @@ export function DestinationsMap({
         )
       }
     } catch (error) {
-      console.error('Error adding 3D features:', error)
+      
     }
   }
 
@@ -364,7 +364,7 @@ export function DestinationsMap({
         map.removeLayer('add-3d-buildings')
       }
     } catch (error) {
-      console.error('Error removing 3D features:', error)
+      
     }
   }
 
@@ -389,7 +389,6 @@ export function DestinationsMap({
         onLoad={onMapLoad}
         maxPitch={viewMode === "3D" ? 85 : 0}
       >
-        {/* Scale control only - minimal and unobtrusive */}
         <ScaleControl 
           position="bottom-left" 
           style={{ 
@@ -421,7 +420,6 @@ export function DestinationsMap({
                   className="relative cursor-pointer"
                   style={{ width: size, height: size }}
                 >
-                  {/* Cluster marker */}
                   <div className="absolute inset-0 bg-[#B5985A]/30 rounded-full animate-pulse" />
                   <div className="relative w-full h-full bg-gradient-to-br from-[#B5985A] to-[#d4af37] rounded-full flex items-center justify-center shadow-2xl border-2 border-white/40">
                     <span className="text-white font-bold text-lg">{point_count}</span>
@@ -451,13 +449,11 @@ export function DestinationsMap({
                 whileTap={{ scale: 0.95 }}
                 className="relative cursor-pointer"
               >
-                {/* Custom marker */}
                 <div className="relative">
                   <div className="absolute inset-0 bg-[#B5985A] rounded-full blur-md opacity-50 animate-pulse" />
                   <div className="relative bg-gradient-to-br from-[#B5985A] to-[#d4af37] rounded-full p-3 shadow-2xl border border-white/20">
                     <MapPin className="w-5 h-5 text-white" />
                   </div>
-                  {/* Property count badge */}
                   <div className="absolute -top-2 -right-2 bg-white text-black text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
                     {destination._count?.properties || 0}
                   </div>
@@ -482,7 +478,6 @@ export function DestinationsMap({
               animate={{ opacity: 1, y: 0 }}
               className="bg-gradient-to-b from-gray-950 to-black backdrop-blur-xl rounded-xl overflow-hidden border border-[#B5985A]/20 shadow-2xl"
             >
-              {/* Header with image placeholder */}
               <div className="relative h-32 bg-gradient-to-br from-[#B5985A]/20 to-[#d4af37]/20">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 <div className="absolute bottom-3 left-4 right-4">
@@ -493,9 +488,7 @@ export function DestinationsMap({
                 </div>
               </div>
               
-              {/* Content */}
               <div className="p-4 space-y-4">
-                {/* Stats */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-white/5 rounded-lg p-3">
                     <p className="text-gray-400 text-xs">Properties</p>
@@ -508,7 +501,6 @@ export function DestinationsMap({
                 </div>
                 
                 
-                {/* Action buttons */}
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
@@ -532,7 +524,6 @@ export function DestinationsMap({
         )}
       </Map>
 
-      {/* Map overlay gradient for luxury effect */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-transparent" />

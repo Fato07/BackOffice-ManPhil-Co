@@ -77,7 +77,6 @@ export function MapControls({
 
   return (
     <div className="space-y-3">
-      {/* Search Bar */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -131,7 +130,6 @@ export function MapControls({
         </div>
       </motion.div>
 
-      {/* Filters */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -167,7 +165,6 @@ export function MapControls({
             <div className="space-y-4">
               <h4 className="font-medium text-[#B5985A]">Filter Destinations</h4>
               
-              {/* Filter options */}
               <div className="space-y-3">
                 <div>
                   <label className="text-sm text-gray-400">Country</label>
@@ -226,7 +223,6 @@ export function MapControls({
         </Button>
       </motion.div>
 
-      {/* Style Controls */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -258,7 +254,6 @@ export function MapControls({
           </button>
         </div>
 
-        {/* 2D/3D View Mode Toggle */}
         {onViewModeChange && (
           <div className="flex items-center bg-black/40 backdrop-blur-md rounded-lg p-1 border border-white/10">
             <button

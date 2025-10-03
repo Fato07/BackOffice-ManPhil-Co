@@ -249,7 +249,6 @@ export function DestinationTreeMinimal({
           )}
           onClick={() => handleNodeSelection(node, !isSelected)}
         >
-          {/* Expand/Collapse */}
           {hasChildren && (
             <button
               onClick={(e) => {
@@ -268,7 +267,6 @@ export function DestinationTreeMinimal({
           )}
           {!hasChildren && <div className="w-4" />}
 
-          {/* Checkbox */}
           <Checkbox
             checked={isSelected || isPartiallySelected}
             onCheckedChange={(checked) => handleNodeSelection(node, checked as boolean)}
@@ -279,21 +277,17 @@ export function DestinationTreeMinimal({
             )}
           />
 
-          {/* Icon for countries */}
           {node.type === "country" && (
             <MapPin className="h-3 w-3 text-muted-foreground" />
           )}
 
-          {/* Name */}
           <span className="flex-1">{node.name}</span>
 
-          {/* Count */}
           <span className="text-xs text-muted-foreground">
             {node.propertyCount}
           </span>
         </motion.div>
 
-        {/* Children */}
         {hasChildren && isExpanded && node.children && (
           <AnimatePresence>
             {node.children.map(child => renderNode(child, level + 1))}
@@ -305,7 +299,6 @@ export function DestinationTreeMinimal({
 
   return (
     <div className={cn("space-y-3", className)}>
-      {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
         <Input
@@ -324,7 +317,6 @@ export function DestinationTreeMinimal({
         )}
       </div>
 
-      {/* Controls */}
       <div className="flex items-center justify-between">
         <div className="flex gap-1">
           <Button
@@ -363,7 +355,6 @@ export function DestinationTreeMinimal({
         )}
       </div>
 
-      {/* Tree */}
       <div className="space-y-0.5">
         {filteredTree.length === 0 ? (
           <div className="py-8 text-center text-sm text-muted-foreground">
@@ -374,7 +365,6 @@ export function DestinationTreeMinimal({
         )}
       </div>
 
-      {/* Selected destinations visual feedback */}
       {selectedDestinations.length > 0 && (
         <div className="mt-4 space-y-2">
           <div className="flex items-center justify-between">

@@ -54,7 +54,7 @@ export async function GET(
 
     return NextResponse.json(resources)
   } catch (error) {
-    console.error("Error fetching resources:", error)
+    
     return NextResponse.json(
       { error: "Failed to fetch resources" },
       { status: 500 }
@@ -86,12 +86,12 @@ export async function POST(
     const { id: propertyId } = await params
     const body = await req.json()
     
-    console.log(`[Resources Upload] Starting resource creation for property: ${propertyId}`)
-    console.log(`[Resources Upload] Resource type: ${body.type}, name: ${body.name}`)
+    
+    
 
     // Check if Supabase is configured
     if (body.file && (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY)) {
-      console.error("[Resources Upload] Supabase environment variables not configured")
+      
       return NextResponse.json(
         { 
           error: "Storage service not configured",
@@ -104,7 +104,7 @@ export async function POST(
     // Validate request body
     const validationResult = createResourceSchema.safeParse(body)
     if (!validationResult.success) {
-      console.error("[Resources Upload] Validation failed:", validationResult.error.issues)
+      
       return NextResponse.json(
         { error: validationResult.error.issues },
         { status: 400 }
@@ -126,13 +126,13 @@ export async function POST(
 
     // If a file is provided, upload it to Supabase
     if (data.file && data.fileName) {
-      console.log(`[Resources Upload] Uploading file: ${data.fileName}`)
+      
       
       const fileBuffer = Buffer.from(data.file, "base64")
       const fileExt = data.fileName.split(".").pop()
       const fileName = `${propertyId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
       
-      console.log(`[Resources Upload] Uploading to Supabase bucket "resources": ${fileName}`)
+      
 
       const { error: uploadError } = await supabase.storage
         .from("resources")
@@ -141,7 +141,7 @@ export async function POST(
         })
 
       if (uploadError) {
-        console.error("[Resources Upload] Supabase upload error:", uploadError)
+        
         
         const errorMessage = "Failed to upload file"
         let errorDetails = uploadError.message
@@ -162,7 +162,7 @@ export async function POST(
         )
       }
       
-      console.log(`[Resources Upload] File uploaded successfully to Supabase`)
+      
 
       const { data: { publicUrl } } = supabase.storage
         .from("resources")
@@ -172,14 +172,14 @@ export async function POST(
     }
 
     if (!resourceUrl) {
-      console.error("[Resources Upload] No URL or file provided")
+      
       return NextResponse.json(
         { error: "Either URL or file must be provided" },
         { status: 400 }
       )
     }
 
-    console.log(`[Resources Upload] Creating resource with URL: ${resourceUrl}`)
+    
 
     // Create the resource
     const resource = await prisma.resource.create({
@@ -192,7 +192,7 @@ export async function POST(
       },
     })
     
-    console.log(`[Resources Upload] Resource created successfully with ID: ${resource.id}`)
+    
 
     // Log the action
     await prisma.auditLog.create({
@@ -207,7 +207,7 @@ export async function POST(
 
     return NextResponse.json(resource, { status: 201 })
   } catch (error) {
-    console.error("[Resources Upload] Unexpected error:", error)
+    
     
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 })

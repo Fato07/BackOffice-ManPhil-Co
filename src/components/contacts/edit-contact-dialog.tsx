@@ -295,7 +295,6 @@ export function EditContactDialog({ contactId, open: controlledOpen, onOpenChang
                 )}
               />
 
-              {/* Property Linking Section */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <FormLabel>Linked Properties</FormLabel>

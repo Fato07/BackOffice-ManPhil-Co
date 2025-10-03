@@ -121,7 +121,6 @@ export function SectionNavigator({
     <div 
       className="fixed right-0 top-1/2 -translate-y-1/2 z-50 pointer-events-none"
     >
-      {/* Minimal dots indicator */}
       <div 
         className={cn(
           "absolute right-2 transition-all duration-300 pointer-events-auto",
@@ -149,7 +148,6 @@ export function SectionNavigator({
         </div>
       </div>
 
-      {/* Full navigator on hover */}
       <div 
         className={cn(
           "transition-all duration-300 transform origin-right",
@@ -194,13 +192,11 @@ export function SectionNavigator({
                     <span className="truncate max-w-[120px]">{section.label}</span>
                   </div>
                   
-                  {/* Progress indicator */}
                   {isActive && (
                     <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#B5985A]" />
                   )}
                 </button>
                 
-                {/* Connector line */}
                 {index < sections.length - 1 && (
                   <div className="absolute left-[15px] top-full h-1 w-px bg-gray-200" />
                 )}

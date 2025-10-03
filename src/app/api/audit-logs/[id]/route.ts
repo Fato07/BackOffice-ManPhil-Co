@@ -145,7 +145,7 @@ export async function GET(
       entityDetails,
     })
   } catch (error) {
-    console.error("Error fetching audit log:", error)
+    
     return NextResponse.json(
       { error: "Failed to fetch audit log" },
       { status: 500 }

@@ -40,7 +40,7 @@ export function useExportEquipmentRequests() {
 
       toast.success("Export completed successfully")
     } catch (error) {
-      console.error("Export error:", error)
+      
       toast.error("Failed to export equipment requests")
     } finally {
       setIsExporting(false)

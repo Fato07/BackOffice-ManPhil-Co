@@ -58,7 +58,7 @@ export default function CustomForgotPassword() {
         router.push(`/reset-password?email=${encodeURIComponent(email)}`);
       }, 2000);
     } catch (err: any) {
-      console.error('Password reset error:', err);
+      
       
       if (err.errors) {
         const emailError = err.errors.find((e: any) => 
@@ -80,7 +80,6 @@ export default function CustomForgotPassword() {
 
   return (
     <div className="w-full space-y-8">
-      {/* Back Link */}
       <Link 
         href="/sign-in" 
         className="inline-flex items-center text-sm text-gray-600 hover:text-[#B5985A] transition-colors"
@@ -89,7 +88,6 @@ export default function CustomForgotPassword() {
         Back to sign in
       </Link>
 
-      {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-4xl font-serif text-[#0A0A0A]">Reset Your Password</h1>
         <p className="text-gray-600 text-lg">
@@ -97,14 +95,12 @@ export default function CustomForgotPassword() {
         </p>
       </div>
 
-      {/* Success Message */}
       {successMessage && (
         <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
           <p className="text-emerald-800 text-sm">{successMessage}</p>
         </div>
       )}
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
         <LuxuryInput
           label="Email address"
@@ -129,7 +125,6 @@ export default function CustomForgotPassword() {
         </LuxuryButton>
       </form>
 
-      {/* Footer */}
       <div className="text-center space-y-2">
         <p className="text-gray-600">
           Remember your password?{' '}

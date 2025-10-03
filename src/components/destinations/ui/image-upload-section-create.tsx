@@ -54,11 +54,9 @@ export function ImageUploadSectionCreate({
     <div className={cn("space-y-4", className)}>
       <Label className="text-gray-300">Destination Image (Optional)</Label>
       
-      {/* File Upload */}
       <div className="space-y-4">
         {selectedFile ? (
           <div className="space-y-3">
-            {/* Preview */}
             <div className="relative aspect-video rounded-lg overflow-hidden bg-white/5 border border-white/10">
               <img
                 src={previewUrl!}
@@ -77,7 +75,6 @@ export function ImageUploadSectionCreate({
               </Button>
             </div>
 
-            {/* Alt Text Input */}
             <div className="space-y-2">
               <Label className="text-gray-300 text-sm">Alt Text (Optional)</Label>
               <Input

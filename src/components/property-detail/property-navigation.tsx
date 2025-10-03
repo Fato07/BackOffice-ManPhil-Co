@@ -103,7 +103,6 @@ export function PropertyNavigation({
         isExpanded ? "w-80" : "w-16"
       )}
     >
-      {/* Header */}
       <div className={cn(
         "border-b border-white/20",
         isExpanded ? "p-4" : "p-2"
@@ -151,7 +150,6 @@ export function PropertyNavigation({
         )}
       </div>
 
-      {/* Navigation Sections */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
         {isExpanded ? (
           <div className="py-2">

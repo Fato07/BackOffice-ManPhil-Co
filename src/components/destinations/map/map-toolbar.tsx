@@ -85,7 +85,7 @@ export function MapToolbar({
         x.set(parsed.x)
         y.set(parsed.y)
       } catch {
-        console.error('Failed to parse saved toolbar position')
+        
       }
     }
   }, [x, y])
@@ -174,7 +174,6 @@ export function MapToolbar({
 
   return (
     <TooltipProvider>
-      {/* Invisible constraints container that covers the viewport */}
       <div 
         ref={constraintsRef}
         className="fixed inset-0 pointer-events-none"
@@ -221,7 +220,6 @@ export function MapToolbar({
           "pointer-events-auto"
         )}
       >
-        {/* Drag Handle Indicator */}
         <motion.div 
           className={cn(
             "absolute -top-3 left-1/2 -translate-x-1/2",
@@ -236,7 +234,6 @@ export function MapToolbar({
           <div className="w-1 h-1 bg-white/40 rounded-full" />
         </motion.div>
 
-        {/* Search Section */}
         <AnimatePresence mode="wait">
           {searchExpanded ? (
             <motion.div
@@ -309,7 +306,6 @@ export function MapToolbar({
 
         <div className="w-px h-6 bg-white/10" />
 
-        {/* Filters */}
         <DropdownMenu>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -362,7 +358,6 @@ export function MapToolbar({
 
         <div className="w-px h-6 bg-white/10" />
 
-        {/* Map Style Toggle */}
         <div className="flex items-center bg-white/5 rounded-md p-0.5">
           {Object.entries(MAP_STYLES).map(([key, style]) => (
             <Tooltip key={key}>
@@ -384,7 +379,6 @@ export function MapToolbar({
           ))}
         </div>
 
-        {/* 2D/3D Toggle */}
         {onViewModeChange && (
           <>
             <div className="w-px h-6 bg-white/10" />
@@ -427,7 +421,6 @@ export function MapToolbar({
 
         <div className="w-px h-6 bg-white/10" />
 
-        {/* Zoom Controls */}
         <div className="flex items-center gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -465,7 +458,6 @@ export function MapToolbar({
 
         <div className="w-px h-6 bg-white/10" />
 
-        {/* Additional Controls */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -500,7 +492,6 @@ export function MapToolbar({
           <TooltipContent>Fullscreen</TooltipContent>
         </Tooltip>
 
-        {/* Auto-hide Toggle */}
         <div className="ml-2 w-px h-6 bg-white/10" />
         <Tooltip>
           <TooltipTrigger asChild>

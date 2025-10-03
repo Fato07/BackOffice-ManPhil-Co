@@ -31,18 +31,13 @@ export function useCreateResource(propertyId: string) {
 
   return useMutation({
     mutationFn: async (data: CreateResourceInput) => {
-      console.log(`[Frontend] Creating resource for property ${propertyId}`, data)
-      
       // If a file is provided, convert it to base64
       let fileData = data.file
       if (data.file && data.file.startsWith("blob:")) {
-        console.log(`[Frontend] Converting blob to base64 for file: ${data.fileName}`)
         const response = await fetch(data.file)
         const blob = await response.blob()
-        console.log(`[Frontend] Blob size: ${blob.size}, type: ${blob.type}`)
         const buffer = await blob.arrayBuffer()
         fileData = btoa(String.fromCharCode(...new Uint8Array(buffer)))
-        console.log(`[Frontend] Base64 data length: ${fileData.length}`)
       }
 
       const response = await api.post<Resource>(`/api/properties/${propertyId}/resources`, {
@@ -50,7 +45,6 @@ export function useCreateResource(propertyId: string) {
         file: fileData,
       })
       
-      console.log("[Frontend] Resource creation response:", response)
       return response
     },
     onSuccess: () => {
@@ -58,8 +52,6 @@ export function useCreateResource(propertyId: string) {
       toast.success("Resource added successfully")
     },
     onError: (error: any) => {
-      console.error("[Frontend] Resource creation error:", error)
-      
       // Handle detailed error response
       if (error.response?.data) {
         const data = error.response.data
@@ -97,7 +89,6 @@ export function useUpdateResource() {
       toast.success("Resource updated successfully")
     },
     onError: (error: Error) => {
-      console.error("Error updating resource:", error)
       toast.error("Failed to update resource")
     },
   })
@@ -114,7 +105,6 @@ export function useDeleteResource() {
       toast.success("Resource deleted successfully")
     },
     onError: (error: Error) => {
-      console.error("Error deleting resource:", error)
       toast.error("Failed to delete resource")
     },
   })

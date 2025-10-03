@@ -81,7 +81,7 @@ export function InternalSection({ property }: InternalSectionProps) {
     try {
       return JSON.parse(property.internalComment)
     } catch (error) {
-      console.error('Failed to parse internal comment data:', error)
+      
       return {}
     }
   }, [property.internalComment])
@@ -168,7 +168,6 @@ export function InternalSection({ property }: InternalSectionProps) {
       </div>
 
       <div className="space-y-8">
-        {/* General Internal Notes */}
         <div>
           <Label className="text-base font-semibold">General Internal Notes</Label>
           <Textarea
@@ -180,7 +179,6 @@ export function InternalSection({ property }: InternalSectionProps) {
           />
         </div>
 
-        {/* Owner Information */}
         <ProtectedSection permission={Permission.OWNER_VIEW}>
           <div>
             <h3 className="text-base font-semibold mb-4">Owner Information</h3>
@@ -224,7 +222,6 @@ export function InternalSection({ property }: InternalSectionProps) {
           </div>
         </ProtectedSection>
 
-        {/* Access Information */}
         <div>
           <h3 className="text-base font-semibold mb-4">Access Information</h3>
           <div className="grid grid-cols-2 gap-4">
@@ -272,7 +269,6 @@ export function InternalSection({ property }: InternalSectionProps) {
           </div>
         </div>
 
-        {/* Maintenance Information */}
         <div>
           <h3 className="text-base font-semibold mb-4">Maintenance Information</h3>
           <div className="space-y-4">
@@ -315,7 +311,6 @@ export function InternalSection({ property }: InternalSectionProps) {
           </div>
         </div>
 
-        {/* Vendor Contacts */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-semibold">Vendor Contacts</h3>
@@ -399,7 +394,6 @@ export function InternalSection({ property }: InternalSectionProps) {
           </div>
         </div>
 
-        {/* Financial Information */}
         <ProtectedSection permission={Permission.FINANCIAL_VIEW}>
           <div>
             <h3 className="text-base font-semibold mb-4">Financial Information</h3>
@@ -435,7 +429,6 @@ export function InternalSection({ property }: InternalSectionProps) {
           </div>
         </ProtectedSection>
 
-        {/* Operational Procedures */}
         <div>
           <h3 className="text-base font-semibold mb-4">Operational Procedures</h3>
           <div className="space-y-4">

@@ -258,7 +258,6 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
         {!importResult ? (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* File Upload */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <FormLabel>Upload File</FormLabel>
@@ -306,7 +305,6 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
                 )}
               </div>
 
-              {/* Import Options */}
               <div className="space-y-4">
                 <FormField
                   control={form.control}
@@ -355,7 +353,6 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
                 />
               </div>
 
-              {/* Preview */}
               {previewData.length > 0 && (
                 <div className="space-y-2">
                   <FormLabel>Preview (first 5 rows)</FormLabel>
@@ -376,7 +373,6 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
                 </div>
               )}
 
-              {/* Upload Progress */}
               {isUploading && (
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
@@ -417,26 +413,32 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
             <div className="space-y-4">
               <h3 className="font-medium">Import Summary</h3>
               <div className="grid grid-cols-3 gap-4">
-                <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg text-center">
-                  <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
-                  <div className="text-2xl font-semibold text-green-900 dark:text-green-100">
+                <div className="p-4 bg-green-50 rounded-lg text-center">
+                  <CheckCircle2 className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                  <div className="text-2xl font-semibold text-green-900">
                     {importResult.success}
                   </div>
-                  <div className="text-sm text-green-700 dark:text-green-300">Imported</div>
+                  <div className="text-sm text-green-700">
+                    Successful
+                  </div>
                 </div>
-                <div className="p-4 bg-yellow-50 dark:bg-yellow-950 rounded-lg text-center">
-                  <AlertCircle className="h-8 w-8 text-yellow-600 dark:text-yellow-400 mx-auto mb-2" />
-                  <div className="text-2xl font-semibold text-yellow-900 dark:text-yellow-100">
+                <div className="p-4 bg-yellow-50 rounded-lg text-center">
+                  <AlertCircle className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
+                  <div className="text-2xl font-semibold text-yellow-900">
                     {importResult.skipped}
                   </div>
-                  <div className="text-sm text-yellow-700 dark:text-yellow-300">Skipped</div>
+                  <div className="text-sm text-yellow-700">
+                    Skipped
+                  </div>
                 </div>
-                <div className="p-4 bg-red-50 dark:bg-red-950 rounded-lg text-center">
-                  <XCircle className="h-8 w-8 text-red-600 dark:text-red-400 mx-auto mb-2" />
-                  <div className="text-2xl font-semibold text-red-900 dark:text-red-100">
+                <div className="p-4 bg-red-50 rounded-lg text-center">
+                  <XCircle className="h-8 w-8 text-red-600 mx-auto mb-2" />
+                  <div className="text-2xl font-semibold text-red-900">
                     {importResult.failed}
                   </div>
-                  <div className="text-sm text-red-700 dark:text-red-300">Failed</div>
+                  <div className="text-sm text-red-700">
+                    Failed
+                  </div>
                 </div>
               </div>
             </div>

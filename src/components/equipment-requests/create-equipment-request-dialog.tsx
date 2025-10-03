@@ -104,7 +104,6 @@ export function CreateEquipmentRequestDialog() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid gap-4">
-                {/* Property Selection */}
                 <FormField
                   control={form.control}
                   name="propertyId"
@@ -136,7 +135,6 @@ export function CreateEquipmentRequestDialog() {
                   )}
                 />
 
-                {/* Priority */}
                 <FormField
                   control={form.control}
                   name="priority"
@@ -164,7 +162,6 @@ export function CreateEquipmentRequestDialog() {
                   )}
                 />
 
-                {/* Reason */}
                 <FormField
                   control={form.control}
                   name="reason"
@@ -186,7 +183,6 @@ export function CreateEquipmentRequestDialog() {
                   )}
                 />
 
-                {/* Equipment Items */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <FormLabel className="text-sm">Equipment Items *</FormLabel>
@@ -225,7 +221,6 @@ export function CreateEquipmentRequestDialog() {
 
                         <div className="grid gap-4">
                           <div className="grid grid-cols-3 gap-4">
-                            {/* Item Name */}
                             <FormField
                               control={form.control}
                               name={`items.${index}.name`}
@@ -240,7 +235,6 @@ export function CreateEquipmentRequestDialog() {
                               )}
                             />
 
-                            {/* Quantity */}
                             <FormField
                               control={form.control}
                               name={`items.${index}.quantity`}
@@ -262,7 +256,6 @@ export function CreateEquipmentRequestDialog() {
                             />
                           </div>
 
-                          {/* Description */}
                           <FormField
                             control={form.control}
                             name={`items.${index}.description`}
@@ -278,7 +271,6 @@ export function CreateEquipmentRequestDialog() {
                           />
 
                           <div className="grid grid-cols-2 gap-4">
-                            {/* Estimated Cost */}
                             <FormField
                               control={form.control}
                               name={`items.${index}.estimatedCost`}
@@ -300,7 +292,6 @@ export function CreateEquipmentRequestDialog() {
                               )}
                             />
 
-                            {/* Link */}
                             <FormField
                               control={form.control}
                               name={`items.${index}.link`}
@@ -323,7 +314,6 @@ export function CreateEquipmentRequestDialog() {
 
                 <Separator />
 
-                {/* Notes */}
                 <FormField
                   control={form.control}
                   name="notes"

@@ -157,7 +157,6 @@ export function FurtherInfoSection({ property }: FurtherInfoSectionProps) {
       canEdit={canEdit}
     >
       <div className="space-y-8">
-        {/* Accessibility Section */}
         <div>
           <h3 className="text-base font-semibold mb-4">Accessibility</h3>
           <div className="space-y-4">
@@ -207,7 +206,6 @@ export function FurtherInfoSection({ property }: FurtherInfoSectionProps) {
           </div>
         </div>
 
-        {/* Policies Section */}
         <div>
           <h3 className="text-base font-semibold mb-4">House Policies</h3>
           <div className="space-y-4">
@@ -314,7 +312,6 @@ export function FurtherInfoSection({ property }: FurtherInfoSectionProps) {
           </div>
         </div>
 
-        {/* Staff Section */}
         <div>
           <h3 className="text-base font-semibold mb-4">Staff & Services</h3>
           <div className="space-y-4">

@@ -93,7 +93,7 @@ export function EditDestinationDialog({
       queryClient.invalidateQueries({ queryKey: destinationKeys.all })
       onOpenChange(false)
     } catch (error) {
-      console.error("Error updating destination:", error)
+      
       toast.error("Failed to update destination")
     } finally {
       setIsSubmitting(false)
@@ -204,7 +204,6 @@ export function EditDestinationDialog({
               />
             </div>
             
-            {/* Image Upload Section */}
             <div className="pt-2">
               <Separator className="bg-white/10" />
             </div>

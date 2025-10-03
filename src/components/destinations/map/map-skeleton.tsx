@@ -4,7 +4,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 export function MapSkeleton() {
   return (
     <div className="relative h-full w-full bg-gray-950">
-      {/* Map placeholder with animated gradient */}
       <motion.div
         className="absolute inset-0"
         animate={{
@@ -21,7 +20,6 @@ export function MapSkeleton() {
         }}
       />
       
-      {/* Controls skeleton */}
       <div className="absolute top-4 left-4 space-y-3">
         <Skeleton className="h-12 w-64 bg-white/10" />
         <div className="flex gap-2">
@@ -30,12 +28,10 @@ export function MapSkeleton() {
         </div>
       </div>
       
-      {/* Stats skeleton */}
       <div className="absolute top-4 right-4">
         <Skeleton className="h-32 w-48 bg-white/10" />
       </div>
       
-      {/* Map markers skeleton */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
         <motion.div
           animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}

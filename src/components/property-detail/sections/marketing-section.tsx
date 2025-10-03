@@ -50,7 +50,6 @@ const marketingSchema = z.object({
   })).default({}),
 })
 
-// type MarketingData = z.infer<typeof marketingSchema>
 
 interface MarketingSectionProps {
   property: PropertyWithRelations
@@ -65,9 +64,6 @@ export function MarketingSection({ property }: MarketingSectionProps) {
 
   // Use automaticOffer field temporarily to store marketing content
   const marketingContent = (property.automaticOffer as { marketingContent?: Record<string, unknown> })?.marketingContent || {}
-  // const availableLanguages = Object.keys(marketingContent).length > 0 
-  //   ? Object.keys(marketingContent) 
-  //   : ["en"]
 
   const form = useForm<z.input<typeof marketingSchema>>({
     resolver: zodResolver(marketingSchema),
@@ -190,7 +186,6 @@ export function MarketingSection({ property }: MarketingSectionProps) {
     >
       <form onSubmit={(e) => e.preventDefault()}>
         <div className="space-y-6">
-        {/* Language Selector */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <Label className="text-base">Available Languages</Label>
@@ -241,7 +236,6 @@ export function MarketingSection({ property }: MarketingSectionProps) {
           </div>
         </div>
 
-        {/* Content Editor */}
         <Tabs value={activeLanguage} className="w-full">
           <TabsContent value={activeLanguage} className="space-y-6">
             <div>
@@ -442,7 +436,6 @@ export function MarketingSection({ property }: MarketingSectionProps) {
           </TabsContent>
         </Tabs>
 
-        {/* Statistics */}
         {!isEditing && (
           <div className="grid grid-cols-3 gap-4 pt-4 border-t">
             <div>

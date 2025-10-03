@@ -336,7 +336,6 @@ export function RoomBuilder({ propertyId, rooms: initialRooms }: RoomBuilderProp
         </TabsContent>
       </Tabs>
       
-      {/* Add/Edit Room Dialog */}
       <RoomFormDialog
         open={isAddDialogOpen || !!editingRoom}
         onOpenChange={(open) => {
@@ -350,7 +349,6 @@ export function RoomBuilder({ propertyId, rooms: initialRooms }: RoomBuilderProp
         onSubmit={editingRoom ? handleUpdateRoom : handleCreateRoom}
       />
       
-      {/* Delete Confirmation Dialog */}
       <Dialog open={!!deletingRoom} onOpenChange={(open) => !open && setDeletingRoom(null)}>
         <DialogContent>
           <DialogHeader>
@@ -457,7 +455,6 @@ function RoomFormDialog({ open, onOpenChange, room, isOutdoor, onSubmit }: RoomF
         <form onSubmit={handleSubmit}>
           <div className="overflow-y-auto max-h-[calc(90vh-12rem)] pr-2">
             <div className="space-y-6">
-            {/* Basic Information Section */}
             <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <Info className="h-4 w-4" />
@@ -498,7 +495,6 @@ function RoomFormDialog({ open, onOpenChange, room, isOutdoor, onSubmit }: RoomF
             </div>
           </div>
           
-          {/* Room Details Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <MapPin className="h-4 w-4" />
@@ -539,7 +535,6 @@ function RoomFormDialog({ open, onOpenChange, room, isOutdoor, onSubmit }: RoomF
             </div>
           </div>
           
-          {/* Equipment & Amenities Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <Wrench className="h-4 w-4" />

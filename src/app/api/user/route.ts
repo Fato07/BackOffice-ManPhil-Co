@@ -39,7 +39,7 @@ export async function GET() {
       publicMetadata: user.publicMetadata,
     });
   } catch (error) {
-    console.error("Error in GET /api/user:", error);
+    
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -72,7 +72,7 @@ export async function PATCH(request: Request) {
       data: body,
     });
   } catch (error) {
-    console.error("Error in PATCH /api/user:", error);
+    
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

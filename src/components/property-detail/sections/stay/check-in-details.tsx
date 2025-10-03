@@ -121,7 +121,6 @@ export function CheckInDetails({ property }: CheckInDetailsProps) {
         />
       </div>
 
-      {/* Check-in Contacts */}
       <div className="pt-4 border-t">
         <div className="flex items-center justify-between mb-4">
           <h5 className="font-medium flex items-center gap-2">

@@ -60,7 +60,6 @@ export function ExportDialog({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Export scope */}
           <div className="space-y-3">
             <Label>Export Scope</Label>
             <RadioGroup value={scope} onValueChange={(v) => setScope(v as 'filtered' | 'all')}>
@@ -79,7 +78,6 @@ export function ExportDialog({
             </RadioGroup>
           </div>
 
-          {/* Export format */}
           <div className="space-y-2">
             <Label htmlFor="format">Export Format</Label>
             <Select value={format} onValueChange={(v) => setFormat(v as 'csv' | 'json' | 'xlsx')}>

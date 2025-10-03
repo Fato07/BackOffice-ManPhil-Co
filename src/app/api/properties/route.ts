@@ -376,7 +376,7 @@ export async function GET(req: NextRequest) {
       totalPages: Math.ceil(total / params.pageSize),
     })
   } catch (error) {
-    console.error("Error fetching properties:", error)
+    
     return NextResponse.json(
       { error: "Failed to fetch properties" },
       { status: 500 }
@@ -419,7 +419,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(property, { status: 201 })
   } catch (error) {
-    console.error("Error creating property:", error)
+    
     
     if (error instanceof Error && error.message.includes("validation")) {
       return NextResponse.json(

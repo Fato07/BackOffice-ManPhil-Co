@@ -166,10 +166,8 @@ export function MinimumStaySection({ propertyId, minimumStayRules }: MinimumStay
           </div>
         </div>
 
-        {/* Only show editing controls inside PropertySection */}
         {isEditing && (
           <div className="space-y-4">
-            {/* Add New Rule Button */}
             <div className="flex justify-end">
               <Button
                 variant="outline"
@@ -188,10 +186,8 @@ export function MinimumStaySection({ propertyId, minimumStayRules }: MinimumStay
         )}
       </PropertySection>
 
-      {/* Content outside PropertySection - not affected by isSaving changes */}
       <div className="bg-white rounded-lg shadow-sm">
         <div className="px-6 py-6 space-y-6">
-        {/* Summary Statistics */}
         {stats && !isEditing && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <Card className="p-4 bg-gradient-to-br from-white to-indigo-50 border-indigo-200 hover:shadow-md transition-shadow">
@@ -232,7 +228,6 @@ export function MinimumStaySection({ propertyId, minimumStayRules }: MinimumStay
           </div>
         )}
 
-        {/* Minimum Stay Rules Table - Now outside PropertySection! */}
         <MinimumStayTable
           minimumStayRules={minimumStayRules}
           isEditing={isEditing}
@@ -244,8 +239,6 @@ export function MinimumStaySection({ propertyId, minimumStayRules }: MinimumStay
         </div>
       </div>
 
-      {/* Modals and Dialogs */}
-      {/* Add New Rule Dialog */}
       <Dialog open={isAddingNew} onOpenChange={setIsAddingNew}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -264,7 +257,6 @@ export function MinimumStaySection({ propertyId, minimumStayRules }: MinimumStay
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirmation dialog */}
       <Dialog open={!!deletingId} onOpenChange={(open) => !open && setDeletingId(null)}>
         <DialogContent>
           <DialogHeader>
@@ -293,7 +285,6 @@ export function MinimumStaySection({ propertyId, minimumStayRules }: MinimumStay
         </DialogContent>
       </Dialog>
 
-      {/* Details Modal */}
       <MinimumStayDetailsModal
         rule={selectedRule}
         open={showDetailsModal}
@@ -392,7 +383,6 @@ function MinimumStayRuleCard({
       <Form {...form}>
         <Card className="p-6 border-2 border-indigo-300 bg-indigo-50/30">
         <div className="space-y-6">
-          {/* Header */}
           <div className="flex items-start justify-between">
             <h4 className="text-lg font-medium text-gray-900">Edit Minimum Stay Rule</h4>
             <div className="flex gap-2">
@@ -416,7 +406,6 @@ function MinimumStayRuleCard({
             </div>
           </div>
 
-          {/* Booking condition */}
           <div>
             <Label>Booking Condition</Label>
             <Select
@@ -439,7 +428,6 @@ function MinimumStayRuleCard({
             </Select>
           </div>
 
-          {/* Minimum nights */}
           <div>
             <Label>Minimum Nights</Label>
             <div className="flex items-center gap-2 mt-1">
@@ -478,7 +466,6 @@ function MinimumStayRuleCard({
             </div>
           </div>
 
-          {/* Date range */}
           <div>
             <Label>Applicable Period (optional)</Label>
             <div className="flex items-center gap-3 mt-2">
@@ -614,7 +601,6 @@ function AddMinimumStayRuleForm({
       <Form {...form}>
         <form onSubmit={handleSubmit} className="space-y-6" id="add-minimum-stay-form">
 
-        {/* Booking condition */}
         <div>
           <Label>Booking Condition</Label>
           <Select
@@ -637,7 +623,6 @@ function AddMinimumStayRuleForm({
           </Select>
         </div>
 
-        {/* Minimum nights */}
         <div>
           <Label>Minimum Nights</Label>
           <div className="flex items-center gap-2 mt-1">
@@ -676,7 +661,6 @@ function AddMinimumStayRuleForm({
           </div>
         </div>
 
-        {/* Date range */}
         <div>
           <Label>Applicable Period (optional)</Label>
           <div className="flex items-center gap-3 mt-2">

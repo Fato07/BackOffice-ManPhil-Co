@@ -56,7 +56,7 @@ export interface ContactFormData {
   }[]
 }
 
-export interface CreateContactData extends ContactFormData {}
+export type CreateContactData = ContactFormData
 
 export interface UpdateContactData extends Partial<ContactFormData> {
   id: string

@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
 
 /* Luxury Custom Styles */
 @layer base {
@@ -43,9 +42,6 @@
     @apply backdrop-blur-md bg-white/10 border border-white/20;
   }
   
-  .glass-dark {
-    @apply backdrop-blur-md bg-black/20 border border-white/10;
-  }
 
   .text-gradient {
     @apply bg-gradient-to-r from-[#B5985A] to-[#D4AF37] bg-clip-text text-transparent;
@@ -135,41 +131,6 @@
   }
 
 
-  /* Dark mode support */
-  .dark {
-    --color-luxury-gold: #D4AF37;
-    --color-luxury-navy: #2c4a7c;
-    --color-luxury-cream: #1a1a1a;
-    --color-luxury-dark: #FAFAF8;
-  }
-
-  /* Dark mode sidebar enhancements */
-  .dark [data-sidebar] {
-    @apply bg-zinc-900 border-zinc-800;
-  }
-
-  .dark [data-sidebar-content]::-webkit-scrollbar-thumb {
-    @apply bg-zinc-700;
-  }
-
-  .dark [data-sidebar-content]:hover::-webkit-scrollbar-thumb {
-    @apply bg-zinc-600;
-  }
-
-  .dark .sidebar-active-indicator {
-    @apply bg-[#D4AF37];
-  }
-
-  .dark [data-sidebar] button:focus-visible,
-  .dark [data-sidebar] a:focus-visible {
-    @apply ring-[#D4AF37];
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --color-luxury-gold: #D4AF37;
-    }
-  }
 }
 
 @theme inline {
@@ -247,39 +208,6 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
 
 @layer base {
   * {
@@ -356,7 +284,10 @@
     --tw-animate-duration: 700ms;
   }
 
-  /* Luxury animations for photo cards */
+  /* ==========================================================================
+     LUXURY ANIMATIONS - Photo upload and interaction animations
+     ========================================================================== */
+  
   @keyframes ring-expand {
     0% {
       transform: scale(0);
@@ -479,7 +410,9 @@
     animation: ken-burns-subtle 30s ease-in-out infinite alternate;
   }
 
-  /* Enhanced glass effects for luxury feel */
+  /* ==========================================================================
+     LUXURY VISUAL EFFECTS - Glass effects, gradients, and visual enhancements
+     ========================================================================== */
   .glass-luxury {
     @apply backdrop-blur-xl bg-white/5 border border-white/10;
     background: linear-gradient(
@@ -489,14 +422,6 @@
     );
   }
 
-  .glass-luxury-dark {
-    @apply backdrop-blur-xl bg-black/10 border border-white/5;
-    background: linear-gradient(
-      135deg,
-      rgba(0, 0, 0, 0.15),
-      rgba(0, 0, 0, 0.05)
-    );
-  }
 
   /* Luxury text shadow for readability over images */
   .text-shadow-luxury {
@@ -652,48 +577,5 @@
     animation-delay: -14s;
   }
   
-  /* Photo upload animations */
-  @keyframes check-bounce {
-    0%, 100% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.2);
-    }
-  }
-  
-  @keyframes ring-expand {
-    0% {
-      transform: scale(0.5);
-      opacity: 1;
-    }
-    100% {
-      transform: scale(2);
-      opacity: 0;
-    }
-  }
-  
-  @keyframes success-fade {
-    0% {
-      opacity: 1;
-    }
-    70% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 0;
-    }
-  }
-  
-  .animate-check-bounce {
-    animation: check-bounce 0.5s ease-out;
-  }
-  
-  .animate-ring-expand {
-    animation: ring-expand 1s ease-out;
-  }
-  
-  .animate-success-fade {
-    animation: success-fade 3s ease-out forwards;
-  }
+
 }

@@ -112,6 +112,7 @@ model Property {
   pricing               PropertyPricing?
   minimumStayRules      MinimumStayRule[]
   operationalCosts      OperationalCost[]
+  availabilityRequests  AvailabilityRequest[]
 
   @@index([status])
   @@index([destinationId])
@@ -162,24 +163,54 @@ model PropertyContact {
 }
 
 model Booking {
-  id             String      @id @default(cuid())
+  id             String         @id @default(cuid())
   propertyId     String
   type           BookingType
+  status         BookingStatus  @default(CONFIRMED)
+  source         BookingSource  @default(MANUAL)
   startDate      DateTime
   endDate        DateTime
   guestName      String?
   guestEmail     String?
   guestPhone     String?
   numberOfGuests Int?
+  totalAmount    Float?
   notes          String?
   externalId     String?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-  property       Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  metadata       Json?
+  createdBy      String?
+  updatedBy      String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  property       Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([propertyId])
   @@index([startDate, endDate])
   @@index([type])
+  @@index([status])
+}
+
+model AvailabilityRequest {
+  id             String                      @id @default(cuid())
+  propertyId     String
+  startDate      DateTime
+  endDate        DateTime
+  guestName      String
+  guestEmail     String
+  guestPhone     String
+  numberOfGuests Int
+  message        String?
+  status         AvailabilityRequestStatus   @default(PENDING)
+  urgency        AvailabilityRequestUrgency  @default(MEDIUM)
+  requestedBy    String                      // User ID who created the request
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
+  property       Property                    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([startDate, endDate])
 }
 
 model PriceRange {
@@ -421,6 +452,35 @@ enum BookingType {
   TENTATIVE
   BLOCKED
   MAINTENANCE
+  OWNER
+  OWNER_STAY
+  CONTRACT
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum BookingSource {
+  MANUAL
+  EXTERNAL
+  IMPORT
+  WEBSITE
+}
+
+enum AvailabilityRequestStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum AvailabilityRequestUrgency {
+  LOW
+  MEDIUM
+  HIGH
 }
 
 model Contact {

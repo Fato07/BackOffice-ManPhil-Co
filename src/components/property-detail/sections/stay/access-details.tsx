@@ -132,11 +132,9 @@ export function AccessDetails({ property }: AccessDetailsProps) {
         )}
       </div>
 
-      {/* How to get there */}
       <div className="space-y-4">
         <h5 className="font-medium">How to get there?</h5>
         
-        {/* Airports */}
         <div>
           <Label className="flex items-center gap-2 mb-2">
             <Plane className="h-4 w-4 text-gray-500" />
@@ -187,7 +185,6 @@ export function AccessDetails({ property }: AccessDetailsProps) {
           )}
         </div>
 
-        {/* Train Stations */}
         <div>
           <Label className="flex items-center gap-2 mb-2">
             <Train className="h-4 w-4 text-gray-500" />
@@ -238,7 +235,6 @@ export function AccessDetails({ property }: AccessDetailsProps) {
           )}
         </div>
 
-        {/* Cars */}
         <div>
           <Label className="flex items-center gap-2 mb-2">
             <Car className="h-4 w-4 text-gray-500" />
@@ -289,7 +285,6 @@ export function AccessDetails({ property }: AccessDetailsProps) {
           )}
         </div>
 
-        {/* Road Type */}
         <div>
           <Label className="flex items-center gap-2 mb-2">
             <MapPin className="h-4 w-4 text-gray-500" />
@@ -318,7 +313,6 @@ export function AccessDetails({ property }: AccessDetailsProps) {
           )}
         </div>
 
-        {/* Special Attention */}
         <div>
           <div className="flex items-center space-x-2 mb-2">
             <Checkbox
@@ -346,7 +340,6 @@ export function AccessDetails({ property }: AccessDetailsProps) {
           )}
         </div>
 
-        {/* Keys */}
         <div>
           <h5 className="font-medium mb-3 flex items-center gap-2">
             <Key className="h-4 w-4 text-gray-500" />

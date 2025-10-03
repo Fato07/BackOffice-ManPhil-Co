@@ -75,7 +75,6 @@ export function ExportDialog({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Export Format */}
           <div className="space-y-3">
             <Label>Export Format</Label>
             <RadioGroup value={exportFormat} onValueChange={(value) => setExportFormat(value as any)}>
@@ -104,7 +103,6 @@ export function ExportDialog({
 
           <Separator />
 
-          {/* Export Scope */}
           <div className="space-y-3">
             <Label>Export Scope</Label>
             <RadioGroup value={exportScope} onValueChange={(value) => setExportScope(value as any)}>
@@ -144,7 +142,6 @@ export function ExportDialog({
             </RadioGroup>
           </div>
 
-          {/* Export Summary */}
           <div className="rounded-lg bg-muted px-4 py-3">
             <p className="text-sm text-muted-foreground">
               Export will include <span className="font-medium text-foreground">{getExportCount()}</span> properties

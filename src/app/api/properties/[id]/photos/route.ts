@@ -39,11 +39,11 @@ export async function POST(
     }
 
     const { id } = await context.params
-    console.log(`[Photos Upload] Starting upload for property: ${id}`)
+    
     
     // Check if Supabase is configured
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.error("[Photos Upload] Supabase environment variables not configured")
+      
       return NextResponse.json(
         { error: "Storage service not configured. Please set up Supabase environment variables." },
         { status: 500 }
@@ -70,7 +70,7 @@ export async function POST(
     const formData = await request.formData()
     const files = formData.getAll("files") as File[]
     
-    console.log(`[Photos Upload] Received ${files.length} files to upload`)
+    
     
     if (files.length === 0) {
       return NextResponse.json({ error: "No files provided" }, { status: 400 })
@@ -80,7 +80,7 @@ export async function POST(
     const errors: string[] = []
 
     for (const file of files) {
-      console.log(`[Photos Upload] Processing file: ${file.name}, size: ${file.size}, type: ${file.type}`)
+      
       
       // Validate file type
       if (!ALLOWED_FILE_TYPES.includes(file.type)) {
@@ -104,7 +104,7 @@ export async function POST(
       const fileExt = file.name.split('.').pop()
       const fileName = `${id}/${timestamp}-${randomString}.${fileExt}`
       
-      console.log(`[Photos Upload] Uploading to Supabase: ${fileName}`)
+      
 
       // Upload to Supabase Storage
       const buffer = await file.arrayBuffer()
@@ -118,7 +118,7 @@ export async function POST(
 
       if (error) {
         const errorMsg = `Failed to upload ${file.name}: ${error.message}`
-        console.error(`[Photos Upload] Supabase upload error:`, error)
+        
         errors.push(errorMsg)
         
         // Check if it's a bucket not found error
@@ -128,7 +128,7 @@ export async function POST(
         continue
       }
       
-      console.log(`[Photos Upload] Successfully uploaded to Supabase: ${fileName}`)
+      
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
@@ -154,7 +154,7 @@ export async function POST(
       uploadedPhotos.push(photo)
     }
 
-    console.log(`[Photos Upload] Upload complete. Success: ${uploadedPhotos.length}, Failed: ${files.length - uploadedPhotos.length}`)
+    
 
     // Data integrity check: Ensure property has at least one main photo
     if (uploadedPhotos.length > 0 && !hasMainPhoto) {
@@ -163,7 +163,7 @@ export async function POST(
       
       if (!uploadedMainPhoto) {
         // No main photo exists, set the first uploaded photo as main
-        console.log(`[Photos Upload] No main photo found after upload, setting first photo as main`)
+        
         
         const firstPhoto = uploadedPhotos[0]
         await prisma.photo.update({
@@ -216,7 +216,7 @@ export async function POST(
 
     return NextResponse.json(response)
   } catch (error) {
-    console.error("[Photos Upload] Unexpected error:", error)
+    
     return NextResponse.json(
       { 
         error: "Failed to upload photos",
@@ -247,7 +247,7 @@ export async function GET(
 
     return NextResponse.json({ photos })
   } catch (error) {
-    console.error("Get photos error:", error)
+    
     return NextResponse.json(
       { error: "Failed to fetch photos" },
       { status: 500 }
@@ -303,7 +303,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Update photo positions error:", error)
+    
     return NextResponse.json(
       { error: "Failed to update photo positions" },
       { status: 500 }

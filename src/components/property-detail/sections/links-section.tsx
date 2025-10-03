@@ -210,7 +210,6 @@ export function LinksSection({ propertyId }: LinksSectionProps) {
         )}
       </div>
 
-      {/* Drag and Drop Zone */}
       {canEdit && (
         <div
           onDrop={handleDrop}
@@ -230,7 +229,6 @@ export function LinksSection({ propertyId }: LinksSectionProps) {
         </div>
       )}
 
-      {/* Resources List */}
       {isLoading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
@@ -349,7 +347,6 @@ export function LinksSection({ propertyId }: LinksSectionProps) {
         </div>
       )}
 
-      {/* Create Resource Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -473,7 +470,6 @@ export function LinksSection({ propertyId }: LinksSectionProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Resource Dialog */}
       <Dialog 
         open={!!editingResource} 
         onOpenChange={(open) => !open && setEditingResource(null)}
@@ -529,7 +525,6 @@ export function LinksSection({ propertyId }: LinksSectionProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog 
         open={!!deletingResource} 
         onOpenChange={(open) => !open && setDeletingResource(null)}

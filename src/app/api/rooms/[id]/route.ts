@@ -52,7 +52,7 @@ export async function GET(
 
     return NextResponse.json({ room })
   } catch (error) {
-    console.error("Get room error:", error)
+    
     return NextResponse.json(
       { error: "Failed to fetch room" },
       { status: 500 }
@@ -121,7 +121,7 @@ export async function PATCH(
 
     return NextResponse.json({ room: updatedRoom })
   } catch (error) {
-    console.error("Update room error:", error)
+    
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 })
     }
@@ -203,7 +203,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Delete room error:", error)
+    
     return NextResponse.json(
       { error: "Failed to delete room" },
       { status: 500 }

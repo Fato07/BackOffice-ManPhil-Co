@@ -74,7 +74,6 @@ export function PropertyCard({
       )}
       onClick={() => router.push(`/houses/${property.id}`)}
     >
-      {/* Image Section */}
       <div className="relative aspect-[16/10] overflow-hidden bg-gray-100">
         {mainPhoto ? (
           <img
@@ -89,7 +88,6 @@ export function PropertyCard({
           </div>
         )}
         
-        {/* Status Badge and Checkbox */}
         <div className="absolute top-3 left-3 flex items-center gap-2">
           {onSelectChange && (
             <div 
@@ -108,7 +106,6 @@ export function PropertyCard({
           </Badge>
         </div>
 
-        {/* Action Menu */}
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -153,11 +150,9 @@ export function PropertyCard({
         </div>
       </div>
 
-      {/* Content Section */}
       <CardContent className="p-4">
         <h3 className="font-semibold text-lg mb-2 line-clamp-1">{property.name}</h3>
         
-        {/* Location */}
         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
           <MapPin className="h-3.5 w-3.5" />
           <span className="line-clamp-1">
@@ -165,7 +160,6 @@ export function PropertyCard({
           </span>
         </div>
 
-        {/* Property Features */}
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <Bed className="h-3.5 w-3.5" />

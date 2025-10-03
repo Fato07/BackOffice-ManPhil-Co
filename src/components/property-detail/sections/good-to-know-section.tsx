@@ -77,7 +77,7 @@ export function GoodToKnowSection({ property }: GoodToKnowSectionProps) {
     try {
       return JSON.parse(property.goodToKnow)
     } catch (error) {
-      console.error('Failed to parse goodToKnow data:', error)
+      
       return {}
     }
   }, [property.goodToKnow])

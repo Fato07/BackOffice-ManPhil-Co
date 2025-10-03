@@ -53,7 +53,7 @@ export async function GET(
       try {
         internalData = JSON.parse(property.internalComment);
       } catch (error) {
-        console.error('Failed to parse internal comment:', error);
+        
       }
     }
 
@@ -70,7 +70,7 @@ export async function GET(
       );
     }
 
-    console.error('Error fetching internal data:', error);
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -128,7 +128,7 @@ export async function PATCH(
       );
     }
 
-    console.error('Error updating internal data:', error);
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

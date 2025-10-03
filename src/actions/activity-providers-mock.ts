@@ -91,8 +91,8 @@ export async function getActivityProviders(params?: {
       totalCount: filteredProviders.length,
       pageCount: Math.ceil(filteredProviders.length / pageSize)
     }
-  } catch (error) {
-    console.error('Error fetching activity providers:', error)
+  } catch (_error) {
+    
     return {
       success: false,
       error: 'Failed to fetch activity providers'
@@ -117,8 +117,8 @@ export async function getActivityProvider(id: string) {
         properties: [] // Mock empty properties for now
       }
     }
-  } catch (error) {
-    console.error('Error fetching activity provider:', error)
+  } catch (_error) {
+    
     return { success: false, error: 'Failed to fetch activity provider' }
   }
 }
@@ -157,8 +157,8 @@ export async function createActivityProvider(data: {
     mockProviders.push(newProvider as any)
     
     return { success: true, data: newProvider }
-  } catch (error) {
-    console.error('Error creating activity provider:', error)
+  } catch (_error) {
+    
     return { success: false, error: 'Failed to create activity provider' }
   }
 }
@@ -190,8 +190,8 @@ export async function updateActivityProvider(id: string, data: {
     } as any
     
     return { success: true, data: mockProviders[providerIndex] }
-  } catch (error) {
-    console.error('Error updating activity provider:', error)
+  } catch (_error) {
+    
     return { success: false, error: 'Failed to update activity provider' }
   }
 }
@@ -209,8 +209,8 @@ export async function deleteActivityProvider(id: string) {
     mockProviders.splice(providerIndex, 1)
     
     return { success: true }
-  } catch (error) {
-    console.error('Error deleting activity provider:', error)
+  } catch (_error) {
+    
     return { success: false, error: 'Failed to delete activity provider' }
   }
 }
@@ -226,11 +226,11 @@ export async function linkProviderToProperty(data: {
     await new Promise(resolve => setTimeout(resolve, 200))
     
     // Mock implementation - in real app this would create a link in PropertyActivityProvider table
-    console.log('Mock: Linking provider', data.providerId, 'to property', data.propertyId)
+    
     
     return { success: true, data: { id: 'mock-link-id', ...data } }
-  } catch (error) {
-    console.error('Error linking provider to property:', error)
+  } catch (_error) {
+    
     return { success: false, error: 'Failed to link provider to property' }
   }
 }
@@ -240,11 +240,11 @@ export async function unlinkProviderFromProperty(providerId: string, propertyId:
     await new Promise(resolve => setTimeout(resolve, 200))
     
     // Mock implementation
-    console.log('Mock: Unlinking provider', providerId, 'from property', propertyId)
+    
     
     return { success: true }
-  } catch (error) {
-    console.error('Error unlinking provider from property:', error)
+  } catch (_error) {
+    
     return { success: false, error: 'Failed to unlink provider from property' }
   }
 }

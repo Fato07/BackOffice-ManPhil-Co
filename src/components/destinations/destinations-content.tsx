@@ -96,7 +96,6 @@ export function DestinationsContent() {
         )}
       </AnimatePresence>
 
-      {/* Unified Map Toolbar - Now draggable */}
       <MapToolbar 
         onLocationSearch={handleLocationSearch}
         mapStyle={mapStyle}
@@ -109,7 +108,6 @@ export function DestinationsContent() {
         onFullscreen={mapControls?.toggleFullscreen}
       />
 
-      {/* View Toggle - Moved to left side */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -119,7 +117,6 @@ export function DestinationsContent() {
         <ViewToggle currentView={viewMode} onViewChange={setViewMode} />
       </motion.div>
 
-      {/* Stats Widget - Responsive */}
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -129,7 +126,6 @@ export function DestinationsContent() {
         <StatsWidget destinations={data?.destinations || []} />
       </motion.div>
 
-      {/* Add Destination Button */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -139,7 +135,6 @@ export function DestinationsContent() {
         <CreateDestinationDialog />
       </motion.div>
 
-      {/* Destination Details Sidebar */}
       <AnimatePresence>
         {sidebarOpen && selectedDestination && (
           <DestinationSidebar

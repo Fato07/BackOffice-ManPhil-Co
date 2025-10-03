@@ -34,6 +34,7 @@ const RoomBuilder = lazy(() => import("@/components/property-detail/sections/roo
 const SurroundingsSection = lazy(() => import("@/components/property-detail/sections/surroundings-section").then(m => ({ default: m.SurroundingsSection })))
 const StaySection = lazy(() => import("@/components/property-detail/sections/stay-section").then(m => ({ default: m.StaySection })))
 const PricingSection = lazy(() => import("@/components/property-detail/sections/pricing-section").then(m => ({ default: m.PricingSection })))
+const AvailabilitySection = lazy(() => import("@/components/availability/availability-section").then(m => ({ default: m.AvailabilitySection })))
 
 // Section loading skeleton
 function SectionSkeleton() {
@@ -91,6 +92,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
     { id: "promote", label: "Promote", component: PromoteSection, icon: Home, description: "Visibility and positioning" },
     { id: "surroundings", label: "Surroundings", component: SurroundingsSection, icon: MapPinned, description: "Property environment and area" },
     { id: "pricing", label: "Pricing", component: PricingSection, icon: DollarSign, description: "Pricing and rates management", permission: Permission.FINANCIAL_VIEW },
+    { id: "availability", label: "Availability", component: AvailabilitySection, icon: Calendar, description: "Booking calendar and availability management" },
     
     // Property Details container - expanded with more subsections
     { id: "property-details", label: "Property Details", component: null, icon: Info, description: "Complete property information", isContainer: true },
@@ -176,7 +178,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
     setCurrentSection(sectionId)
     const element = sectionRefs.current[sectionId]
     if (element) {
-      const yOffset = -120 // Account for dashboard header and sticky header
+      const yOffset = -80 // Account for dashboard header and reduced sticky header
       const y = element.getBoundingClientRect().top + window.scrollY + yOffset
       window.scrollTo({ top: y, behavior: "smooth" })
     }
@@ -187,6 +189,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
     promote: !!property.exclusivity || !!property.position,
     surroundings: !!(property.surroundings && (property.surroundings as SurroundingsInfo).filters?.length),
     pricing: !!(property.pricing || (property.prices && property.prices.length > 0)),
+    availability: true, // Availability section is always considered complete since it shows current bookings
     info: !!property.name && !!property.numberOfRooms,
     location: !!(property.address || property.city || property.postcode || property.neighborhood || (property.latitude && property.longitude)),
     "further-info": !!property.accessibility || !!property.policies,
@@ -292,7 +295,6 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
 
   return (
     <div className="relative flex min-h-[calc(100vh-3.5rem)] luxury-gradient-bg">
-      {/* Floating luxury particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         {Array.from({ length: 10 }).map((_, i) => (
           <div
@@ -307,7 +309,6 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
         ))}
       </div>
 
-      {/* Left Navigation with enhanced glass effect */}
       <div className="relative z-40">
         <PropertyNavigation
           propertyId={property.id}
@@ -319,48 +320,44 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
         />
       </div>
 
-      {/* Main Content - flush with navigation */}
       <div className="relative z-20 flex-1 flex flex-col bg-transparent">
-        {/* Sticky Header with enhanced glass effect - seamlessly connected to navigation */}
-        <div className="sticky top-14 z-30 bg-gradient-to-b from-white/85 to-white/75 backdrop-blur-2xl pl-8 pr-8 pb-6 pt-6 border-b border-white/40 shadow-lg flex-shrink-0">
-            {/* Back button */}
+        <div className="sticky top-14 z-30 bg-white/90 backdrop-blur-md pl-8 pr-8 pb-3 pt-3 border-b border-gray-200/60 flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => router.push("/houses")}
-              className="mb-4 -ml-2"
+              className="mb-2 -ml-2 h-7 px-2 text-sm"
             >
-              <ChevronLeft className="mr-1 h-4 w-4" />
+              <ChevronLeft className="mr-1 h-3 w-3" />
               Back to Houses
             </Button>
             
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-extralight text-gray-900 tracking-tight">
+                <h1 className="text-lg font-medium text-gray-900">
                   {property.name}
                 </h1>
-                <p className="text-sm text-gray-600 mt-2 font-light">
+                <p className="text-xs text-gray-500 mt-1">
                   Complete all sections to publish this luxury property
                 </p>
               </div>
-              <div className="flex items-center gap-4">
-                {/* View All Photos Button */}
+              <div className="flex items-center gap-2">
                 {property.photos && property.photos.length > 0 && (
                   <Button 
-                    variant="outline" 
+                    variant="ghost" 
                     size="sm" 
-                    className="gap-2"
+                    className="gap-1 h-7 px-2 text-xs"
                     onClick={() => setShowPhotoViewer(true)}
                   >
-                    <Images className="h-4 w-4" />
-                    <span className="text-sm">View All Photos</span>
+                    <Images className="h-3 w-3" />
+                    Photos
                   </Button>
                 )}
                 
                 <Button 
-                  variant="outline" 
+                  variant="ghost" 
                   size="sm" 
-                  className="gap-2"
+                  className="gap-1 h-7 px-2"
                   onClick={() => {
                     const e = new KeyboardEvent("keydown", {
                       key: "k",
@@ -369,39 +366,38 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
                     document.dispatchEvent(e)
                   }}
                 >
-                  <Command className="h-4 w-4" />
-                  <span className="text-xs text-gray-500">⌘K</span>
+                  <Command className="h-3 w-3" />
+                  <span className="text-xs text-gray-400">⌘K</span>
                 </Button>
                 <div className={cn(
-                  "ml-4 flex items-center gap-4",
+                  "ml-2 flex items-center gap-2",
                   !navigationExpanded && "hidden lg:flex"
                 )}>
                   <div className="text-right">
-                    <p className="text-xs text-gray-500 uppercase tracking-wider">Progress</p>
-                    <p className="text-2xl font-light text-[#B5985A]">
+                    <p className="text-xs text-[#B5985A] font-medium">
                       {Math.round((Object.values(completionStatus).filter(Boolean).length / sections.length) * 100)}%
                     </p>
                   </div>
-                  <div className="h-16 w-16">
-                    <svg className="transform -rotate-90 w-16 h-16">
+                  <div className="h-8 w-8">
+                    <svg className="transform -rotate-90 w-8 h-8">
                       <circle
-                        cx="32"
-                        cy="32"
-                        r="28"
+                        cx="16"
+                        cy="16"
+                        r="12"
                         stroke="currentColor"
-                        strokeWidth="4"
+                        strokeWidth="2"
                         fill="none"
                         className="text-gray-200"
                       />
                       <circle
-                        cx="32"
-                        cy="32"
-                        r="28"
+                        cx="16"
+                        cy="16"
+                        r="12"
                         stroke="currentColor"
-                        strokeWidth="4"
+                        strokeWidth="2"
                         fill="none"
-                        strokeDasharray={`${2 * Math.PI * 28}`}
-                        strokeDashoffset={`${2 * Math.PI * 28 * (1 - Object.values(completionStatus).filter(Boolean).length / sections.length)}`}
+                        strokeDasharray={`${2 * Math.PI * 12}`}
+                        strokeDashoffset={`${2 * Math.PI * 12 * (1 - Object.values(completionStatus).filter(Boolean).length / sections.length)}`}
                         className="text-[#B5985A] transition-all duration-500"
                       />
                     </svg>
@@ -411,7 +407,6 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
             </div>
           </div>
 
-        {/* Scrollable sections container */}
         <div className="flex-1">
           <div className="px-4 sm:px-6 lg:px-8 py-8">
             <div className="space-y-12">
@@ -460,14 +455,13 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
                         }
                       }}
                       className={cn(
-                        "scroll-mt-36 transition-all duration-500 mb-6"
+                        "scroll-mt-24 transition-all duration-500 mb-6"
                       )}
                     >
                       <GlassCard variant="luxury" className={cn(
                         "animate-in fade-in-0 slide-in-from-bottom-4 duration-700",
                         section.id === "property-details" && "border-dashed"
                       )} style={{ animationDelay: `${currentIndex * 100}ms` }}>
-                        {/* Container Section Header */}
                         <div className="px-8 py-6 border-b border-gray-100/50">
                           <div className="flex items-center justify-between">
                             <div>
@@ -491,7 +485,6 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
                           </div>
                         </div>
 
-                        {/* Subsections */}
                         <div className="divide-y divide-gray-100">
                           {subsections.map((subsection, subIndex) => (
                             <div 
@@ -513,7 +506,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
                                   )
                                 }
                               }}
-                              className="px-8 py-6 scroll-mt-36"
+                              className="px-8 py-6 scroll-mt-24"
                             >
                               <h3 className="text-lg font-medium text-gray-900 mb-4">
                                 {subsection.label}
@@ -577,11 +570,10 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
                         }
                       }}
                       className={cn(
-                        "scroll-mt-36 transition-all duration-500 mb-6"
+                        "scroll-mt-24 transition-all duration-500 mb-6"
                       )}
                     >
                       <GlassCard variant="luxury" className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700" style={{ animationDelay: `${currentIndex * 100}ms` }}>
-                        {/* Section Header */}
                         <div className={cn(
                           "px-8 py-6 border-b border-gray-100/50",
                           section.id === "internal" && "bg-amber-50/30"
@@ -593,6 +585,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
                               </h2>
                               <p className="text-sm text-gray-600 mt-1">
                                 {section.id === "promote" && "Control visibility and positioning"}
+                                {section.id === "availability" && "Booking calendar and availability management"}
                                 {section.id === "info" && "Basic property information"}
                                 {section.id === "location" && "Property location details"}
                                 {section.id === "further-info" && "Additional property details"}
@@ -622,7 +615,6 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
                           </div>
                         </div>
 
-                        {/* Section Content */}
                         <div className="">
                           {shouldRender ? (
                             <Suspense fallback={
@@ -664,22 +656,18 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
             </div>
           </div>
 
-          {/* Bottom Padding */}
           <div className="h-16" />
         </div>
       </div>
 
-      {/* Section Navigator */}
       <SectionNavigator
         sections={navigatorSections}
         currentSection={currentSection}
         onSectionChange={handleSectionChange}
       />
 
-      {/* Command Palette */}
       <CommandPalette propertyId={property.id} />
       
-      {/* Image Viewer Modal */}
       {property.photos && (
         <ImageViewerModal
           isOpen={showPhotoViewer}

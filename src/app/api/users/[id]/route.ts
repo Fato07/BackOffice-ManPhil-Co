@@ -30,7 +30,7 @@ export async function GET(
       fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim() || user.username || "User",
     })
   } catch (error) {
-    console.error("Error fetching user:", error)
+    
     return NextResponse.json(
       { error: "Failed to fetch user" },
       { status: 500 }

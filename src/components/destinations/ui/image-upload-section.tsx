@@ -74,7 +74,7 @@ export function ImageUploadSection({
         handleRemoveFile()
       }
     } catch (error) {
-      console.error("Error uploading image:", error)
+      
       const message = error instanceof Error ? error.message : "Failed to upload image"
       toast.error(message)
     } finally {
@@ -100,7 +100,7 @@ export function ImageUploadSection({
       onImageUpdate?.(null, null)
       setAltText("")
     } catch (error) {
-      console.error("Error deleting image:", error)
+      
       const message = error instanceof Error ? error.message : "Failed to delete image"
       toast.error(message)
     } finally {
@@ -112,7 +112,6 @@ export function ImageUploadSection({
     <div className={cn("space-y-4", className)}>
       <Label className="text-gray-300">Destination Image</Label>
       
-      {/* Current Image */}
       {currentImageUrl && !selectedFile && (
         <div className="space-y-3">
           <div className="relative aspect-video rounded-lg overflow-hidden bg-white/5 border border-white/10">
@@ -143,12 +142,10 @@ export function ImageUploadSection({
         </div>
       )}
 
-      {/* File Upload */}
       {(!currentImageUrl || selectedFile) && (
         <div className="space-y-4">
           {selectedFile ? (
             <div className="space-y-3">
-              {/* Preview */}
               <div className="relative aspect-video rounded-lg overflow-hidden bg-white/5 border border-white/10">
                 <img
                   src={previewUrl!}
@@ -167,7 +164,6 @@ export function ImageUploadSection({
                 </Button>
               </div>
 
-              {/* Alt Text Input */}
               <div className="space-y-2">
                 <Label className="text-gray-300 text-sm">Alt Text (Optional)</Label>
                 <Input
@@ -180,7 +176,6 @@ export function ImageUploadSection({
                 />
               </div>
 
-              {/* Upload Button */}
               <Button
                 type="button"
                 onClick={handleUpload}

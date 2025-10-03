@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ room })
   } catch (error) {
-    console.error("Create room error:", error)
+    
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 })
     }
@@ -159,7 +159,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Update room positions error:", error)
+    
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 })
     }

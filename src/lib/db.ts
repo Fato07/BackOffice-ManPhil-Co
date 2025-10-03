@@ -27,7 +27,7 @@ if (process.env.NODE_ENV === 'development') {
   const cleanup = async () => {
     if (globalForPrisma.prisma) {
       await globalForPrisma.prisma.$disconnect()
-        .catch((e) => console.error('Failed to disconnect Prisma:', e))
+        .catch((_e) => console.error('Error disconnecting Prisma:', _e))
     }
   }
   

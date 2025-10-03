@@ -58,7 +58,6 @@ export function EquipmentRequestFiltersPanel({
 
   return (
     <div className="flex flex-wrap gap-2">
-      {/* Status Filter */}
       <Select
         value={localFilters.status || "ALL"}
         onValueChange={(value) => handleFilterChange("status", value as EquipmentRequestStatus | "ALL")}
@@ -75,7 +74,6 @@ export function EquipmentRequestFiltersPanel({
         </SelectContent>
       </Select>
 
-      {/* Priority Filter */}
       <Select
         value={localFilters.priority || "ALL"}
         onValueChange={(value) => handleFilterChange("priority", value as EquipmentRequestPriority | "ALL")}
@@ -92,7 +90,6 @@ export function EquipmentRequestFiltersPanel({
         </SelectContent>
       </Select>
 
-      {/* Date From Filter */}
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -119,7 +116,6 @@ export function EquipmentRequestFiltersPanel({
         </PopoverContent>
       </Popover>
 
-      {/* Date To Filter */}
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -146,7 +142,6 @@ export function EquipmentRequestFiltersPanel({
         </PopoverContent>
       </Popover>
 
-      {/* Active filter summary */}
       {(localFilters.status && localFilters.status !== "ALL") && (
         <Badge variant="secondary" className="ml-auto text-[10px] py-0 px-1.5 h-5">
           Status: {localFilters.status}

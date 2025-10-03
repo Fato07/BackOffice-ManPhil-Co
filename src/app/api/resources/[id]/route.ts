@@ -46,7 +46,7 @@ export async function GET(
 
     return NextResponse.json(resource)
   } catch (error) {
-    console.error("Error fetching resource:", error)
+    
     return NextResponse.json(
       { error: "Failed to fetch resource" },
       { status: 500 }
@@ -107,7 +107,7 @@ export async function PUT(
 
     return NextResponse.json(updatedResource)
   } catch (error) {
-    console.error("Error updating resource:", error)
+    
     
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 })
@@ -170,7 +170,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Error deleting resource:", error)
+    
     return NextResponse.json(
       { error: "Failed to delete resource" },
       { status: 500 }

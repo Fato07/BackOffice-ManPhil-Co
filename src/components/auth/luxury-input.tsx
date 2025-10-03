@@ -55,7 +55,6 @@ const LuxuryInput = forwardRef<HTMLInputElement, LuxuryInputProps>(
             {...props}
           />
 
-          {/* Floating Label */}
           <label
             className={cn(
               "absolute left-4 transition-all duration-300 pointer-events-none",
@@ -73,7 +72,6 @@ const LuxuryInput = forwardRef<HTMLInputElement, LuxuryInputProps>(
             {label}
           </label>
 
-          {/* Password Toggle */}
           {type === 'password' && (
             <button
               type="button"
@@ -89,7 +87,6 @@ const LuxuryInput = forwardRef<HTMLInputElement, LuxuryInputProps>(
             </button>
           )}
 
-          {/* Focus Gradient Effect */}
           <div 
             className={cn(
               "absolute inset-0 rounded-xl transition-opacity duration-300 pointer-events-none",
@@ -99,7 +96,6 @@ const LuxuryInput = forwardRef<HTMLInputElement, LuxuryInputProps>(
           />
         </div>
 
-        {/* Error Message */}
         {error && (
           <p className="mt-1.5 text-sm text-rose-600 font-medium animate-slide-up">
             {error}

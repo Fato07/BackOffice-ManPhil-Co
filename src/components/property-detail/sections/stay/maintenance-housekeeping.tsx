@@ -170,7 +170,6 @@ export function MaintenanceHousekeeping({ property }: MaintenanceHousekeepingPro
         )}
       </div>
 
-      {/* Linen and Towels */}
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -193,13 +192,11 @@ export function MaintenanceHousekeeping({ property }: MaintenanceHousekeepingPro
           </div>
         </div>
         
-        {/* Housekeeping Contacts */}
         {(linenChange.frequency !== 'none' || towelChange.frequency !== 'none') && (
           renderContacts(housekeepingContacts, "Housekeeping Contact", Users)
         )}
       </div>
 
-      {/* Gardening */}
       <div className="pt-6 border-t">
         <div className="flex items-center space-x-2 mb-4">
           <Checkbox
@@ -231,7 +228,6 @@ export function MaintenanceHousekeeping({ property }: MaintenanceHousekeepingPro
         )}
       </div>
 
-      {/* Pool */}
       <div className="pt-6 border-t">
         <div className="flex items-center space-x-2 mb-4">
           <Checkbox

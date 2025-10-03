@@ -81,6 +81,12 @@ export const bulkUpdateLegalDocumentsSchema = z.object({
   updates: updateLegalDocumentSchema,
 })
 
+export const bulkDownloadLegalDocumentsSchema = z.object({
+  documentIds: z.array(z.string().cuid()).min(1, 'At least one document must be selected'),
+  format: z.enum(['zip', 'individual']).default('zip'),
+  includeVersions: z.boolean().default(false),
+})
+
 // Type exports
 export type CreateLegalDocumentInput = z.infer<typeof createLegalDocumentSchema>
 export type UpdateLegalDocumentInput = z.infer<typeof updateLegalDocumentSchema>
@@ -89,3 +95,4 @@ export type LegalDocumentFiltersInput = z.infer<typeof legalDocumentFiltersSchem
 export type LegalDocumentExportInput = z.infer<typeof legalDocumentExportSchema>
 export type BulkDeleteLegalDocumentsInput = z.infer<typeof bulkDeleteLegalDocumentsSchema>
 export type BulkUpdateLegalDocumentsInput = z.infer<typeof bulkUpdateLegalDocumentsSchema>
+export type BulkDownloadLegalDocumentsInput = z.infer<typeof bulkDownloadLegalDocumentsSchema>

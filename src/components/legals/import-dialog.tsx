@@ -118,7 +118,6 @@ export function ImportDialog({
         <div className="space-y-4">
           {!result ? (
             <>
-              {/* File upload */}
               <div className="space-y-2">
                 <Label>Select File</Label>
                 <DocumentUploadZone
@@ -128,7 +127,6 @@ export function ImportDialog({
                 />
               </div>
 
-              {/* Import progress */}
               {isImporting && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
@@ -139,7 +137,6 @@ export function ImportDialog({
                 </div>
               )}
 
-              {/* Instructions */}
               <Alert>
                 <FileText className="h-4 w-4" />
                 <AlertDescription>
@@ -163,7 +160,6 @@ export function ImportDialog({
             </>
           ) : (
             <>
-              {/* Import results */}
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="rounded-lg border p-4">

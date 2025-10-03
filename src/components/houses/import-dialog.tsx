@@ -151,7 +151,6 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
           <TabsContent value="preview" className="space-y-4">
             {validationResult && (
               <>
-                {/* Import Mode */}
                 <div className="space-y-3">
                   <Label>Import Mode</Label>
                   <RadioGroup value={importMode} onValueChange={(value) => setImportMode(value as any)}>
@@ -185,7 +184,6 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
                   </RadioGroup>
                 </div>
 
-                {/* Import Summary */}
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>

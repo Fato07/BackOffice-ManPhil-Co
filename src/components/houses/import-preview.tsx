@@ -23,7 +23,6 @@ export function ImportPreview({ validationResult }: ImportPreviewProps) {
 
   return (
     <div className="space-y-4">
-      {/* Summary */}
       <div className="flex items-center gap-4 text-sm">
         <div className="flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-green-600" />
@@ -43,7 +42,6 @@ export function ImportPreview({ validationResult }: ImportPreviewProps) {
         )}
       </div>
 
-      {/* Errors and Warnings */}
       {(validation.errorCount > 0 || validation.warningCount > 0) && (
         <ScrollArea className="h-32 rounded-md border">
           <div className="p-4 space-y-2">
@@ -74,7 +72,6 @@ export function ImportPreview({ validationResult }: ImportPreviewProps) {
         </ScrollArea>
       )}
 
-      {/* Preview Table */}
       <div className="space-y-2">
         <h4 className="text-sm font-medium">Preview (first {preview.length} rows)</h4>
         <ScrollArea className="h-64 rounded-md border">

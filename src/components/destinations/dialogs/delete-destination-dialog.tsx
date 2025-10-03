@@ -43,7 +43,7 @@ export function DeleteDestinationDialog({
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
-      console.error("Error deleting destination:", error)
+      
       
       if (error instanceof ApiError && error.status === 400) {
         // Handle the case where destination has associated properties

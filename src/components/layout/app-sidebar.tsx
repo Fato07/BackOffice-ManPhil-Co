@@ -38,7 +38,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useSidebar } from "@/components/ui/sidebar"
-import { ThemeToggle } from "@/components/ui/theme-toggle"
 
 const menuGroups = [
   {
@@ -152,7 +151,6 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Main Navigation */}
         {menuGroups.map((group, groupIndex) => (
           <SidebarGroup key={group.label}>
             {!isCollapsed && (
@@ -231,7 +229,6 @@ export function AppSidebar() {
                   {user.primaryEmailAddress?.emailAddress}
                 </p>
               </div>
-              <ThemeToggle />
             </div>
           )}
           {isCollapsed && (
@@ -280,13 +277,6 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                 )
               })}
-              {isCollapsed && (
-                <SidebarMenuItem>
-                  <div className="flex justify-center pt-2">
-                    <ThemeToggle />
-                  </div>
-                </SidebarMenuItem>
-              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

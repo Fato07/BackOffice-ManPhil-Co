@@ -124,7 +124,7 @@ export async function updatePropertyContacts(
       data: { contacts: result },
     }
   } catch (error) {
-    console.error('Error updating property contacts:', error)
+    
 
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0]
@@ -177,7 +177,7 @@ export async function getPropertyContacts(propertyId: string): Promise<ActionRes
       data: contacts,
     }
   } catch (error) {
-    console.error('Error fetching property contacts:', error)
+    
     return {
       success: false,
       error: 'Failed to fetch contacts',
