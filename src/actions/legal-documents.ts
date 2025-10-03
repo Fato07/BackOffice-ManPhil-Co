@@ -52,8 +52,12 @@ export async function getLegalDocuments(
   } = {}
 ): Promise<ActionResult<{ documents: LegalDocumentWithRelations[]; totalCount: number }>> {
   try {
+    console.log('🔍 getLegalDocuments: Starting with filters:', JSON.stringify(filters, null, 2))
+    
     // Permission check
+    console.log('🔐 getLegalDocuments: Checking permissions...')
     await requirePermission(Permission.LEGAL_DOCUMENT_VIEW)
+    console.log('✅ getLegalDocuments: Permission check passed')
 
     const page = filters.page || 1
     const pageSize = filters.pageSize || 20
@@ -105,6 +109,9 @@ export async function getLegalDocuments(
       where.tags = { hasSome: filters.tags }
     }
 
+    console.log('📊 getLegalDocuments: Query where clause:', JSON.stringify(where, null, 2))
+    console.log('📄 getLegalDocuments: Query pagination - page:', page, 'pageSize:', pageSize, 'skip:', skip)
+
     const [documents, totalCount] = await Promise.all([
       prisma.legalDocument.findMany({
         where,
@@ -125,6 +132,9 @@ export async function getLegalDocuments(
       }),
       prisma.legalDocument.count({ where })
     ])
+
+    console.log('📈 getLegalDocuments: Query results - found', documents.length, 'documents, total count:', totalCount)
+    console.log('📋 getLegalDocuments: Document IDs:', documents.map(d => ({ id: d.id, name: d.name, status: d.status })))
 
     // Update status based on expiry dates
     const now = new Date()
@@ -155,11 +165,14 @@ export async function getLegalDocuments(
       }
     }
 
+    console.log('✅ getLegalDocuments: Returning', documents.length, 'documents successfully')
+    
     return {
       success: true,
       data: { documents, totalCount }
     }
   } catch (error) {
+    console.error('❌ getLegalDocuments: Error occurred:', error)
     // Error getting legal documents
     return { 
       success: false, 
@@ -778,6 +791,61 @@ export async function bulkDownloadLegalDocuments(
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Failed to prepare bulk download' 
+    }
+  }
+}
+
+/**
+ * Debug function to check database documents directly
+ */
+export async function debugCheckDatabaseDocuments(): Promise<ActionResult<any>> {
+  try {
+    console.log('🔍 debugCheckDatabaseDocuments: Starting database check...')
+    
+    // Get total count of documents
+    const totalCount = await prisma.legalDocument.count()
+    console.log('📊 debugCheckDatabaseDocuments: Total documents in database:', totalCount)
+    
+    // Get recent documents (last 10)
+    const recentDocs = await prisma.legalDocument.findMany({
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        category: true,
+        createdAt: true,
+        uploadedAt: true,
+        url: true,
+        propertyId: true
+      }
+    })
+    
+    console.log('📋 debugCheckDatabaseDocuments: Recent documents:')
+    recentDocs.forEach(doc => {
+      console.log(`  - ${doc.name} (${doc.status}) - ${doc.createdAt.toISOString()}`)
+    })
+    
+    // Check for any documents without URLs (upload failures)
+    const docsWithoutUrls = await prisma.legalDocument.count({
+      where: { url: null }
+    })
+    console.log('⚠️ debugCheckDatabaseDocuments: Documents without URLs:', docsWithoutUrls)
+    
+    return {
+      success: true,
+      data: {
+        totalCount,
+        recentDocs,
+        docsWithoutUrls
+      }
+    }
+  } catch (error) {
+    console.error('❌ debugCheckDatabaseDocuments: Error occurred:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to check database'
     }
   }
 }

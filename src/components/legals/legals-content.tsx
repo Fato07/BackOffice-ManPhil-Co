@@ -108,6 +108,11 @@ export function LegalsContent() {
     sortOrder: urlState.sortOrder,
   }), [urlState])
 
+  // Debug logging for filters
+  console.log('🔍 LegalsContent: Current URL state:', urlState)
+  console.log('📊 LegalsContent: Applied filters:', filters)
+  console.log('🔍 LegalsContent: Active filters count:', activeFiltersCount)
+  
   // Fetch documents
   const { data: result, isLoading, error } = useLegalDocuments(filters)
   
@@ -205,6 +210,13 @@ export function LegalsContent() {
   const documents = result?.data?.documents || []
   const totalCount = result?.data?.totalCount || 0
   const totalPages = Math.ceil(totalCount / urlState.pageSize)
+  
+  // Debug logging for results
+  console.log('📊 LegalsContent: Query result success:', result?.success)
+  console.log('📋 LegalsContent: Documents found:', documents.length)
+  console.log('📈 LegalsContent: Total count:', totalCount)
+  console.log('❌ LegalsContent: Query error:', error)
+  console.log('⏳ LegalsContent: Is loading:', isLoading)
   
   // Get selected documents for bulk operations
   const selectedDocuments = documents.filter(doc => selectedDocumentIds.includes(doc.id))

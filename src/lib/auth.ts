@@ -51,12 +51,22 @@ export async function requireAuth() {
 export async function getUserRole(): Promise<UserRole | null> {
   try {
     const user = await currentUser();
-    if (!user) return null;
+    if (!user) {
+      console.log('🚫 getUserRole: No user found')
+      return null;
+    }
     
     const role = user.publicMetadata?.role as UserRole | undefined;
-    return role || UserRole.VIEWER; // Default to VIEWER if no role set
-  } catch (error) {
+    const finalRole = role || UserRole.VIEWER;
     
+    console.log('👤 getUserRole: User ID:', user.id)
+    console.log('📋 getUserRole: Raw role from publicMetadata:', role)
+    console.log('🎭 getUserRole: Final role assigned:', finalRole)
+    console.log('📄 getUserRole: Full publicMetadata:', JSON.stringify(user.publicMetadata, null, 2))
+    
+    return finalRole; // Default to VIEWER if no role set
+  } catch (error) {
+    console.error('❌ getUserRole: Error occurred:', error)
     return null;
   }
 }
@@ -84,12 +94,22 @@ export async function hasRole(role: string | UserRole): Promise<boolean> {
 export async function hasPermission(permission: Permission | string): Promise<boolean> {
   try {
     const role = await getUserRole();
-    if (!role) return false;
+    if (!role) {
+      console.log('🚫 hasPermission: No role found, denying permission:', permission)
+      return false;
+    }
     
     const rolePermissions = ROLE_PERMISSIONS[role];
-    return rolePermissions.includes(permission as Permission);
-  } catch (error) {
+    const hasAccess = rolePermissions.includes(permission as Permission);
     
+    console.log('🔐 hasPermission: Checking permission:', permission)
+    console.log('🎭 hasPermission: User role:', role)
+    console.log('📜 hasPermission: Role permissions:', rolePermissions)
+    console.log('✅/❌ hasPermission: Access granted:', hasAccess)
+    
+    return hasAccess;
+  } catch (error) {
+    console.error('❌ hasPermission: Error occurred:', error)
     return false;
   }
 }
@@ -100,10 +120,13 @@ export async function hasPermission(permission: Permission | string): Promise<bo
  * @throws Error if the user doesn't have the permission
  */
 export async function requirePermission(permission: Permission | string) {
+  console.log('🛡️ requirePermission: Requiring permission:', permission)
   const hasAccess = await hasPermission(permission);
   if (!hasAccess) {
+    console.error('❌ requirePermission: Access denied for permission:', permission)
     throw new Error('Insufficient permissions');
   }
+  console.log('✅ requirePermission: Access granted for permission:', permission)
   return true;
 }
 
