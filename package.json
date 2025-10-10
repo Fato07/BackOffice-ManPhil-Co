@@ -13,7 +13,10 @@
     "prisma:studio": "prisma studio",
     "setup:storage": "bun scripts/setup-storage.ts",
     "supabase:link:staging": "supabase link --project-ref zfpbnqqejytfdigwcmsc",
-    "supabase:push:staging": "supabase db push"
+    "supabase:push:staging": "supabase db push",
+    "validate-schema": "node scripts/validate-schema.js",
+    "validate-schema:staging": "node scripts/validate-schema.js --env=staging",
+    "validate-schema:production": "node scripts/validate-schema.js --env=production"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.31.9",
