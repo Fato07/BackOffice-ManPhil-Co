@@ -380,8 +380,8 @@ function MinimumStayRuleCard({
     defaultValues: {
       bookingCondition: rule.bookingCondition,
       minimumNights: rule.minimumNights,
-      startDate: rule.startDate ? new Date(rule.startDate) : null,
-      endDate: rule.endDate ? new Date(rule.endDate) : null,
+      startDate: rule.startDate ? new Date(rule.startDate) : undefined,
+      endDate: rule.endDate ? new Date(rule.endDate) : undefined,
     },
   })
 
