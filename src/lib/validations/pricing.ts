@@ -46,8 +46,8 @@ export type UpdatePricingPeriodFormData = z.infer<typeof updatePricingPeriodSche
 const baseMinimumStayRuleSchema = z.object({
   bookingCondition: z.nativeEnum(BookingCondition),
   minimumNights: z.number().int().min(1, "Minimum nights must be at least 1"),
-  startDate: z.date().nullable().optional(),
-  endDate: z.date().nullable().optional(),
+  startDate: z.date(),
+  endDate: z.date(),
 }).refine(data => {
   if (data.startDate && data.endDate) {
     return data.endDate > data.startDate
@@ -60,7 +60,10 @@ const baseMinimumStayRuleSchema = z.object({
 
 export const createMinimumStayRuleSchema = baseMinimumStayRuleSchema
 
-export const updateMinimumStayRuleSchema = baseMinimumStayRuleSchema.partial()
+export const updateMinimumStayRuleSchema = baseMinimumStayRuleSchema.partial().extend({
+  startDate: z.date().optional(),
+  endDate: z.date().optional(),
+})
 
 export type CreateMinimumStayRuleFormData = z.infer<typeof createMinimumStayRuleSchema>
 export type UpdateMinimumStayRuleFormData = z.infer<typeof updateMinimumStayRuleSchema>

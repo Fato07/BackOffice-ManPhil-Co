@@ -176,8 +176,9 @@ export function PropertyDetailsClient({ property }: PropertyDetailsWrapperProps)
 
   const handleSectionChange = (sectionId: string) => {
     setCurrentSection(sectionId)
+    // Only scroll if the section is not already visible/active to prevent conflicts
     const element = sectionRefs.current[sectionId]
-    if (element) {
+    if (element && currentSection !== sectionId) {
       const yOffset = -80 // Account for dashboard header and reduced sticky header
       const y = element.getBoundingClientRect().top + window.scrollY + yOffset
       window.scrollTo({ top: y, behavior: "smooth" })
