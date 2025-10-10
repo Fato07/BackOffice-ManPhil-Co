@@ -28,31 +28,44 @@ export function SectionNavigator({
   const [showNavigator, setShowNavigator] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
+  const [isManualScroll, setIsManualScroll] = useState(false)
 
   useEffect(() => {
+    let scrollTimeout: NodeJS.Timeout
+
     const handleScroll = () => {
       setIsVisible(window.scrollY > 200)
 
-      // Find current section based on scroll position
-      const scrollPosition = window.scrollY + 100
-      
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const section = sections[i]
-        if (section.element) {
-          const rect = section.element.getBoundingClientRect()
-          const absoluteTop = rect.top + window.scrollY
-          
-          if (scrollPosition >= absoluteTop) {
-            setActiveSection(section.id)
-            break
+      // Skip automatic section detection during manual scrolling
+      if (isManualScroll) return
+
+      // Debounce scroll handling to prevent conflicts
+      clearTimeout(scrollTimeout)
+      scrollTimeout = setTimeout(() => {
+        // Find current section based on scroll position
+        const scrollPosition = window.scrollY + 100
+        
+        for (let i = sections.length - 1; i >= 0; i--) {
+          const section = sections[i]
+          if (section.element) {
+            const rect = section.element.getBoundingClientRect()
+            const absoluteTop = rect.top + window.scrollY
+            
+            if (scrollPosition >= absoluteTop) {
+              setActiveSection(section.id)
+              break
+            }
           }
         }
-      }
+      }, 100) // 100ms debounce
     }
 
     // Set up intersection observer for better performance
     const observer = new IntersectionObserver(
       (entries) => {
+        // Skip automatic section detection during manual scrolling
+        if (isManualScroll) return
+
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const sectionId = entry.target.id
@@ -75,14 +88,15 @@ export function SectionNavigator({
       }
     })
 
-    window.addEventListener("scroll", handleScroll)
+    window.addEventListener("scroll", handleScroll, { passive: true })
     handleScroll()
 
     return () => {
+      clearTimeout(scrollTimeout)
       window.removeEventListener("scroll", handleScroll)
       observer.disconnect()
     }
-  }, [sections])
+  }, [sections, isManualScroll])
 
   // Handle responsive behavior
   useEffect(() => {
@@ -99,10 +113,20 @@ export function SectionNavigator({
   const scrollToSection = (sectionId: string) => {
     const section = sections.find(s => s.id === sectionId)
     if (section?.element) {
+      // Prevent automatic scroll detection during manual navigation
+      setIsManualScroll(true)
+      setActiveSection(sectionId)
+      
       const yOffset = -140 // Account for both headers
       const y = section.element.getBoundingClientRect().top + window.scrollY + yOffset
+      
       window.scrollTo({ top: y, behavior: "smooth" })
       onSectionChange?.(sectionId)
+      
+      // Re-enable automatic scroll detection after scroll completes
+      setTimeout(() => {
+        setIsManualScroll(false)
+      }, 1000) // Allow time for smooth scroll to complete
     }
   }
 

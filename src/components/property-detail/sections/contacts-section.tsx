@@ -1,17 +1,11 @@
 "use client"
 
-import { useState, useTransition, useOptimistic } from "react"
+import { useState, useTransition, useOptimistic, useMemo, useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { PropertySection } from "../property-section"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { usePermissions } from "@/hooks/use-permissions"
 import { ProtectedSection } from "@/components/auth/protected-section"
 import { Permission } from "@/types/auth"
@@ -19,123 +13,99 @@ import { PropertyWithRelations } from "@/types/property"
 import { ContactType } from "@/generated/prisma"
 import { toast } from "sonner"
 import { updatePropertyContacts } from "@/actions/property-contacts"
-import { Plus, Trash2, User, Building, Users, Wrench, AlertTriangle, Mail, Phone, Loader2, UserCheck, CheckCircle, Shield, FileSignature, Home, Trees, Waves, UserPlus } from "lucide-react"
+import { Plus, Users } from "lucide-react"
+import { ContactsTable } from "./contacts/contacts-table"
+import { ContactDetailsModal, type ContactFormData } from "./contacts/contact-details-modal"
 
 const contactSchema = z.object({
   contacts: z.array(z.object({
     id: z.string().optional(),
-    type: z.nativeEnum(ContactType).describe("Please select a valid contact type"),
-    name: z.string().min(1, "Name is required").max(255, "Name too long"),
-    email: z.string().email({ message: "Please enter a valid email address" }).nullish(),
-    phone: z.string().max(50, "Phone number too long").nullish(),
-    notes: z.string().max(1000, "Notes too long").nullish(),
+    type: z.nativeEnum(ContactType),
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    name: z.string().optional(), // Legacy field
+    email: z.string().nullish(),
+    phone: z.string().nullish(),
+    notes: z.string().nullish(),
+    spokenLanguage: z.string().optional(),
+    isContractSignatory: z.boolean().default(false),
     isApproved: z.boolean().default(false),
   })).default([]),
 })
-
-type ContactData = z.infer<typeof contactSchema>
 
 interface ContactsSectionProps {
   property: PropertyWithRelations
 }
 
-const contactTypeIcons = {
-  [ContactType.OWNER]: User,
-  [ContactType.MANAGER]: UserCheck,
-  [ContactType.AGENCY]: Building,
-  [ContactType.STAFF]: Users,
-  [ContactType.MAINTENANCE]: Wrench,
-  [ContactType.EMERGENCY]: AlertTriangle,
-  [ContactType.CHECK_IN_MANAGER]: CheckCircle,
-  [ContactType.SECURITY_DEPOSIT_MANAGER]: Shield,
-  [ContactType.SIGNATORY]: FileSignature,
-  [ContactType.HOUSEKEEPING]: Home,
-  [ContactType.GARDENING]: Trees,
-  [ContactType.POOL_MAINTENANCE]: Waves,
-  [ContactType.CHECK_IN_STAFF]: UserPlus,
-}
-
-const contactTypeLabels = {
-  [ContactType.OWNER]: "Owner",
-  [ContactType.MANAGER]: "Manager",
-  [ContactType.AGENCY]: "Agency",
-  [ContactType.STAFF]: "Staff",
-  [ContactType.MAINTENANCE]: "Maintenance",
-  [ContactType.EMERGENCY]: "Emergency",
-  [ContactType.CHECK_IN_MANAGER]: "Check-in Manager",
-  [ContactType.SECURITY_DEPOSIT_MANAGER]: "Security Deposit Manager",
-  [ContactType.SIGNATORY]: "Signatory",
-  [ContactType.HOUSEKEEPING]: "Housekeeping",
-  [ContactType.GARDENING]: "Gardening",
-  [ContactType.POOL_MAINTENANCE]: "Pool Maintenance",
-  [ContactType.CHECK_IN_STAFF]: "Check-in Staff",
-}
 
 export function ContactsSection({ property }: ContactsSectionProps) {
-  const [isEditing, setIsEditing] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const { hasPermission, canEditSection } = usePermissions()
+  const { canEditSection } = usePermissions()
   
-  // Optimistic state for contacts
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create")
+  
   const [optimisticContacts, setOptimisticContacts] = useOptimistic(
     property.contacts || [],
-    (_, newContacts: any[]) => newContacts
+    (_, newContacts: typeof property.contacts) => newContacts || []
   )
-
-  // Check if user has permission to view this section
-  if (!hasPermission(Permission.CONTACTS_VIEW)) {
-    return null;
-  }
 
   const form = useForm<z.input<typeof contactSchema>>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
-      contacts: optimisticContacts?.map(contact => ({
-        ...contact,
-        email: contact.email ?? "",
-        phone: contact.phone ?? "",
-        notes: contact.notes ?? "",
-      })) || [],
+      contacts: optimisticContacts?.map(contact => {
+        // Handle backward compatibility: split existing name if firstName/lastName don't exist
+        const firstName = contact.firstName || contact.name?.split(' ')[0] || ""
+        const lastName = contact.lastName || contact.name?.split(' ').slice(1).join(' ') || ""
+        
+        return {
+          ...contact,
+          firstName,
+          lastName,
+          name: contact.name || `${firstName} ${lastName}`.trim(),
+          email: contact.email ?? "",
+          phone: contact.phone ?? "",
+          notes: contact.notes ?? "",
+          spokenLanguage: contact.spokenLanguage ?? "English",
+          isContractSignatory: contact.isContractSignatory ?? false,
+        }
+      }) || [],
     },
   })
 
-  const contacts = form.watch("contacts")
+  const [, setContacts] = useState(() => form.getValues("contacts") || [])
 
-  const addContact = () => {
-    const currentContacts = form.getValues("contacts") || []
-    form.setValue("contacts", [
-      ...currentContacts,
-      {
-        type: ContactType.OWNER,
-        name: "",
-        email: "",
-        phone: "",
-        notes: "",
-        isApproved: false,
-      }
-    ])
-  }
-
-  const removeContact = (index: number) => {
-    const currentContacts = form.getValues("contacts") || []
-    form.setValue("contacts", currentContacts.filter((_, i) => i !== index))
-  }
-
-  const handleSave = async (data: z.input<typeof contactSchema>) => {
-    // Optimistically update the UI
-    setOptimisticContacts(data.contacts || [])
-    setIsEditing(false)
+  const handleSave = useCallback(async () => {
+    const contactsData = form.getValues("contacts") || []
 
     startTransition(async () => {
+      // Cast contactsData to the proper type for optimistic update
+      const optimisticData = contactsData.map(contact => ({
+        ...contact,
+        id: contact.id || 'temp-id',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        propertyId: property.id,
+        metadata: {},
+        spokenLanguage: contact.spokenLanguage || "English",
+        isContractSignatory: contact.isContractSignatory || false,
+        isApproved: contact.isApproved || false,
+      }))
+      setOptimisticContacts(optimisticData as typeof property.contacts)
+      
       try {
         const result = await updatePropertyContacts({
           propertyId: property.id,
-          contacts: (data.contacts || []).map(contact => ({
+          contacts: contactsData.map(contact => ({
             type: contact.type,
-            name: contact.name,
+            firstName: contact.firstName,
+            lastName: contact.lastName,
             email: contact.email || null,
             phone: contact.phone || null,
             notes: contact.notes || null,
+            spokenLanguage: contact.spokenLanguage || "English",
+            isContractSignatory: contact.isContractSignatory || false,
             isApproved: contact.isApproved || false,
           })),
         })
@@ -146,65 +116,151 @@ export function ContactsSection({ property }: ContactsSectionProps) {
 
         toast.success("Contacts updated successfully")
       } catch (error) {
-        // Revert optimistic update on error
         setOptimisticContacts(property.contacts || [])
         form.reset({
-          contacts: property.contacts?.map(contact => ({
-            ...contact,
-            email: contact.email ?? "",
-            phone: contact.phone ?? "",
-            notes: contact.notes ?? "",
-          })) || [],
+          contacts: property.contacts?.map(contact => {
+            const firstName = contact.firstName || contact.name?.split(' ')[0] || ""
+            const lastName = contact.lastName || contact.name?.split(' ').slice(1).join(' ') || ""
+            
+            return {
+              ...contact,
+              firstName,
+              lastName,
+              name: contact.name || `${firstName} ${lastName}`.trim(),
+              email: contact.email ?? "",
+              phone: contact.phone ?? "",
+              notes: contact.notes ?? "",
+              spokenLanguage: contact.spokenLanguage ?? "English",
+              isContractSignatory: contact.isContractSignatory ?? false,
+            }
+          }) || [],
         })
-        setIsEditing(true)
         
         toast.error(error instanceof Error ? error.message : "Failed to update contacts")
       }
     })
-  }
+  }, [form, property.id, property.contacts, setOptimisticContacts, startTransition])
 
-  const handleCancel = () => {
-    form.reset({
-      contacts: optimisticContacts?.map(contact => ({
-        ...contact,
-        email: contact.email ?? "",
-        phone: contact.phone ?? "",
-        notes: contact.notes ?? "",
-      })) || [],
-    })
-    setIsEditing(false)
-  }
+  const handleAddContact = useCallback(() => {
+    setModalMode("create")
+    setEditingIndex(null)
+    setModalOpen(true)
+  }, [])
 
-  // Group contacts by type
-  const groupedContacts = (contacts || []).reduce((acc, contact, index) => {
-    const type = contact.type
-    if (!acc[type]) {
-      acc[type] = []
+  const handleEditContact = useCallback((index: number) => {
+    setModalMode("edit")
+    setEditingIndex(index)
+    setModalOpen(true)
+  }, [])
+
+  const handleDeleteContact = useCallback((index: number) => {
+    const currentContacts = form.getValues("contacts") || []
+    const updatedContacts = currentContacts.filter((_, i) => i !== index)
+    form.setValue("contacts", updatedContacts)
+    setContacts(updatedContacts)
+    handleSave()
+  }, [form, handleSave])
+
+  const handleModalSave = useCallback((data: ContactFormData) => {
+    const currentContacts = form.getValues("contacts") || []
+    let updatedContacts: typeof currentContacts
+    
+    if (modalMode === "create") {
+      updatedContacts = [
+        ...currentContacts,
+        {
+          type: data.type,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          name: `${data.firstName} ${data.lastName}`.trim(),
+          email: data.email || "",
+          phone: data.phone || "",
+          notes: data.notes || "",
+          spokenLanguage: data.spokenLanguage || "English",
+          isContractSignatory: data.isContractSignatory || false,
+          isApproved: data.isApproved,
+        }
+      ]
+    } else if (modalMode === "edit" && editingIndex !== null) {
+      updatedContacts = [...currentContacts]
+      updatedContacts[editingIndex] = {
+        ...updatedContacts[editingIndex],
+        type: data.type,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        name: `${data.firstName} ${data.lastName}`.trim(),
+        email: data.email || "",
+        phone: data.phone || "",
+        notes: data.notes || "",
+        spokenLanguage: data.spokenLanguage || "English",
+        isContractSignatory: data.isContractSignatory || false,
+        isApproved: data.isApproved,
+      }
+    } else {
+      updatedContacts = currentContacts
     }
-    acc[type].push({ ...contact, index })
-    return acc
-  }, {} as Record<ContactType, Array<{ 
-    type: ContactType;
-    name: string;
-    id?: string;
-    email?: string | null;
-    phone?: string | null;
-    notes?: string | null;
-    isApproved?: boolean;
-    index: number;
-  }>>)
+    
+    form.setValue("contacts", updatedContacts)
+    setContacts(updatedContacts)
+    
+    setModalOpen(false)
+    setEditingIndex(null)
+    
+    handleSave()
+  }, [modalMode, editingIndex, form, handleSave])
+
+  const handleModalClose = useCallback(() => {
+    setModalOpen(false)
+    setEditingIndex(null)
+  }, [])
+
+  const getModalInitialData = useCallback((): Partial<ContactFormData> | undefined => {
+    if (modalMode === "edit" && editingIndex !== null) {
+      const currentContacts = form.getValues("contacts") || []
+      const contact = currentContacts[editingIndex]
+      if (contact) {
+        return {
+          type: contact.type,
+          firstName: contact.firstName,
+          lastName: contact.lastName,
+          email: contact.email || "",
+          phone: contact.phone || "",
+          notes: contact.notes || "",
+          spokenLanguage: contact.spokenLanguage || "English",
+          isContractSignatory: contact.isContractSignatory || false,
+          isApproved: contact.isApproved || false,
+        }
+      }
+    }
+    return undefined
+  }, [modalMode, editingIndex, form])
+
+  // Watch form data for reactive updates
+  const watchedContacts = form.watch("contacts")
+  
+  const tableData = useMemo(() => {
+    return (watchedContacts || []).map((contact, index) => ({
+      ...contact,
+      index,
+      isApproved: contact.isApproved || false,
+    }))
+  }, [watchedContacts])
+
+  // Update local contacts state when form changes
+  useEffect(() => {
+    setContacts(watchedContacts || [])
+  }, [watchedContacts])
 
   return (
     <ProtectedSection permission={Permission.CONTACTS_VIEW}>
       <PropertySection
         title="Linked Contacts"
-        isEditing={isEditing}
-        onEdit={() => canEditSection('contacts') && setIsEditing(true)}
-        onSave={form.handleSubmit(handleSave)}
-        onCancel={handleCancel}
-        showEditButton={canEditSection('contacts')}
+        isEditing={false}
+        showEditButton={false}
         className="border-blue-200 bg-blue-50/30"
-        isSaving={isPending}
+        onEdit={() => {}}
+        onSave={() => {}}
+        onCancel={() => {}}
       >
         <div className="mb-4">
           <div className="flex items-center gap-2 p-3 bg-blue-100 rounded-lg border border-blue-300">
@@ -215,172 +271,38 @@ export function ContactsSection({ property }: ContactsSectionProps) {
           </div>
         </div>
 
-        <div className="space-y-6">
-          {isEditing ? (
-            <>
-              <div className="space-y-3">
-                {(contacts || []).map((contact, index) => {
-                  const Icon = contactTypeIcons[contact.type]
-                  return (
-                    <Card key={index} className="p-4">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-5 w-5 text-gray-500" />
-                            <Badge variant="outline">
-                              {contactTypeLabels[contact.type]}
-                            </Badge>
-                          </div>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            className="text-red-600"
-                            onClick={() => removeContact(index)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label>Contact Type</Label>
-                            <Select
-                              value={contact.type}
-                              onValueChange={(value) => 
-                                form.setValue(`contacts.${index}.type`, value as ContactType)
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {Object.entries(ContactType).map(([key, value]) => (
-                                  <SelectItem key={value} value={value}>
-                                    {contactTypeLabels[value]}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div>
-                            <Label>Name *</Label>
-                            <Input
-                              {...form.register(`contacts.${index}.name`)}
-                              placeholder="Contact name"
-                            />
-                          </div>
-
-                          <div>
-                            <Label>Email</Label>
-                            <Input
-                              type="email"
-                              {...form.register(`contacts.${index}.email`)}
-                              placeholder="email@example.com"
-                            />
-                          </div>
-
-                          <div>
-                            <Label>Phone</Label>
-                            <Input
-                              {...form.register(`contacts.${index}.phone`)}
-                              placeholder="+1 234 567 8900"
-                            />
-                          </div>
-
-                          <div className="col-span-2">
-                            <Label>Notes</Label>
-                            <Textarea
-                              {...form.register(`contacts.${index}.notes`)}
-                              placeholder="Additional notes about this contact..."
-                              rows={2}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  )
-                })}
-              </div>
-
+        <div className="space-y-4">
+          {canEditSection('contacts') && (
+            <div className="flex justify-end">
               <Button
-                type="button"
-                variant="outline"
-                onClick={addContact}
-                className="w-full"
+                onClick={handleAddContact}
+                size="sm"
+                className="gap-2"
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-4 w-4" />
                 Add Contact
               </Button>
-            </>
-          ) : (
-            /* View Mode - Grouped by Type */
-            Object.entries(groupedContacts).length > 0 ? (
-              <div className="space-y-6">
-                {Object.entries(groupedContacts).map(([type, typeContacts]) => {
-                  const Icon = contactTypeIcons[type as ContactType]
-                  return (
-                    <div key={type}>
-                      <div className="flex items-center gap-2 mb-3">
-                        <Icon className="h-5 w-5 text-gray-600" />
-                        <h3 className="font-semibold">
-                          {contactTypeLabels[type as ContactType]}
-                        </h3>
-                        <Badge variant="secondary" className="ml-auto">
-                          {typeContacts.length}
-                        </Badge>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        {typeContacts.map((contact) => (
-                          <Card key={contact.index} className="p-4">
-                            <div className="flex items-start justify-between">
-                              <div className="space-y-1">
-                                <p className="font-medium">{contact.name}</p>
-                                {contact.email && (
-                                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <Mail className="h-3 w-3" />
-                                    {contact.email}
-                                  </div>
-                                )}
-                                {contact.phone && (
-                                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <Phone className="h-3 w-3" />
-                                    {contact.phone}
-                                  </div>
-                                )}
-                                {contact.notes && (
-                                  <p className="text-sm text-gray-600 mt-2">
-                                    {contact.notes}
-                                  </p>
-                                )}
-                              </div>
-                              {contact.isApproved && (
-                                <Badge className="bg-green-100 text-green-800">
-                                  Approved
-                                </Badge>
-                              )}
-                            </div>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                <p>No contacts added yet</p>
-                {canEditSection('contacts') && (
-                  <p className="text-sm mt-1">Click Edit to add contacts</p>
-                )}
-              </div>
-            )
+            </div>
           )}
+          
+          <ContactsTable
+            contacts={tableData}
+            isEditing={canEditSection('contacts')}
+            onEdit={handleEditContact}
+            onDelete={handleDeleteContact}
+          />
         </div>
       </PropertySection>
+      
+      <ContactDetailsModal
+        key={`${modalMode}-${editingIndex}`}
+        open={modalOpen}
+        onClose={handleModalClose}
+        onSave={handleModalSave}
+        initialData={getModalInitialData()}
+        mode={modalMode}
+        isLoading={isPending}
+      />
     </ProtectedSection>
   )
 }

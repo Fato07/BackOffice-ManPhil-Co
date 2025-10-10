@@ -829,7 +829,7 @@ export async function debugCheckDatabaseDocuments(): Promise<ActionResult<any>> 
     
     // Check for any documents without URLs (upload failures)
     const docsWithoutUrls = await prisma.legalDocument.count({
-      where: { url: null }
+      where: { url: "" }
     })
     console.log('⚠️ debugCheckDatabaseDocuments: Documents without URLs:', docsWithoutUrls)
     

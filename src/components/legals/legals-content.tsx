@@ -111,7 +111,6 @@ export function LegalsContent() {
   // Debug logging for filters
   console.log('🔍 LegalsContent: Current URL state:', urlState)
   console.log('📊 LegalsContent: Applied filters:', filters)
-  console.log('🔍 LegalsContent: Active filters count:', activeFiltersCount)
   
   // Fetch documents
   const { data: result, isLoading, error } = useLegalDocuments(filters)
@@ -131,6 +130,8 @@ export function LegalsContent() {
     if (urlState.tags && urlState.tags.length > 0) count++
     return count
   }, [urlState])
+
+  console.log('🔍 LegalsContent: Active filters count:', activeFiltersCount)
 
   // Handle filter change
   const handleFilterChange = async (filters: Partial<typeof urlState>) => {

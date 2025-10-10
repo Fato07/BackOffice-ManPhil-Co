@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useOptimistic } from "react"
+import { useState, useOptimistic, useTransition } from "react"
 import { PropertySection } from "../property-section"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -26,6 +26,7 @@ const filterOptions = [
 
 export function SurroundingsSection({ property }: SurroundingsSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const updateSurroundings = useUpdatePropertySurroundings()
   
   // Parse existing surroundings data
@@ -51,22 +52,24 @@ export function SurroundingsSection({ property }: SurroundingsSectionProps) {
       customNotes: customNotes.trim()
     }
 
-    // Optimistically update
-    setOptimisticSurroundings(newData)
-    setIsEditing(false)
+    startTransition(async () => {
+      try {
+        // Optimistically update
+        setOptimisticSurroundings(newData)
+        setIsEditing(false)
 
-    try {
-      await updateSurroundings.mutateAsync({
-        propertyId: property.id,
-        surroundings: newData
-      })
-    } catch (error) {
-      // Revert optimistic update on error
-      setOptimisticSurroundings(existingSurroundings || { filters: [], customNotes: '' })
-      setSelectedFilters(existingSurroundings?.filters || [])
-      setCustomNotes(existingSurroundings?.customNotes || '')
-      setIsEditing(true)
-    }
+        await updateSurroundings.mutateAsync({
+          propertyId: property.id,
+          surroundings: newData
+        })
+      } catch (error) {
+        // Revert optimistic update on error
+        setOptimisticSurroundings(existingSurroundings || { filters: [], customNotes: '' })
+        setSelectedFilters(existingSurroundings?.filters || [])
+        setCustomNotes(existingSurroundings?.customNotes || '')
+        setIsEditing(true)
+      }
+    })
   }
 
   const handleCancel = () => {
@@ -91,7 +94,7 @@ export function SurroundingsSection({ property }: SurroundingsSectionProps) {
       onSave={handleSave}
       onCancel={handleCancel}
       className="border-purple-200 bg-purple-50/30"
-      isSaving={updateSurroundings.isPending}
+      isSaving={isPending || updateSurroundings.isPending}
     >
       <div className="mb-4">
         <div className="flex items-center gap-2 p-3 bg-purple-100 rounded-lg border border-purple-300">

@@ -12,10 +12,14 @@ import { auth } from '@clerk/nextjs/server'
 const contactSchema = z.object({
   id: z.string().optional(),
   type: z.nativeEnum(ContactType).describe("Please select a valid contact type"),
-  name: z.string().min(1, "Name is required").max(255, "Name too long"),
+  firstName: z.string().min(1, "First name is required").max(100, "First name too long"),
+  lastName: z.string().min(1, "Last name is required").max(100, "Last name too long"),
+  name: z.string().optional(), // Legacy field - computed from firstName + lastName
   email: z.string().email({ message: "Please enter a valid email address" }).nullish(),
   phone: z.string().max(50, "Phone number too long").nullish(),
   notes: z.string().max(1000, "Notes too long").nullish(),
+  spokenLanguage: z.string().default("English"),
+  isContractSignatory: z.boolean().default(false),
   isApproved: z.boolean().default(false),
 })
 
@@ -41,7 +45,7 @@ interface ActionResult<T> {
  */
 export async function updatePropertyContacts(
   input: UpdateContactsInput
-): Promise<ActionResult<{ contacts: any[] }>> {
+): Promise<ActionResult<{ contacts: Array<{ id: string; type: ContactType; firstName: string | null; lastName: string | null; name: string; email: string | null; phone: string | null; notes: string | null; spokenLanguage: string | null; isContractSignatory: boolean; isApproved: boolean }> }>> {
   try {
     // Authentication check
     const { userId } = await auth()
@@ -88,10 +92,14 @@ export async function updatePropertyContacts(
             data: {
               propertyId,
               type: contact.type,
-              name: contact.name,
+              firstName: contact.firstName,
+              lastName: contact.lastName,
+              name: `${contact.firstName} ${contact.lastName}`.trim(), // Computed legacy field
               email: contact.email || null,
               phone: contact.phone || null,
               notes: contact.notes || null,
+              spokenLanguage: contact.spokenLanguage || "English",
+              isContractSignatory: contact.isContractSignatory || false,
               isApproved: contact.isApproved,
             },
           })
@@ -151,7 +159,7 @@ export async function updatePropertyContacts(
 /**
  * Fetches property contacts with proper permissions
  */
-export async function getPropertyContacts(propertyId: string): Promise<ActionResult<any[]>> {
+export async function getPropertyContacts(propertyId: string): Promise<ActionResult<Array<{ id: string; type: ContactType; firstName: string | null; lastName: string | null; name: string; email: string | null; phone: string | null; notes: string | null; spokenLanguage: string | null; isContractSignatory: boolean; isApproved: boolean }>>> {
   try {
     const { userId } = await auth()
     if (!userId) {
@@ -176,7 +184,7 @@ export async function getPropertyContacts(propertyId: string): Promise<ActionRes
       success: true,
       data: contacts,
     }
-  } catch (error) {
+  } catch (_error) {
     
     return {
       success: false,

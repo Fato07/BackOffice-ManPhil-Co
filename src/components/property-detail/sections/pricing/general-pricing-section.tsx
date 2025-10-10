@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useOptimistic } from "react"
+import { useState, useOptimistic, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { CalendarIcon, RefreshCw, DollarSign, Shield, CreditCard, Percent, Info, Settings } from "lucide-react"
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { updatePropertyPricingSchema } from "@/lib/validations/pricing"
 import { useUpdatePropertyPricing } from "@/hooks/use-property-pricing"
 import type { PropertyPricing } from "@/generated/prisma"
@@ -28,6 +29,7 @@ interface GeneralPricingSectionProps {
 
 export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSectionProps) {
   const [isEditing, setIsEditing] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const updatePricing = useUpdatePropertyPricing(propertyId)
 
   // Optimistic state
@@ -55,31 +57,55 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
     },
   })
 
-  const handleSave = async () => {
-    try {
-      const data = form.getValues()
-      
-      // Optimistically update
-      const newPricing = {
-        ...optimisticPricing,
-        ...data,
-        id: optimisticPricing?.id || '',
-        propertyId,
-        createdAt: optimisticPricing?.createdAt || new Date(),
-        updatedAt: new Date(),
-      } as PropertyPricing
-      
-      setOptimisticPricing(newPricing)
-      setIsEditing(false)
+  const onSubmit = async (data: GeneralPricingFormData) => {
+    startTransition(async () => {
+      try {
+        // Optimistically update
+        const newPricing = {
+          ...optimisticPricing,
+          ...data,
+          id: optimisticPricing?.id || '',
+          propertyId,
+          createdAt: optimisticPricing?.createdAt || new Date(),
+          updatedAt: new Date(),
+        } as PropertyPricing
+        
+        setOptimisticPricing(newPricing)
+        setIsEditing(false)
 
-      await updatePricing.mutateAsync(data)
-      toast.success("Pricing settings updated successfully")
-    } catch (error) {
-      // Revert optimistic update
-      setOptimisticPricing(pricing)
-      setIsEditing(true)
-      toast.error("Failed to update pricing settings")
-    }
+        await updatePricing.mutateAsync(data)
+        toast.success("Pricing settings updated successfully")
+      } catch (error) {
+        // Revert optimistic update
+        setOptimisticPricing(pricing)
+        setIsEditing(true)
+        
+        // Handle validation errors
+        if (error && typeof error === 'object' && 'message' in error) {
+          const errorMessage = error.message as string
+          try {
+            // Try to parse Zod validation errors
+            const zodError = JSON.parse(errorMessage)
+            if (Array.isArray(zodError)) {
+              // Map validation errors to form fields
+              zodError.forEach((err: any) => {
+                if (err.path && err.path.length > 0) {
+                  form.setError(err.path[0] as keyof GeneralPricingFormData, {
+                    type: 'server',
+                    message: err.message
+                  })
+                }
+              })
+              return // Don't show generic toast if we have field errors
+            }
+          } catch {
+            // Not a JSON error, show generic message
+          }
+        }
+        
+        toast.error("Failed to update pricing settings")
+      }
+    })
   }
 
   const handleCancel = () => {
@@ -92,10 +118,10 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
       title="General Pricing"
       isEditing={isEditing}
       onEdit={() => setIsEditing(true)}
-      onSave={handleSave}
+      onSave={form.handleSubmit(onSubmit)}
       onCancel={handleCancel}
       className="border-teal-200 bg-teal-50/30"
-      isSaving={updatePricing.isPending}
+      isSaving={isPending || updatePricing.isPending}
     >
       <div className="mb-4">
         <div className="flex items-center gap-2 p-3 bg-teal-100 rounded-lg border border-teal-300">
@@ -106,8 +132,9 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
         </div>
       </div>
 
-      <div className="space-y-6">
-        <Card className="p-4 bg-gradient-to-r from-teal-50 to-cyan-50 border-teal-200">
+      <Form {...form}>
+        <div className="space-y-6">
+          <Card className="p-4 bg-gradient-to-r from-teal-50 to-cyan-50 border-teal-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white rounded-lg shadow-sm">
@@ -176,26 +203,53 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
                 <Card className="p-4 hover:shadow-md transition-shadow">
-                  <Label className="text-sm text-gray-600">Security deposit</Label>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-lg font-light text-gray-500">€</span>
-                    <Input
-                      type="number"
-                      {...form.register("securityDeposit", { valueAsNumber: true })}
-                      className="text-lg font-light"
-                      placeholder="0"
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="securityDeposit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm text-gray-600">Security deposit</FormLabel>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-lg font-light text-gray-500">€</span>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                              value={field.value?.toString() || ""}
+                              className="text-lg font-light"
+                              placeholder="0"
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </Card>
 
                 <Card className="p-4 hover:shadow-md transition-shadow">
-                  <Label className="text-sm text-gray-600">Payment schedule</Label>
-                  <Input
-                    {...form.register("paymentSchedule")}
-                    placeholder="50 - 40 - 10"
-                    className="mt-2 font-light"
+                  <FormField
+                    control={form.control}
+                    name="paymentSchedule"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm text-gray-600">Payment schedule</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            value={field.value || ""}
+                            placeholder="50 - 40 - 10"
+                            className="mt-2 font-light"
+                          />
+                        </FormControl>
+                        <p className="text-xs text-gray-500 mt-1">Format: XX - XX - XX</p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <p className="text-xs text-gray-500 mt-1">Format: XX - XX - XX</p>
                 </Card>
 
                 <Card className="p-4 hover:shadow-md transition-shadow">
@@ -216,42 +270,87 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <Card className="p-4 hover:shadow-md transition-shadow bg-gradient-to-br from-white to-orange-50">
-                  <Label className="text-sm text-gray-600">Owner minimum</Label>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-lg font-light text-gray-500">€</span>
-                    <Input
-                      type="number"
-                      {...form.register("minOwnerAcceptedPrice", { valueAsNumber: true })}
-                      className="text-lg font-light"
-                      placeholder="0"
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="minOwnerAcceptedPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm text-gray-600">Owner minimum</FormLabel>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-lg font-light text-gray-500">€</span>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                              value={field.value?.toString() || ""}
+                              className="text-lg font-light"
+                              placeholder="0"
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </Card>
 
                 <Card className="p-4 hover:shadow-md transition-shadow bg-gradient-to-br from-white to-blue-50">
-                  <Label className="text-sm text-gray-600">LC minimum</Label>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-lg font-light text-gray-500">€</span>
-                    <Input
-                      type="number"
-                      {...form.register("minLCAcceptedPrice", { valueAsNumber: true })}
-                      className="text-lg font-light"
-                      placeholder="0"
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="minLCAcceptedPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm text-gray-600">LC minimum</FormLabel>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-lg font-light text-gray-500">€</span>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                              value={field.value?.toString() || ""}
+                              className="text-lg font-light"
+                              placeholder="0"
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </Card>
 
                 <Card className="p-4 hover:shadow-md transition-shadow bg-gradient-to-br from-white to-green-50">
-                  <Label className="text-sm text-gray-600">Public minimum</Label>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-lg font-light text-gray-500">€</span>
-                    <Input
-                      type="number"
-                      {...form.register("publicMinimumPrice", { valueAsNumber: true })}
-                      className="text-lg font-light"
-                      placeholder="0"
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="publicMinimumPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm text-gray-600">Public minimum</FormLabel>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-lg font-light text-gray-500">€</span>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                              value={field.value?.toString() || ""}
+                              className="text-lg font-light"
+                              placeholder="0"
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </Card>
               </div>
             </div>
@@ -263,73 +362,148 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
                 <Card className="p-4 hover:shadow-md transition-shadow">
-                  <Label className="text-sm text-gray-600">Net owner commission</Label>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      {...form.register("netOwnerCommission", { valueAsNumber: true })}
-                      className="text-lg font-light"
-                      placeholder="0"
-                    />
-                    <span className="text-lg font-light text-gray-500">%</span>
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="netOwnerCommission"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm text-gray-600">Net owner commission</FormLabel>
+                        <div className="flex items-center gap-2 mt-2">
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="100"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                              value={field.value?.toString() || ""}
+                              className="text-lg font-light"
+                              placeholder="0"
+                            />
+                          </FormControl>
+                          <span className="text-lg font-light text-gray-500">%</span>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </Card>
 
                 <Card className="p-4 hover:shadow-md transition-shadow">
-                  <Label className="text-sm text-gray-600">Public price commission</Label>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      {...form.register("publicPriceCommission", { valueAsNumber: true })}
-                      className="text-lg font-light"
-                      placeholder="0"
-                    />
-                    <span className="text-lg font-light text-gray-500">%</span>
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="publicPriceCommission"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm text-gray-600">Public price commission</FormLabel>
+                        <div className="flex items-center gap-2 mt-2">
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="100"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                              value={field.value?.toString() || ""}
+                              className="text-lg font-light"
+                              placeholder="0"
+                            />
+                          </FormControl>
+                          <span className="text-lg font-light text-gray-500">%</span>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </Card>
 
                 <Card className="p-4 hover:shadow-md transition-shadow">
-                  <Label className="text-sm text-gray-600">B2B2C partner commission</Label>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      {...form.register("b2b2cPartnerCommission", { valueAsNumber: true })}
-                      className="text-lg font-light"
-                      placeholder="0"
-                    />
-                    <span className="text-lg font-light text-gray-500">%</span>
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="b2b2cPartnerCommission"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm text-gray-600">B2B2C partner commission</FormLabel>
+                        <div className="flex items-center gap-2 mt-2">
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="100"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                              value={field.value?.toString() || ""}
+                              className="text-lg font-light"
+                              placeholder="0"
+                            />
+                          </FormControl>
+                          <span className="text-lg font-light text-gray-500">%</span>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </Card>
 
                 <Card className="p-4 hover:shadow-md transition-shadow">
-                  <Label className="text-sm text-gray-600">Public taxes</Label>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      {...form.register("publicTaxes", { valueAsNumber: true })}
-                      className="text-lg font-light"
-                      placeholder="0"
-                    />
-                    <span className="text-lg font-light text-gray-500">%</span>
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="publicTaxes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm text-gray-600">Public taxes</FormLabel>
+                        <div className="flex items-center gap-2 mt-2">
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="100"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                              value={field.value?.toString() || ""}
+                              className="text-lg font-light"
+                              placeholder="0"
+                            />
+                          </FormControl>
+                          <span className="text-lg font-light text-gray-500">%</span>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </Card>
 
                 <Card className="p-4 hover:shadow-md transition-shadow">
-                  <Label className="text-sm text-gray-600">Included client fees</Label>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      {...form.register("clientFees", { valueAsNumber: true })}
-                      className="text-lg font-light"
-                      placeholder="0"
-                    />
-                    <span className="text-lg font-light text-gray-500">%</span>
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="clientFees"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm text-gray-600">Included client fees</FormLabel>
+                        <div className="flex items-center gap-2 mt-2">
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="100"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                              value={field.value?.toString() || ""}
+                              className="text-lg font-light"
+                              placeholder="0"
+                            />
+                          </FormControl>
+                          <span className="text-lg font-light text-gray-500">%</span>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </Card>
               </div>
             </div>
@@ -458,7 +632,8 @@ export function GeneralPricingSection({ propertyId, pricing }: GeneralPricingSec
             </div>
           </div>
         )}
-      </div>
+        </div>
+      </Form>
     </PropertySection>
   )
 }

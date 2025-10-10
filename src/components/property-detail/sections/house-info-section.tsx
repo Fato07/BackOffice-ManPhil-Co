@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { X } from "lucide-react"
@@ -17,6 +17,7 @@ import { z } from "zod"
 import { toast } from "sonner"
 import { usePermissions } from "@/hooks/use-permissions"
 import { Permission } from "@/types/auth"
+import { GoogleMapsLink } from "@/components/ui/google-maps-link"
 
 type BasicInfoFormData = z.infer<typeof updatePropertyBasicSchema>
 type DescriptionFormData = z.infer<typeof updatePropertyDescriptionSchema>
@@ -80,6 +81,18 @@ export function HouseInfoSection({ property }: HouseInfoSectionProps) {
     latitude: property.latitude || null,
     longitude: property.longitude || null,
   })
+
+  // Synchronize locationData with property changes
+  useEffect(() => {
+    setLocationData({
+      address: property.address || "",
+      additionalDetails: property.additionalDetails || "",
+      postcode: property.postcode || "",
+      city: property.city || "",
+      latitude: property.latitude || null,
+      longitude: property.longitude || null,
+    })
+  }, [property.address, property.additionalDetails, property.postcode, property.city, property.latitude, property.longitude])
 
   // Parse description and parking JSON data
   const descriptionData = property.description as PropertyDescription || {}
@@ -411,11 +424,23 @@ export function HouseInfoSection({ property }: HouseInfoSectionProps) {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Address</Label>
-                <Input 
-                  value={locationData.address} 
-                  onChange={(e) => setLocationData({...locationData, address: e.target.value})}
-                  className="mt-1" 
-                />
+                <div className="space-y-2">
+                  <Input 
+                    value={locationData.address} 
+                    onChange={(e) => setLocationData({...locationData, address: e.target.value})}
+                    className="mt-1" 
+                  />
+                  {(locationData.address || (locationData.latitude && locationData.longitude)) && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">Preview:</span>
+                      <GoogleMapsLink 
+                        address={locationData.address}
+                        latitude={locationData.latitude}
+                        longitude={locationData.longitude}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <Label>Additional details</Label>
@@ -484,7 +509,16 @@ export function HouseInfoSection({ property }: HouseInfoSectionProps) {
 
             <div>
               <Label className="text-gray-600">Address</Label>
-              <p className="mt-1">{property.address || "—"}</p>
+              <div className="mt-1 flex items-center gap-2">
+                <p>{property.address || "—"}</p>
+                {(property.address || (property.latitude && property.longitude)) && (
+                  <GoogleMapsLink 
+                    address={property.address}
+                    latitude={property.latitude}
+                    longitude={property.longitude}
+                  />
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

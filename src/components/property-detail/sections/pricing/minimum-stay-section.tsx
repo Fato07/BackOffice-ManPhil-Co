@@ -47,6 +47,7 @@ import {
 } from "@/hooks/use-property-pricing"
 import { MinimumStayTable } from "./minimum-stay-table"
 import { MinimumStayDetailsModal } from "./minimum-stay-details-modal"
+import { EditMinimumStayModal } from "./edit-minimum-stay-modal"
 import type { MinimumStayRule, BookingCondition } from "@/generated/prisma"
 import { z } from "zod"
 
@@ -93,6 +94,8 @@ export function MinimumStaySection({ propertyId, minimumStayRules }: MinimumStay
   const [showHistory, setShowHistory] = useState(false)
   const [selectedRule, setSelectedRule] = useState<MinimumStayRule | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [editingRule, setEditingRule] = useState<MinimumStayRule | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   const createMinimumStayRule = useCreateMinimumStayRule(propertyId)
   const updateMinimumStayRule = useUpdateMinimumStayRule(propertyId)
@@ -125,8 +128,8 @@ export function MinimumStaySection({ propertyId, minimumStayRules }: MinimumStay
   const handleEdit = useCallback((id: string) => {
     const rule = minimumStayRules.find(r => r.id === id)
     if (rule) {
-      setSelectedRule(rule)
-      setShowDetailsModal(true)
+      setEditingRule(rule)
+      setShowEditModal(true)
     }
   }, [minimumStayRules])
 
@@ -293,6 +296,16 @@ export function MinimumStaySection({ propertyId, minimumStayRules }: MinimumStay
           setSelectedRule(null)
         }}
         onEdit={handleEdit}
+      />
+
+      <EditMinimumStayModal
+        minimumStayRule={editingRule}
+        open={showEditModal}
+        onClose={() => {
+          setShowEditModal(false)
+          setEditingRule(null)
+        }}
+        propertyId={propertyId}
       />
     </div>
   )

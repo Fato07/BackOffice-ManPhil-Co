@@ -50,6 +50,7 @@ import {
 } from "@/hooks/use-property-pricing"
 import { PricePeriodsTable } from "./price-periods-table"
 import { PricePeriodDetailsModal } from "./price-period-details-modal"
+import { EditPricePeriodModal } from "./edit-price-period-modal"
 import type { PriceRange } from "@/generated/prisma"
 import { z } from "zod"
 
@@ -69,6 +70,8 @@ export function PricePeriodsSection({ propertyId, priceRanges, hasLegacyData }: 
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [selectedPeriod, setSelectedPeriod] = useState<PriceRange | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [editingPeriod, setEditingPeriod] = useState<PriceRange | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   const createPriceRange = useCreatePriceRange(propertyId)
   const updatePriceRange = useUpdatePriceRange(propertyId)
@@ -97,7 +100,11 @@ export function PricePeriodsSection({ propertyId, priceRanges, hasLegacyData }: 
   }, [priceRanges])
 
   const handleSave = async () => {
+    // All individual price period saves are handled by their respective modals
+    // This function is for saving the overall section state
     setIsEditing(false)
+    setIsAddingNew(false)
+    setEditingId(null)
   }
 
   const handleCancel = () => {
@@ -109,8 +116,8 @@ export function PricePeriodsSection({ propertyId, priceRanges, hasLegacyData }: 
   const handleEdit = useCallback((id: string) => {
     const priceRange = priceRanges.find(range => range.id === id)
     if (priceRange) {
-      setSelectedPeriod(priceRange)
-      setShowDetailsModal(true)
+      setEditingPeriod(priceRange)
+      setShowEditModal(true)
     }
   }, [priceRanges])
 
@@ -342,6 +349,16 @@ export function PricePeriodsSection({ propertyId, priceRanges, hasLegacyData }: 
           setSelectedPeriod(null)
         }}
         onEdit={handleEdit}
+      />
+
+      <EditPricePeriodModal
+        priceRange={editingPeriod}
+        open={showEditModal}
+        onClose={() => {
+          setShowEditModal(false)
+          setEditingPeriod(null)
+        }}
+        propertyId={propertyId}
       />
     </div>
   )

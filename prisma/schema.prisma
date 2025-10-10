@@ -143,23 +143,28 @@ model Room {
 }
 
 model PropertyContact {
-  id         String      @id @default(cuid())
-  propertyId String
-  type       ContactType
-  name       String
-  email      String?
-  phone      String?
-  notes      String?
-  metadata   Json?
-  isApproved Boolean     @default(false)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  property   Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  id                  String      @id @default(cuid())
+  propertyId          String
+  type                ContactType
+  name                String      // Legacy field - computed from firstName + lastName
+  firstName           String?     // New field
+  lastName            String?     // New field
+  email               String?
+  phone               String?
+  notes               String?
+  spokenLanguage      String?     @default("English")  // "French" or "English"
+  isContractSignatory Boolean     @default(false)      // Contract signer flag
+  metadata            Json?
+  isApproved          Boolean     @default(false)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  property            Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([propertyId])
   @@index([type])
   @@index([propertyId, type])
   @@index([isApproved])
+  @@index([isContractSignatory])
 }
 
 model Booking {

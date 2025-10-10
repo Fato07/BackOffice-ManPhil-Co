@@ -63,35 +63,30 @@ export function DataTable<TData, TValue>({
   onSelectedRowsChange,
   enableAnimations = false, // Default to false for better performance
 }: DataTableProps<TData, TValue>) {
-  const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [sorting, setSorting] = React.useState<SortingState>([])
 
- React.useEffect(() => {
-    if (selectedRowIds) {
-      const newRowSelection: Record<string, boolean> = {}
-      selectedRowIds.forEach((id) => {
-        newRowSelection[id] = true
-      })
-      setRowSelection(newRowSelection)
-    }
+  // Convert selectedRowIds prop to TanStack Table format
+  const rowSelection = React.useMemo(() => {
+    if (!selectedRowIds) return {}
+    const selection: Record<string, boolean> = {}
+    selectedRowIds.forEach((id) => {
+      selection[id] = true
+    })
+    return selection
   }, [selectedRowIds])
 
+  // Handle selection changes and notify parent
   const handleRowSelectionChange = React.useCallback((updater: any) => {
-    setRowSelection((old) => {
-      const newSelection = typeof updater === 'function' ? updater(old) : updater
-      
-      if (onSelectedRowsChange) {
-        const selectedIds = Object.keys(newSelection)
-          .filter(key => newSelection[key])
-        
-        onSelectedRowsChange(selectedIds)
-      }
-      
-      return newSelection
-    })
-  }, [onSelectedRowsChange])
+    if (!onSelectedRowsChange) return
+    
+    const newSelection = typeof updater === 'function' ? updater(rowSelection) : updater
+    const selectedIds = Object.keys(newSelection)
+      .filter(key => newSelection[key])
+    
+    onSelectedRowsChange(selectedIds)
+  }, [rowSelection, onSelectedRowsChange])
 
   const table = useReactTable({
     data,

@@ -38,6 +38,7 @@ import {
 } from "@/hooks/use-property-pricing"
 import { OperationalCostsTable } from "./operational-costs-table"
 import { OperationalCostDetailsModal } from "./operational-cost-details-modal"
+import { EditOperationalCostModal } from "./edit-operational-cost-modal"
 import type { OperationalCost, OperationalCostType, PriceType } from "@/generated/prisma"
 import { z } from "zod"
 
@@ -104,6 +105,8 @@ export function OperationalCostsSection({ propertyId, operationalCosts }: Operat
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [selectedCost, setSelectedCost] = useState<OperationalCost | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [editingCost, setEditingCost] = useState<OperationalCost | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   const createOperationalCost = useCreateOperationalCost(propertyId)
   const updateOperationalCost = useUpdateOperationalCost(propertyId)
@@ -142,8 +145,8 @@ export function OperationalCostsSection({ propertyId, operationalCosts }: Operat
   const handleEdit = useCallback((id: string) => {
     const cost = operationalCosts.find(c => c.id === id)
     if (cost) {
-      setSelectedCost(cost)
-      setShowDetailsModal(true)
+      setEditingCost(cost)
+      setShowEditModal(true)
     }
   }, [operationalCosts])
 
@@ -337,6 +340,16 @@ export function OperationalCostsSection({ propertyId, operationalCosts }: Operat
           setSelectedCost(null)
         }}
         onEdit={handleEdit}
+      />
+
+      <EditOperationalCostModal
+        operationalCost={editingCost}
+        open={showEditModal}
+        onClose={() => {
+          setShowEditModal(false)
+          setEditingCost(null)
+        }}
+        propertyId={propertyId}
       />
     </div>
   )
