@@ -31,6 +31,13 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { DataTablePagination } from "./data-table-pagination"
 import { motion } from "framer-motion"
 
@@ -44,6 +51,7 @@ interface DataTableProps<TData, TValue> {
   pageCount?: number
   page?: number
   onPageChange?: (page: number) => void
+  onPageSizeChange?: (pageSize: number) => void
   selectedRowIds?: string[]
   onSelectedRowsChange?: (selectedIds: string[]) => void
   enableAnimations?: boolean // New prop to control animations
@@ -59,6 +67,7 @@ export function DataTable<TData, TValue>({
   pageCount,
   page,
   onPageChange,
+  onPageSizeChange,
   selectedRowIds,
   onSelectedRowsChange,
   enableAnimations = false, // Default to false for better performance
@@ -229,6 +238,26 @@ export function DataTable<TData, TValue>({
             {selectedRowIds?.length || 0} of {totalCount || data.length} row(s) selected.
           </div>
           <div className="flex items-center space-x-6 lg:space-x-8">
+            {onPageSizeChange && (
+              <div className="flex items-center space-x-2">
+                <p className="text-sm font-medium">Rows per page</p>
+                <Select
+                  value={`${pageSize}`}
+                  onValueChange={(value) => onPageSizeChange(Number(value))}
+                >
+                  <SelectTrigger className="h-8 w-[70px]">
+                    <SelectValue placeholder={pageSize} />
+                  </SelectTrigger>
+                  <SelectContent side="top">
+                    {[10, 20, 30, 40, 50].map((size) => (
+                      <SelectItem key={size} value={`${size}`}>
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="flex w-[100px] items-center justify-center text-sm font-medium">
               Page {page} of {pageCount}
             </div>
@@ -273,7 +302,7 @@ export function DataTable<TData, TValue>({
           </div>
         </div>
       ) : (
-        <DataTablePagination table={table} />
+        <DataTablePagination table={table} onPageSizeChange={onPageSizeChange} />
       )}
     </div>
   )

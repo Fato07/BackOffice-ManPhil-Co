@@ -68,7 +68,7 @@ export function PropertySidebar({ property, isOpen, onClose }: PropertySidebarPr
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-0 h-full w-96 z-50 bg-gray-900 border-l border-gray-700 overflow-y-auto"
+            className="fixed right-0 top-0 h-full w-96 z-50 bg-gray-900 border-l border-gray-700 overflow-y-auto flex flex-col"
           >
             {/* Header */}
             <div className="sticky top-0 bg-gray-900/95 backdrop-blur-xl border-b border-gray-700 p-6 z-10">
@@ -94,17 +94,31 @@ export function PropertySidebar({ property, isOpen, onClose }: PropertySidebarPr
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-6">
-              {isLoading ? (
-                <PropertySidebarSkeleton />
-              ) : error ? (
-                <PropertySidebarError onRetry={() => window.location.reload()} />
-              ) : propertyDetails ? (
-                <PropertySidebarContent 
-                  property={propertyDetails} 
-                  onViewDetails={handleViewDetails}
-                />
-              ) : null}
+            <div className="flex-1 flex flex-col">
+              <div className="flex-1 p-6 space-y-6 overflow-y-auto">
+                {isLoading ? (
+                  <PropertySidebarSkeleton />
+                ) : error ? (
+                  <PropertySidebarError onRetry={() => window.location.reload()} />
+                ) : propertyDetails ? (
+                  <PropertySidebarContent 
+                    property={propertyDetails}
+                  />
+                ) : null}
+              </div>
+
+              {/* Actions Button - Always at bottom */}
+              {propertyDetails && (
+                <div className="border-t border-gray-700 p-4 bg-gray-900/95 backdrop-blur-xl">
+                  <Button 
+                    onClick={handleViewDetails}
+                    className="w-full bg-[#B5985A] hover:bg-[#9A7F4A] text-black font-medium"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    View Full Details
+                  </Button>
+                </div>
+              )}
             </div>
           </motion.div>
         </>
@@ -114,11 +128,9 @@ export function PropertySidebar({ property, isOpen, onClose }: PropertySidebarPr
 }
 
 function PropertySidebarContent({ 
-  property, 
-  onViewDetails 
+  property 
 }: { 
   property: PropertySidebarData
-  onViewDetails: () => void 
 }) {
   const availabilityStatus = getPropertyAvailabilityStatus(property.bookings, property.availabilityRequests)
   const currentPricing = getCurrentPricing(property.priceRanges)
@@ -241,16 +253,6 @@ function PropertySidebarContent({
         </div>
       )}
 
-      {/* Actions */}
-      <div className="sticky bottom-0 bg-gray-900/95 backdrop-blur-xl border-t border-gray-700 p-4 -mx-6 -mb-6">
-        <Button 
-          onClick={onViewDetails}
-          className="w-full bg-[#B5985A] hover:bg-[#9A7F4A] text-black font-medium"
-        >
-          <ExternalLink className="h-4 w-4 mr-2" />
-          View Full Details
-        </Button>
-      </div>
     </>
   )
 }

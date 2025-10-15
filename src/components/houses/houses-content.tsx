@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { DataTable } from "@/components/data-table/data-table"
-import { VirtualDataTable } from "@/components/ui/virtual-data-table"
 import { columns } from "@/components/houses/columns"
 import { CreateHouseDialog } from "@/components/houses/create-house-dialog"
 import { PropertyFilters as PropertyFiltersComponent } from "@/components/houses/property-filters"
@@ -91,6 +90,7 @@ export function HousesContent() {
       
       // Pagination
       page: parseAsInteger.withDefault(1),
+      pageSize: parseAsInteger.withDefault(10),
     },
     {
       history: 'push',
@@ -188,7 +188,7 @@ export function HousesContent() {
   const { data: properties, isLoading } = useProperties(
     filters,
     urlState.page,
-    10
+    urlState.pageSize
   )
 
   // Handle filter changes
@@ -260,6 +260,10 @@ export function HousesContent() {
 
   const handlePageChange = (newPage: number) => {
     setUrlState({ page: newPage })
+  }
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setUrlState({ page: 1, pageSize: newPageSize })
   }
 
   const handleRowClick = (property: PropertyListItem) => {
@@ -426,32 +430,20 @@ export function HousesContent() {
             </div>
             
             {viewMode === "table" ? (
-              // Use virtual scrolling for large datasets (>100 items)
-              properties && properties.total > 100 ? (
-                <VirtualDataTable
-                  columns={columns}
-                  data={properties.data || []}
-                  height={600}
-                  itemHeight={53}
-                  searchable={false} // Search is handled by the parent component
-                  onRowClick={handleRowClick}
-                  className="border-0"
-                />
-              ) : (
-                <DataTable
-                  columns={columns}
-                  data={properties?.data || []}
-                  totalCount={properties?.total || 0}
-                  pageSize={10}
-                  pageCount={properties?.totalPages || 0}
-                  page={urlState.page}
-                  onPageChange={handlePageChange}
-                  onRowClick={handleRowClick}
-                  selectedRowIds={selectedPropertyIds}
-                  onSelectedRowsChange={setSelectedPropertyIds}
-                  enableAnimations={false} // Disable animations for better performance
-                />
-              )
+              <DataTable
+                columns={columns}
+                data={properties?.data || []}
+                totalCount={properties?.total || 0}
+                pageSize={urlState.pageSize}
+                pageCount={properties?.totalPages || 0}
+                page={urlState.page}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                onRowClick={handleRowClick}
+                selectedRowIds={selectedPropertyIds}
+                onSelectedRowsChange={setSelectedPropertyIds}
+                enableAnimations={true} // Disable animations for better performance
+              />
             ) : (
               <PropertyGrid
                 properties={properties?.data || []}
