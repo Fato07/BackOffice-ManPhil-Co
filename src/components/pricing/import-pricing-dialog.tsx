@@ -4,7 +4,6 @@ import { useState, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Upload, FileSpreadsheet, AlertCircle, CheckCircle2, XCircle } from "lucide-react"
-import { parseCSVAuto, validateHeaders } from "@/lib/csv/simple-parser"
 import {
   Dialog,
   DialogContent,
@@ -25,12 +24,11 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { importContactsSchema, type ImportContactsData } from "@/lib/validations/contact"
-import { GlobalContactCategory, ContactPropertyRelationship } from "@/generated/prisma"
-import { useImportContacts } from "@/hooks/use-contacts"
+import { importPriceRangesSchema, type ImportPriceRangesData, type PriceRangeImportData } from "@/lib/validations/pricing"
+import { useImportPriceRanges } from "@/hooks/use-pricing-import"
 import { toast } from "sonner"
 
-interface ImportContactsDialogProps {
+interface ImportPricingDialogProps {
   children?: React.ReactNode
 }
 
@@ -41,72 +39,34 @@ interface ImportResult {
   errors: string[]
 }
 
-interface ParsedContact {
-  firstName: string
-  lastName: string
-  email?: string
-  phone?: string
-  category: GlobalContactCategory
-  language: string
-  comments?: string
-  contactProperties?: {
-    propertyId: string
-    relationship: ContactPropertyRelationship
-  }[]
-}
-
-interface CSVContactRow {
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  category: string
-  language: string
-  comments: string
-  linkedProperties: string
-}
-
-// CSV Template headers - using database field names to match export format
-const CSV_TEMPLATE_HEADERS = [
-  "firstName",
-  "lastName", 
-  "email",
-  "phone",
-  "category",
-  "language",
-  "comments",
-  "linkedProperties"
+// CSV Template headers for price ranges
+const CSV_TEMPLATE = [
+  "Property ID*",
+  "Period Name*", 
+  "Start Date*",
+  "End Date*",
+  "Owner Nightly Rate*",
+  "Owner Weekly Rate",
+  "Commission Rate (%)",
+  "Validated (true/false)",
+  "Notes"
 ].join(",")
 
-// Sample data - using real property names format matching export
-const CSV_TEMPLATE_SAMPLE = [
-  "John",
-  "Doe", 
-  "john@example.com",
-  "+33123456789",
-  "OWNER",
-  "English",
-  "Property owner contact",
-  "\"Finca Serena, Villa Santorini Sunset\""
-].join(",")
-
-const CSV_TEMPLATE = [CSV_TEMPLATE_HEADERS, CSV_TEMPLATE_SAMPLE].join('\n')
-
-export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
+export function ImportPricingDialog({ children }: ImportPricingDialogProps) {
   const [open, setOpen] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
-  const [previewData, setPreviewData] = useState<ParsedContact[]>([])
+  const [previewData, setPreviewData] = useState<PriceRangeImportData[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   // Use the real import hook
-  const importContactsMutation = useImportContacts()
+  const importPriceRangesMutation = useImportPriceRanges()
 
   const form = useForm({
-    resolver: zodResolver(importContactsSchema),
+    resolver: zodResolver(importPriceRangesSchema),
     defaultValues: {
-      contacts: [],
-      skipDuplicates: true,
+      priceRanges: [],
+      skipConflicts: true,
       updateExisting: false,
     },
   })
@@ -128,79 +88,61 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
     try {
       const parsed = await parseFile(selectedFile)
       setPreviewData(parsed.slice(0, 5)) // Show first 5 rows
-      form.setValue("contacts", parsed)
+      form.setValue("priceRanges", parsed)
     } catch {
       toast.error("Failed to parse file. Please check the format.")
       setFile(null)
     }
   }
 
-  const parseFile = async (file: File): Promise<ParsedContact[]> => {
-    try {
-      // Use the robust CSV parser instead of manual string splitting
-      const result = await parseCSVAuto(file)
+  const parseFile = async (file: File): Promise<PriceRangeImportData[]> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
       
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to parse CSV')
-      }
-      
-      // Validate headers - using database field names
-      const requiredHeaders = ["firstName", "lastName", "category", "language"]
-      const headerValidation = validateHeaders(result.headers, requiredHeaders)
-      
-      if (!headerValidation.valid) {
-        throw new Error(`Missing required columns: ${headerValidation.missing.join(', ')}`)
-      }
-      
-      // Transform CSV rows to ParsedContact format
-      const contacts: ParsedContact[] = result.data.map((row, index) => {
+      reader.onload = (e) => {
         try {
-          return {
-            firstName: (row.firstName || '').toString().trim(),
-            lastName: (row.lastName || '').toString().trim(),
-            email: row.email ? row.email.toString().trim() || undefined : undefined,
-            phone: row.phone ? row.phone.toString().trim() || undefined : undefined,
-            category: (row.category as GlobalContactCategory) || GlobalContactCategory.OTHER,
-            language: (row.language || 'English').toString().trim(),
-            comments: row.comments ? row.comments.toString().trim() || undefined : undefined,
-            contactProperties: parsePropertyNames(row.linkedProperties || ''),
+          const text = e.target?.result as string
+          const lines = text.split('\n')
+          // Skip headers for now - could be used for field mapping in future
+          lines[0].split(',').map(h => h.trim())
+          
+          const priceRanges: PriceRangeImportData[] = []
+          
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim()
+            if (!line) continue
+            
+            const values = line.split(',').map(v => v.trim().replace(/^"(.*)"$/, '$1'))
+            
+            const priceRange: PriceRangeImportData = {
+              propertyId: values[0] || '',
+              periodName: values[1] || '',
+              startDate: new Date(values[2] || ''),
+              endDate: new Date(values[3] || ''),
+              ownerNightlyRate: parseFloat(values[4]) || 0,
+              ownerWeeklyRate: values[5] ? parseFloat(values[5]) : undefined,
+              commissionRate: values[6] ? parseFloat(values[6]) : 25,
+              isValidated: values[7] ? values[7].toLowerCase() === 'true' : false,
+              notes: values[8] || undefined,
+            }
+            
+            priceRanges.push(priceRange)
           }
-        } catch (error) {
-          throw new Error(`Row ${index + 1}: ${error instanceof Error ? error.message : 'Invalid data'}`)
+          
+          resolve(priceRanges)
+        } catch (_error) {
+          reject(_error)
         }
-      }).filter(contact => contact.firstName && contact.lastName) // Filter out empty rows
+      }
       
-      return contacts
-    } catch (error) {
-      throw new Error(`Failed to parse CSV: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    }
+      reader.onerror = () => reject(new Error('Failed to read file'))
+      reader.readAsText(file)
+    })
   }
 
-  const parsePropertyNames = (namesStr: string): ParsedContact['contactProperties'] => {
-    // For now, we'll handle the simple property names format from export
-    // In the future, this could be enhanced to handle structured format like "propertyId:relationship"
-    if (!namesStr || namesStr.toString().trim() === '') return []
-    
-    // Since export provides property names ("Villa A, Villa B"), 
-    // we'll need to resolve these to property IDs in the server action
-    // For now, we'll store them as placeholder entries with CLIENT relationship
-    const links: ParsedContact['contactProperties'] = []
-    const names = namesStr.toString().split(',').map(name => name.trim()).filter(Boolean)
-    
-    for (const name of names) {
-      // Store property name as a temporary ID - server will resolve to actual IDs
-      links.push({
-        propertyId: `name:${name}`, // Prefix to indicate this needs resolution
-        relationship: ContactPropertyRelationship.OTHER, // Default relationship
-      })
-    }
-    
-    return links
-  }
-
-  const onSubmit = async (data: ImportContactsData) => {
+  const onSubmit = async (data: ImportPriceRangesData) => {
     try {
-      const result = await importContactsMutation.mutateAsync(data)
+      const result = await importPriceRangesMutation.mutateAsync(data)
       
       // Transform the server result to match our UI format
       const importResult: ImportResult = {
@@ -218,11 +160,17 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
   }
 
   const downloadTemplate = () => {
-    const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv' })
+    const sampleData = [
+      "prop_123,Summer 2024,2024-06-01,2024-08-31,350,2100,25,false,Peak season rates",
+      "prop_123,Winter 2024,2024-12-15,2025-01-15,450,2700,25,false,Holiday premium"
+    ]
+    
+    const csvContent = [CSV_TEMPLATE, ...sampleData].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'contacts-import-template.csv'
+    a.download = 'price-ranges-import-template.csv'
     a.click()
     window.URL.revokeObjectURL(url)
     toast.success("Template downloaded")
@@ -247,15 +195,15 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
         {children || (
           <Button variant="outline">
             <Upload className="mr-2 h-4 w-4" />
-            Import
+            Import Pricing
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Import Contacts</DialogTitle>
+          <DialogTitle>Import Price Ranges</DialogTitle>
           <DialogDescription>
-            Upload a CSV or Excel file to import multiple contacts at once.
+            Upload a CSV file to import multiple price ranges and pricing periods at once.
           </DialogDescription>
         </DialogHeader>
 
@@ -312,7 +260,7 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
               <div className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="skipDuplicates"
+                  name="skipConflicts"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                       <FormControl>
@@ -323,10 +271,10 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel>
-                          Skip duplicate contacts
+                          Skip conflicting periods
                         </FormLabel>
                         <FormDescription>
-                          Skip contacts with email addresses that already exist
+                          Skip price ranges that overlap with existing periods
                         </FormDescription>
                       </div>
                     </FormItem>
@@ -346,10 +294,10 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel>
-                          Update existing contacts
+                          Update existing periods
                         </FormLabel>
                         <FormDescription>
-                          Update contacts if they already exist (matched by email)
+                          Update overlapping price ranges with new data
                         </FormDescription>
                       </div>
                     </FormItem>
@@ -362,13 +310,13 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
                   <FormLabel>Preview (first 5 rows)</FormLabel>
                   <ScrollArea className="h-48 w-full border rounded-lg p-4">
                     <div className="space-y-2">
-                      {previewData.map((contact, index) => (
+                      {previewData.map((priceRange, index) => (
                         <div key={index} className="text-sm p-2 bg-muted rounded-lg">
                           <div className="font-medium">
-                            {contact.firstName} {contact.lastName}
+                            {priceRange.periodName} - {priceRange.propertyId}
                           </div>
                           <div className="text-muted-foreground">
-                            {contact.email || "No email"} • {contact.category} • {contact.language}
+                            {priceRange.startDate.toLocaleDateString()} to {priceRange.endDate.toLocaleDateString()} • €{priceRange.ownerNightlyRate}/night
                           </div>
                         </div>
                       ))}
@@ -377,14 +325,14 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
                 </div>
               )}
 
-              {importContactsMutation.isPending && (
+              {importPriceRangesMutation.isPending && (
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Importing contacts...</span>
+                    <span>Importing price ranges...</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                    <span className="text-sm text-muted-foreground">Processing contacts...</span>
+                    <span className="text-sm text-muted-foreground">Processing price ranges...</span>
                   </div>
                 </div>
               )}
@@ -396,9 +344,9 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
                 <Button 
                   type="submit" 
                   className="bg-[#1E3A3A] hover:bg-[#1E3A3A]/90"
-                  disabled={!file || importContactsMutation.isPending || form.getValues("contacts").length === 0}
+                  disabled={!file || importPriceRangesMutation.isPending || form.getValues("priceRanges").length === 0}
                 >
-                  {importContactsMutation.isPending ? (
+                  {importPriceRangesMutation.isPending ? (
                     <>
                       <span className="mr-2">Importing...</span>
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -406,7 +354,7 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
                   ) : (
                     <>
                       <Upload className="mr-2 h-4 w-4" />
-                      Import Contacts
+                      Import Price Ranges
                     </>
                   )}
                 </Button>
@@ -425,7 +373,7 @@ export function ImportContactsDialog({ children }: ImportContactsDialogProps) {
                     {importResult.success}
                   </div>
                   <div className="text-sm text-green-700">
-                    Successful
+                    Imported
                   </div>
                 </div>
                 <div className="p-4 bg-yellow-50 rounded-lg text-center">

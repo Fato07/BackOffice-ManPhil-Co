@@ -11,13 +11,16 @@ import {
   bulkDeleteContacts,
   searchContacts,
   linkContactToProperty,
-  unlinkContactFromProperty
+  unlinkContactFromProperty,
+  importContacts
 } from '@/actions/contacts'
 import type { 
   ContactsResponse,
   ContactDetail,
-  ContactListItem
+  ContactListItem,
+  ContactPropertyInfo
 } from '@/types/contact'
+import { ContactPropertyRelationship } from '@/generated/prisma'
 import type {
   ContactFilters,
   CreateContactData,
@@ -25,7 +28,8 @@ import type {
   BulkDeleteContactsData,
   ContactSearchData,
   LinkContactToPropertyData,
-  UnlinkContactFromPropertyData
+  UnlinkContactFromPropertyData,
+  ImportContactsData
 } from '@/lib/validations/contact'
 
 // Contacts list hook with pagination and filtering
@@ -51,11 +55,11 @@ export function useContacts({
       return {
         data: result.data.contacts.map((contact: any) => ({
           ...contact,
-          contactProperties: contact.contactProperties.map((cp: any) => ({
+          contactProperties: contact.contactProperties.map((cp: any): ContactPropertyInfo => ({
             id: cp.id,
             propertyId: cp.property.id,
             propertyName: cp.property.name || 'Unnamed Property',
-            relationship: cp.relationship
+            relationship: cp.relationship as ContactPropertyRelationship
           }))
         })),
         totalCount: result.data.totalCount,
@@ -262,7 +266,7 @@ export function useUnlinkContactFromProperty() {
 // Export contacts mutation
 export function useExportContacts() {
   return useMutation({
-    mutationFn: async (data: { format: string; contactIds?: string[]; filters?: any }) => {
+    mutationFn: async (data: { format: string; contactIds?: string[]; filters?: ContactFilters }) => {
       // Build query parameters
       const params = new URLSearchParams({
         format: data.format || "csv",
@@ -314,7 +318,7 @@ export function useExportContacts() {
     onSuccess: () => {
       toast.success("Contacts exported successfully")
     },
-    onError: (error) => {
+    onError: () => {
       toast.error("Failed to export contacts")
     },
   })
@@ -329,7 +333,7 @@ export function useOptimisticContactUpdate() {
     await queryClient.cancelQueries({ queryKey: ['contact', contactId] })
 
     // Snapshot the previous value
-    const previousContact = queryClient.getQueryData(['contact', contactId])
+    const previousContact = queryClient.getQueryData(['contact', contactId]) as ContactDetail | undefined
 
     // Optimistically update to the new value
     queryClient.setQueryData(['contact', contactId], (old: ContactDetail | undefined) => {
@@ -341,9 +345,43 @@ export function useOptimisticContactUpdate() {
     return { previousContact }
   }
 
-  const rollback = (contactId: string, context: { previousContact: any }) => {
+  const rollback = (contactId: string, context: { previousContact: ContactDetail | undefined }) => {
     queryClient.setQueryData(['contact', contactId], context.previousContact)
   }
 
   return { optimisticUpdate, rollback }
+}
+
+// Import contacts mutation
+export function useImportContacts() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: ImportContactsData) => {
+      const result = await importContacts(data)
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to import contacts')
+      }
+      return result.data
+    },
+    onSuccess: (data) => {
+      // Invalidate contacts lists
+      queryClient.invalidateQueries({ queryKey: ['contacts'] })
+      
+      if (data?.imported && data.imported > 0) {
+        toast.success(`Successfully imported ${data.imported} contacts`)
+      }
+      
+      if (data?.updated && data.updated > 0) {
+        toast.success(`Updated ${data.updated} existing contacts`)
+      }
+      
+      if (data?.skipped && data.skipped > 0) {
+        toast.warning(`Skipped ${data.skipped} duplicate contacts`)
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to import contacts')
+    },
+  })
 }

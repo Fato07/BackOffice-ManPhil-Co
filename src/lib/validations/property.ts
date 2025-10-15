@@ -7,6 +7,8 @@ export const createPropertySchema = z.object({
   destinationId: z.string().min(1, "Destination is required"),
   numberOfRooms: z.number().int().min(0).default(0),
   numberOfBathrooms: z.number().int().min(0).default(0),
+  latitude: z.number().min(-90, "Invalid latitude").max(90, "Invalid latitude").optional(),
+  longitude: z.number().min(-180, "Invalid longitude").max(180, "Invalid longitude").optional(),
 })
 
 export type CreatePropertyFormData = z.infer<typeof createPropertySchema>

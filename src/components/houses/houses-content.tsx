@@ -410,7 +410,7 @@ export function HousesContent() {
                       onClick={() => setShowExportDialog(true)}
                     >
                       <Download className="mr-2 h-4 w-4" />
-                      Export Selected
+                      Export Properties
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
@@ -480,23 +480,23 @@ export function HousesContent() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {selectedPropertyIds.length} properties?</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
+            <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the following properties and all associated data:
-              <div className="mt-2 max-h-40 overflow-y-auto rounded border p-2">
-                <ul className="space-y-1 text-sm">
-                  {selectedProperties.slice(0, 5).map((property) => (
-                    <li key={property.id} className="text-muted-foreground">
-                      • {property.name}
-                    </li>
-                  ))}
-                  {selectedProperties.length > 5 && (
-                    <li className="text-muted-foreground font-medium">
-                      ... and {selectedProperties.length - 5} more
-                    </li>
-                  )}
-                </ul>
-              </div>
             </AlertDialogDescription>
+            <div className="mt-2 max-h-40 overflow-y-auto rounded border p-2">
+              <ul className="space-y-1 text-sm">
+                {selectedProperties.slice(0, 5).map((property) => (
+                  <li key={property.id} className="text-muted-foreground">
+                    • {property.name}
+                  </li>
+                ))}
+                {selectedProperties.length > 5 && (
+                  <li className="text-muted-foreground font-medium">
+                    ... and {selectedProperties.length - 5} more
+                  </li>
+                )}
+              </ul>
+            </div>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={bulkDeleteMutation.isPending}>Cancel</AlertDialogCancel>

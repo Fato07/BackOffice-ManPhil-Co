@@ -1,38 +1,56 @@
 import { useState } from "react"
 import { toast } from "sonner"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { parseSimpleCSV } from "@/lib/csv/simple-parser"
+import { validateCSVStructure, ValidationResult } from "@/lib/csv/enhanced-validator"
 
 export interface ImportOptions {
   file: File
   mode: "create" | "update" | "both"
-  mappings?: any[]
+  mappings?: Record<string, string>[]
 }
 
 export interface ImportValidationResult {
   totalRows: number
   headers: string[]
+  isUnifiedImport?: boolean
+  entityStats?: Record<string, number>
   fieldMapping: {
-    mappings: any[]
-    suggestions: any
+    mappings: Record<string, string>[]
+    suggestions: Record<string, unknown>
   }
   validation: {
     valid: boolean
-    errors: any[]
-    warnings: any[]
+    errors: unknown[]
+    warnings: unknown[]
     errorCount: number
     warningCount: number
+    validRows?: number
   }
-  preview: any[]
-  availableDestinations: any[]
+  preview: unknown[]
+  availableDestinations: unknown[]
+  // Enhanced validation results
+  enhancedValidation?: ValidationResult
+  parsedData?: Record<string, string>[]
 }
 
 export interface ImportResult {
   success: boolean
-  imported: number
-  updated: number
-  failed: number
-  errors: any[]
-  warnings: any[]
+  imported: {
+    properties: number
+    pricing: number
+    costs: number
+    bookings: number
+    availabilityRequests: number
+  }
+  errors: string[]
+  debug?: {
+    totalRows: number
+    rowsWithAvailabilityRequests: any[]
+    availabilityRequestAttempts: any[]
+    csvHeaders: string[]
+    availabilityRequestColumns: Record<string, boolean>
+  }
 }
 
 export function useImportProperties() {
@@ -41,29 +59,107 @@ export function useImportProperties() {
 
   const validateImport = useMutation({
     mutationFn: async (file: File) => {
-      const formData = new FormData()
-      formData.append("file", file)
-
-      const response = await fetch("/api/import/validate", {
-        method: "POST",
-        body: formData,
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Validation failed")
+      // Parse CSV with enhanced validation
+      const content = await file.text()
+      
+      // Basic validation - check if file has content
+      if (!content.trim()) {
+        throw new Error("File is empty")
+      }
+      
+      // Parse CSV using simple parser
+      const parseResult = parseSimpleCSV(content)
+      
+      if (!parseResult.success) {
+        throw new Error(parseResult.error || "Failed to parse CSV file")
       }
 
-      return response.json() as Promise<ImportValidationResult>
+      // Check minimum requirements
+      if (parseResult.data.length === 0) {
+        throw new Error("CSV must have at least one data row")
+      }
+      
+      if (!parseResult.headers.includes('propertyName')) {
+        throw new Error("CSV must include 'propertyName' column")
+      }
+
+      // Run enhanced validation
+      const enhancedValidation = validateCSVStructure(parseResult.headers, parseResult.data)
+      
+      // Convert enhanced validation to legacy format
+      const legacyValidation = {
+        valid: enhancedValidation.summary.readyToImport,
+        errors: [
+          ...enhancedValidation.structure.headerIssues.map(issue => ({
+            type: 'header',
+            message: `Header issue: ${issue.type} - ${issue.column}`,
+            suggestion: issue.suggestion
+          })),
+          ...enhancedValidation.data.typeValidation
+            .filter(v => v.severity === 'error')
+            .map(v => ({
+              type: 'data',
+              row: v.row,
+              column: v.column,
+              message: v.issue,
+              value: v.value
+            }))
+        ],
+        warnings: [
+          ...enhancedValidation.data.typeValidation
+            .filter(v => v.severity === 'warning')
+            .map(v => ({
+              type: 'data',
+              row: v.row,
+              column: v.column,
+              message: v.issue,
+              value: v.value
+            })),
+          ...enhancedValidation.data.businessRules.map(violation => ({
+            type: 'business_rule',
+            row: violation.row,
+            field: violation.field,
+            message: violation.message
+          }))
+        ],
+        errorCount: enhancedValidation.summary.errorCount,
+        warningCount: enhancedValidation.summary.warningCount,
+        validRows: enhancedValidation.data.validRows,
+      }
+
+      // Generate preview data (first 5 rows)
+      const preview = parseResult.data.slice(0, 5).map((row, index) => ({
+        row: index + 2,
+        data: row,
+        valid: !enhancedValidation.data.typeValidation.some(v => v.row === index + 2 && v.severity === 'error')
+      }))
+
+      return {
+        totalRows: parseResult.data.length,
+        headers: parseResult.headers,
+        isUnifiedImport: true,
+        fieldMapping: {
+          mappings: [],
+          suggestions: {},
+        },
+        validation: legacyValidation,
+        preview,
+        availableDestinations: [],
+        enhancedValidation,
+        parsedData: parseResult.data,
+      } as ImportValidationResult
     },
     onSuccess: (data) => {
       setValidationResult(data)
-      if (data.validation.errorCount > 0) {
-        toast.error(`Found ${data.validation.errorCount} errors in the CSV file`)
-      } else if (data.validation.warningCount > 0) {
-        toast.warning(`Found ${data.validation.warningCount} warnings in the CSV file`)
+      
+      // Show appropriate toast based on validation results
+      if (data.enhancedValidation?.summary.readyToImport) {
+        const confidence = Math.round((data.enhancedValidation.summary.confidence || 0) * 100)
+        toast.success(`CSV validated - ${data.totalRows} rows ready to import (${confidence}% confidence)`)
+      } else if (data.enhancedValidation?.fixable.canProceedWithWarnings) {
+        toast.warning(`CSV has ${data.validation.warningCount} warnings but can proceed`)
       } else {
-        toast.success("CSV file validated successfully")
+        toast.error(`CSV has ${data.validation.errorCount} critical errors that must be fixed`)
       }
     },
     onError: (error: Error) => {
@@ -75,13 +171,8 @@ export function useImportProperties() {
     mutationFn: async (options: ImportOptions) => {
       const formData = new FormData()
       formData.append("file", options.file)
-      formData.append("mode", options.mode)
-      
-      if (options.mappings) {
-        formData.append("mappings", JSON.stringify(options.mappings))
-      }
 
-      const response = await fetch("/api/import/properties", {
+      const response = await fetch("/api/import/simple", {
         method: "POST",
         body: formData,
       })
@@ -95,22 +186,43 @@ export function useImportProperties() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["properties"] })
+      queryClient.invalidateQueries({ queryKey: ["pricing"] })
+      queryClient.invalidateQueries({ queryKey: ["bookings"] })
+      queryClient.invalidateQueries({ queryKey: ["operational-costs"] })
+      queryClient.invalidateQueries({ queryKey: ["availability-requests"] })
       
       if (data.success) {
-        const messages = []
-        if (data.imported > 0) messages.push(`${data.imported} properties imported`)
-        if (data.updated > 0) messages.push(`${data.updated} properties updated`)
-        if (data.failed > 0) messages.push(`${data.failed} failed`)
+        const messages: string[] = []
+        const { imported } = data
         
-        const message = messages.join(", ")
+        if (imported.properties > 0) messages.push(`${imported.properties} properties`)
+        if (imported.pricing > 0) messages.push(`${imported.pricing} pricing periods`)
+        if (imported.costs > 0) messages.push(`${imported.costs} costs`)
+        if (imported.bookings > 0) messages.push(`${imported.bookings} bookings`)
+        if (imported.availabilityRequests > 0) messages.push(`${imported.availabilityRequests} availability requests`)
         
-        if (data.failed === 0) {
+        if (data.errors.length > 0) messages.push(`${data.errors.length} errors`)
+        
+        const message = messages.length > 0 ? `Imported: ${messages.join(", ")}` : "Import completed"
+        
+        // Debug logging for development
+        if (data.debug && process.env.NODE_ENV === 'development') {
+          console.log('Import Debug Info:', {
+            totalRows: data.debug.totalRows,
+            availabilityRequestRows: data.debug.rowsWithAvailabilityRequests.length,
+            csvHeaders: data.debug.csvHeaders,
+            availabilityRequestColumns: data.debug.availabilityRequestColumns,
+            attemptDetails: data.debug.availabilityRequestAttempts
+          })
+        }
+        
+        if (data.errors.length === 0) {
           toast.success(message)
         } else {
           toast.warning(message)
         }
       } else {
-        toast.error("Import failed")
+        toast.error(`Import failed: ${data.errors.join(", ")}`)
       }
     },
     onError: (error: Error) => {

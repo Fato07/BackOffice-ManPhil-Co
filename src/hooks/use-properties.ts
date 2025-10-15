@@ -12,6 +12,7 @@ import {
 import { toast } from "sonner"
 import { updatePropertySurroundings } from "@/actions/property-stay"
 import { bulkDeleteProperties } from "@/actions/properties"
+import { propertiesMapKeys } from "@/hooks/use-properties-map"
 
 // Query keys
 export const propertyKeys = {
@@ -100,6 +101,7 @@ export function useCreateProperty() {
       api.post<PropertyWithRelations>("/api/properties", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: propertyKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: propertiesMapKeys.list() })
       toast.success("Property created successfully")
     },
     onError: (error) => {
@@ -117,6 +119,7 @@ export function useUpdatePropertyById(id: string) {
       api.put<PropertyWithRelations>(`/api/properties/${id}`, data),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: propertyKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: propertiesMapKeys.list() })
       queryClient.setQueryData(propertyKeys.detail(id), data)
       toast.success("Property updated successfully")
     },
@@ -135,6 +138,7 @@ export function useUpdateProperty() {
       api.patch<PropertyWithRelations>(`/api/properties/${id}`, data),
     onSuccess: (updatedData, variables) => {
       queryClient.invalidateQueries({ queryKey: propertyKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: propertiesMapKeys.list() })
       queryClient.setQueryData(propertyKeys.detail(variables.id), updatedData)
       toast.success("Property updated successfully")
     },
@@ -157,6 +161,7 @@ export function useDeleteProperty() {
     mutationFn: (id: string) => api.delete(`/api/properties/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: propertyKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: propertiesMapKeys.list() })
       toast.success("Property deleted successfully")
     },
     onError: (error) => {
@@ -176,6 +181,7 @@ export function useTogglePropertyStatus(id: string) {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: propertyKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: propertiesMapKeys.list() })
       queryClient.setQueryData(propertyKeys.detail(id), data)
       toast.success("Property status updated")
     },
@@ -227,6 +233,7 @@ export function useBulkDeleteProperties() {
     onSuccess: (result) => {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: propertyKeys.lists() })
+        queryClient.invalidateQueries({ queryKey: propertiesMapKeys.list() })
         toast.success(`Successfully deleted ${result.data?.deletedCount} properties`)
       } else {
         toast.error(result.error || "Failed to delete properties")

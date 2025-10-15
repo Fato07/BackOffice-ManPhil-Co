@@ -116,3 +116,76 @@ export function validateDateRangeOverlap(
     )
   })
 }
+
+// CSV Import Schemas
+// Base price range import schema for CSV imports
+export const priceRangeImportSchema = z.object({
+  // Required fields
+  propertyId: z.string().min(1, "Property ID is required"),
+  periodName: z.string().min(1, "Period name is required"),
+  startDate: z.coerce.date({
+    message: "Start date is required"
+  }),
+  endDate: z.coerce.date({
+    message: "End date is required"
+  }),
+  ownerNightlyRate: z.coerce.number().min(0, "Owner nightly rate must be positive"),
+  
+  // Optional fields
+  ownerWeeklyRate: z.coerce.number().min(0, "Owner weekly rate must be positive").optional(),
+  commissionRate: z.coerce.number().min(0, "Commission rate must be positive").max(100, "Commission rate cannot exceed 100%").default(25),
+  isValidated: z.coerce.boolean().default(false),
+  notes: z.string().max(1000, "Notes too long").optional(),
+}).refine((data) => data.endDate > data.startDate, {
+  message: "End date must be after start date",
+  path: ["endDate"],
+})
+
+// Import multiple price ranges
+export const importPriceRangesSchema = z.object({
+  priceRanges: z.array(priceRangeImportSchema).min(1, "At least one price range is required"),
+  skipConflicts: z.boolean().default(true),
+  updateExisting: z.boolean().default(false),
+})
+
+// Export price ranges schema
+export const exportPriceRangesSchema = z.object({
+  propertyIds: z.array(z.string()).optional(),
+  startDate: z.coerce.date().optional(),
+  endDate: z.coerce.date().optional(),
+  format: z.enum(['csv', 'excel']).default('csv'),
+})
+
+// Operational costs import schema
+export const operationalCostImportSchema = z.object({
+  propertyId: z.string().min(1, "Property ID is required"),
+  costType: z.nativeEnum(OperationalCostType),
+  priceType: z.nativeEnum(PriceType),
+  estimatedPrice: z.coerce.number().min(0, "Estimated price must be positive").optional(),
+  publicPrice: z.coerce.number().min(0, "Public price must be positive").optional(),
+  paidBy: z.string().max(255, "Paid by field too long").optional(),
+  comment: z.string().max(500, "Comment too long").optional(),
+})
+
+// Minimum stay rules import schema
+export const minimumStayImportSchema = z.object({
+  propertyId: z.string().min(1, "Property ID is required"),
+  bookingCondition: z.nativeEnum(BookingCondition),
+  minimumNights: z.coerce.number().int().min(1, "Minimum nights must be at least 1"),
+  startDate: z.coerce.date({
+    message: "Start date is required"
+  }),
+  endDate: z.coerce.date({
+    message: "End date is required"
+  }),
+}).refine((data) => data.endDate > data.startDate, {
+  message: "End date must be after start date",
+  path: ["endDate"],
+})
+
+// Type exports for use in components
+export type PriceRangeImportData = z.infer<typeof priceRangeImportSchema>
+export type ImportPriceRangesData = z.infer<typeof importPriceRangesSchema>
+export type ExportPriceRangesData = z.infer<typeof exportPriceRangesSchema>
+export type OperationalCostImportData = z.infer<typeof operationalCostImportSchema>
+export type MinimumStayImportData = z.infer<typeof minimumStayImportSchema>
