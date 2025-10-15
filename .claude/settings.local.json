@@ -22,7 +22,8 @@
       "WebFetch(domain:clerk.com)",
       "WebFetch(domain:react-hook-form.com)",
       "WebFetch(domain:zod.dev)",
-      "mcp__context7__resolve-library-id"
+      "mcp__context7__resolve-library-id",
+      "Bash(bunx tsc:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

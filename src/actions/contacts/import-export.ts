@@ -10,11 +10,86 @@ import {
   ActionResult,
   Prisma,
   GlobalContactCategory,
+  ContactPropertyRelationship,
   exportContactsSchema,
   importContactsSchema,
   type ExportContactsData,
   type ImportContactsData
 } from './types'
+
+/**
+ * Helper function to resolve property names to property IDs
+ */
+async function resolvePropertyLinks(
+  contactProperties: { propertyId: string; relationship: ContactPropertyRelationship }[],
+  errors: { row: number; error: string }[] = [],
+  rowNumber?: number
+): Promise<{ propertyId: string; relationship: ContactPropertyRelationship }[]> {
+  const resolved: { propertyId: string; relationship: ContactPropertyRelationship }[] = []
+  
+  for (const link of contactProperties) {
+    if (link.propertyId.startsWith('name:')) {
+      // This is a property name that needs to be resolved to an ID
+      const propertyName = link.propertyId.replace('name:', '')
+      const property = await prisma.property.findFirst({
+        where: { 
+          name: { 
+            equals: propertyName.trim(), 
+            mode: 'insensitive' 
+          } 
+        },
+        select: { id: true, name: true }
+      })
+      
+      if (property) {
+        resolved.push({
+          propertyId: property.id,
+          relationship: link.relationship
+        })
+      } else {
+        // Property not found - add to errors with suggestion
+        const similarProperties = await prisma.property.findMany({
+          where: {
+            name: {
+              contains: propertyName.trim(),
+              mode: 'insensitive'
+            }
+          },
+          select: { name: true },
+          take: 3
+        })
+        
+        const suggestion = similarProperties.length > 0 
+          ? ` Similar properties: ${similarProperties.map(p => p.name).join(', ')}`
+          : ''
+        
+        if (rowNumber && errors) {
+          errors.push({
+            row: rowNumber,
+            error: `Property "${propertyName}" not found.${suggestion}`
+          })
+        }
+      }
+    } else {
+      // Property ID is already valid - validate it exists
+      const property = await prisma.property.findFirst({
+        where: { id: link.propertyId },
+        select: { id: true }
+      })
+      
+      if (property) {
+        resolved.push(link)
+      } else if (rowNumber && errors) {
+        errors.push({
+          row: rowNumber,
+          error: `Property ID "${link.propertyId}" not found`
+        })
+      }
+    }
+  }
+  
+  return resolved
+}
 
 /**
  * Export contacts to CSV or Excel
@@ -107,16 +182,16 @@ export async function exportContacts(
     const filename = `contacts_export_${new Date().toISOString().split('T')[0]}.${format}`
 
     if (format === 'csv') {
-      // Create CSV content
+      // Create CSV content using database field names to match import format
       const headers = [
-        'First Name',
-        'Last Name',
-        'Email',
-        'Phone',
-        'Language',
-        'Category',
-        'Comments',
-        'Linked Properties'
+        'firstName',
+        'lastName',
+        'email',
+        'phone',
+        'category',
+        'language',
+        'comments',
+        'linkedProperties'
       ]
 
       const rows = contacts.map(contact => [
@@ -124,12 +199,10 @@ export async function exportContacts(
         contact.lastName,
         contact.email || '',
         contact.phone || '',
-        contact.language,
         contact.category,
+        contact.language,
         contact.comments || '',
-        contact.contactProperties.map(cp => 
-          `${cp.property.name} (${cp.relationship})`
-        ).join('; ')
+        contact.contactProperties.map(cp => cp.property.name).join(', ')
       ])
 
       const csvContent = [
@@ -252,11 +325,19 @@ export async function importContacts(
 
           // Create new contact
           const { contactProperties, ...contactData } = contact
+          
+          // Resolve property names to IDs if needed
+          const resolvedContactProperties = await resolvePropertyLinks(
+            contactProperties || [], 
+            errors, 
+            i + index + 1
+          )
+          
           await prisma.contact.create({
             data: {
               ...contactData,
               contactProperties: {
-                create: contactProperties
+                create: resolvedContactProperties
               }
             }
           })

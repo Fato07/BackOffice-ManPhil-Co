@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/db"
-import { parseCSV } from "@/lib/csv/parser"
-import { transformCSVRowToProperty } from "@/lib/csv/parser"
-import { validatePropertyData } from "@/lib/import/validator"
-import { autoMapFields, applyFieldMappings } from "@/lib/import/field-mapper"
-import { getAllFields } from "@/lib/import/validator"
+import { parseSimpleCSV } from "@/lib/csv/simple-parser"
+import { validatePropertyData, validatePropertyRow, getAllFields } from "@/lib/import/validator"
 
 export interface ImportResult {
   success: boolean
@@ -15,6 +12,9 @@ export interface ImportResult {
   errors: any[]
   warnings: any[]
 }
+
+// Note: Pricing, operational costs, and minimum stay rules are now handled
+// by separate import dialogs for better UX and maintainability
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,12 +39,12 @@ export async function POST(req: NextRequest) {
 
     // Read and parse CSV
     const content = await file.text()
-    const parseResult = await parseCSV(content)
+    const parseResult = parseSimpleCSV(content)
 
-    if (parseResult.errors.length > 0) {
+    if (!parseResult.success) {
       return NextResponse.json({
         error: "CSV parsing failed",
-        details: parseResult.errors,
+        details: parseResult.error,
       }, { status: 400 })
     }
 
@@ -52,25 +52,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No data found in CSV" }, { status: 400 })
     }
 
-    // Apply field mappings
-    let mappedData = parseResult.data
-    if (mappingsJson) {
-      try {
-        const mappings = JSON.parse(mappingsJson)
-        mappedData = applyFieldMappings(parseResult.data, mappings)
-      } catch (error) {
-        // If custom mappings fail, try auto-mapping
-        const autoMapping = autoMapFields(parseResult.meta.fields || [], getAllFields())
-        mappedData = applyFieldMappings(parseResult.data, autoMapping.mappings)
-      }
-    } else {
-      // Auto-map fields
-      const autoMapping = autoMapFields(parseResult.meta.fields || [], getAllFields())
-      mappedData = applyFieldMappings(parseResult.data, autoMapping.mappings)
-    }
-
-    // Transform CSV data to property format
-    const transformedData = mappedData.map(transformCSVRowToProperty)
+    // Use the parsed data directly (simple approach)
+    const transformedData = parseResult.data
 
     // Get existing property names for duplicate checking
     const existingProperties = await prisma.property.findMany({
@@ -86,9 +69,15 @@ export async function POST(req: NextRequest) {
       existingProperties.map(p => p.name)
     )
 
-    if (!validation.valid && validation.errors.length > 0) {
+    // Only block imports if there are no valid rows at all
+    const hasValidRows = transformedData.some((_, index) => {
+      const { errors } = validatePropertyRow(transformedData[index], index + 2)
+      return errors.length === 0
+    })
+    
+    if (!hasValidRows) {
       return NextResponse.json({
-        error: "Validation failed",
+        error: "No valid rows to import",
         details: {
           errors: validation.errors,
           warnings: validation.warnings,
@@ -118,7 +107,25 @@ export async function POST(req: NextRequest) {
     await prisma.$transaction(async (tx) => {
       for (let i = 0; i < transformedData.length; i++) {
         const rowNumber = i + 2 // Account for header row
-        const propertyData = transformedData[i]
+        const rawData = transformedData[i]
+
+        // Convert string values to appropriate types for Prisma (create structure for both create and update)
+        let propertyData: any = {
+          name: String(rawData.name || '').trim(),
+          numberOfRooms: rawData.numberOfRooms ? Number(rawData.numberOfRooms) : undefined,
+          numberOfBathrooms: rawData.numberOfBathrooms ? Number(rawData.numberOfBathrooms) : undefined,
+          maxGuests: rawData.maxGuests ? Number(rawData.maxGuests) : undefined,
+          address: rawData.address ? String(rawData.address).trim() : undefined,
+          city: rawData.city ? String(rawData.city).trim() : undefined,
+          latitude: rawData.latitude ? Number(rawData.latitude) : undefined,
+          longitude: rawData.longitude ? Number(rawData.longitude) : undefined,
+          status: rawData.status || 'PUBLISHED',
+          segment: rawData.segment ? String(rawData.segment).trim() : undefined,
+          categories: rawData.categories ? String(rawData.categories).split(',').map(c => c.trim()).filter(Boolean) : [],
+        }
+        
+        // For property creation, we need destination relation
+        let destinationId = rawData.destinationId
 
         try {
           // Skip if no name
@@ -131,26 +138,80 @@ export async function POST(req: NextRequest) {
             continue
           }
 
-          // Map destination name to ID
-          if (propertyData.destinationName && !propertyData.destinationId) {
-            const destId = destinationMap.get(propertyData.destinationName.toLowerCase())
-            if (destId) {
-              propertyData.destinationId = destId
-            } else {
-              result.warnings.push({
-                row: rowNumber,
-                field: "destinationName",
-                message: `Destination "${propertyData.destinationName}" not found`,
-              })
+          // Map destination name to ID or auto-create
+          if (rawData.destinationName && !destinationId) {
+            let destId = destinationMap.get(String(rawData.destinationName).toLowerCase())
+            
+            if (!destId) {
+              // Auto-create missing destination
+              try {
+                // Normalize destination name
+                const normalizedName = String(rawData.destinationName).trim()
+                
+                // Extract country from common destination names or use a default
+                let country = "Unknown"
+                const commonCountries = {
+                  "mallorca": "Spain", "palma": "Spain", "ibiza": "Spain", "barcelona": "Spain",
+                  "marbella": "Spain", "valencia": "Spain", "madrid": "Spain", "seville": "Spain",
+                  "cannes": "France", "nice": "France", "paris": "France", "monaco": "Monaco",
+                  "london": "United Kingdom", "edinburgh": "United Kingdom", "dublin": "Ireland",
+                  "rome": "Italy", "florence": "Italy", "venice": "Italy", "milan": "Italy",
+                  "athens": "Greece", "mykonos": "Greece", "santorini": "Greece", "crete": "Greece",
+                  "lisbon": "Portugal", "porto": "Portugal", "algarve": "Portugal"
+                }
+                
+                const lowerName = normalizedName.toLowerCase()
+                for (const [city, countryName] of Object.entries(commonCountries)) {
+                  if (lowerName.includes(city)) {
+                    country = countryName
+                    break
+                  }
+                }
+                
+                const newDestination = await tx.destination.create({
+                  data: {
+                    name: normalizedName,
+                    country: country,
+                  }
+                })
+                
+                destId = newDestination.id
+                // Update cache to prevent duplicates within same import
+                destinationMap.set(String(rawData.destinationName).toLowerCase(), destId)
+                
+                // Add audit log for created destination
+                await tx.auditLog.create({
+                  data: {
+                    action: "create",
+                    entityType: "destination",
+                    entityId: newDestination.id,
+                    userId,
+                    changes: {
+                      name: normalizedName,
+                      country: country,
+                      autoCreated: true,
+                      createdDuringImport: true,
+                    },
+                  },
+                })
+                
+                result.warnings.push({
+                  row: rowNumber,
+                  field: "destinationName",
+                  message: `Auto-created destination: "${normalizedName}" (${country})`,
+                })
+              } catch (createError: any) {
+                result.errors.push({
+                  row: rowNumber,
+                  message: `Failed to create destination "${rawData.destinationName}": ${createError.message}`,
+                })
+                result.failed++
+                continue
+              }
             }
+            
+            destinationId = destId
           }
-
-          // Remove fields that aren't in the database schema
-          delete propertyData.destinationName
-          delete propertyData.roomCount
-          delete propertyData.totalEquipment
-          delete propertyData.photoCount
-          delete propertyData.resourceCount
 
           const existingId = existingPropertyMap.get(propertyData.name.toLowerCase())
 
@@ -176,12 +237,14 @@ export async function POST(req: NextRequest) {
 
           if (existingId && (mode === "update" || mode === "both")) {
             // Update existing property
+            const updateData = {
+              ...propertyData,
+              ...(destinationId && { destination: { connect: { id: destinationId } } }),
+            }
+            
             const updated = await tx.property.update({
               where: { id: existingId },
-              data: {
-                ...propertyData,
-                updatedBy: userId,
-              },
+              data: updateData,
             })
 
             await tx.auditLog.create({
@@ -194,14 +257,15 @@ export async function POST(req: NextRequest) {
               },
             })
 
+            // Note: Pricing data now handled by separate import dialogs
+
             result.updated++
           } else {
             // Create new property
             const created = await tx.property.create({
               data: {
                 ...propertyData,
-                createdBy: userId,
-                updatedBy: userId,
+                destination: destinationId ? { connect: { id: destinationId } } : undefined,
               },
             })
 
@@ -214,6 +278,8 @@ export async function POST(req: NextRequest) {
                 changes: created,
               },
             })
+
+            // Note: Pricing data now handled by separate import dialogs
 
             result.imported++
           }
@@ -229,9 +295,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result)
   } catch (error) {
+    console.error("Import failed:", error)
+    const errorMessage = error instanceof Error ? error.message : "Unknown error"
+    console.error("Error details:", errorMessage)
     
     return NextResponse.json(
-      { error: "Failed to import properties" },
+      { error: "Failed to import properties", details: errorMessage },
       { status: 500 }
     )
   }

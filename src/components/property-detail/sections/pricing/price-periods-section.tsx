@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { format } from "date-fns"
-import { CalendarIcon, Check, Edit2, Info, Plus, Trash2, X, DollarSign, Calendar as CalendarLucideIcon, TrendingUp, Percent, Shield, MoreHorizontal } from "lucide-react"
+import { CalendarIcon, Check, Edit2, Info, Plus, Trash2, X, DollarSign, Calendar as CalendarLucideIcon, TrendingUp, Percent, Shield, MoreHorizontal, Upload, Download } from "lucide-react"
 import { PropertySection } from "../../property-section"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -51,6 +51,8 @@ import {
 import { PricePeriodsTable } from "./price-periods-table"
 import { PricePeriodDetailsModal } from "./price-period-details-modal"
 import { EditPricePeriodModal } from "./edit-price-period-modal"
+import { ImportPricingDialog } from "../../../pricing/import-pricing-dialog"
+import { ExportPricingDialog } from "../../../pricing/export-pricing-dialog"
 import type { PriceRange } from "@/generated/prisma"
 import { z } from "zod"
 
@@ -180,7 +182,21 @@ export function PricePeriodsSection({ propertyId, priceRanges, hasLegacyData }: 
 
         {isEditing && (
           <div className="space-y-4">
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center">
+              <div className="flex gap-2">
+                <ImportPricingDialog>
+                  <Button variant="outline" size="sm">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Import Pricing
+                  </Button>
+                </ImportPricingDialog>
+                <ExportPricingDialog selectedPropertyIds={[propertyId]}>
+                  <Button variant="outline" size="sm">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export Pricing
+                  </Button>
+                </ExportPricingDialog>
+              </div>
               <Button
                 variant="outline"
                 className="border-2 border-dashed hover:border-emerald-300 hover:bg-emerald-50 transition-all"
@@ -192,7 +208,7 @@ export function PricePeriodsSection({ propertyId, priceRanges, hasLegacyData }: 
             </div>
             
             <p className="text-sm text-gray-600">
-              Use the table below to manage your pricing periods. You can add, edit, or delete periods as needed.
+              Use the table below to manage your pricing periods. You can add, edit, or delete periods as needed. Import/export CSV files for bulk operations.
             </p>
           </div>
         )}

@@ -1,0 +1,49 @@
+propertyName,destinationName,numberOfRooms,numberOfBathrooms,maxGuests,address,city,latitude,longitude,status,segment,categories,periodName,priceStartDate,priceEndDate,ownerNightlyRate,ownerWeeklyRate,costType,costEstimatedPrice,bookingType,bookingStartDate,bookingEndDate,guestName,guestEmail,requestStartDate,requestEndDate,requestGuestName,requestGuestEmail,requestGuestPhone,requestNumberOfGuests,requestMessage,requestStatus,requestUrgency
+"Villa del Sol",Ibiza,6,5,12,"Cala Comte 123","Sant Josep",38.9641,1.2372,PUBLISHED,Luxury,"villa,beachfront,pool,party","Peak Summer",2024-07-01,2024-08-31,750,4500,HOUSEKEEPING,200,CONFIRMED,2024-07-15,2024-07-22,"Sarah Johnson","sarah.johnson@email.com",,,,,,,,,
+"Villa del Sol",,,,,,,,,,,,,,,,,,OWNER_STAY,2024-08-10,2024-08-17,"Property Owner","owner@villasol.com",,,,,,,,,
+"Villa del Sol",,,,,,,,,,,,"Off Peak",2024-04-01,2024-05-31,450,2700,LINEN_CHANGE,35,,,,,,,,,,,,,,,
+"Villa del Sol",,,,,,,,,,,,,,,,,,,,,,,,"2024-09-01","2024-09-08","Wedding Party","wedding@email.com","+34612345678",12,"Looking for exclusive villa for wedding celebration","PENDING","HIGH"
+"Chalet Mont Blanc",French Alps,5,4,10,"Route du Mont Blanc 456","Chamonix",45.9237,6.8694,PUBLISHED,Premium,"chalet,ski,mountain,fireplace","Winter Season",2024-12-15,2025-03-15,550,3300,OPERATIONAL_PACKAGE,250,CONFIRMED,2024-12-20,2024-12-27,"Hans Mueller","h.mueller@email.de",,,,,,,,,
+"Chalet Mont Blanc",,,,,,,,,,,,,,,,,,MAINTENANCE,2024-11-01,2024-11-15,"Maintenance Team","maintenance@chalets.com",,,,,,,,,
+"Chalet Mont Blanc",,,,,,,,,,,,"Summer Low",2024-06-01,2024-08-31,250,1500,HOUSEKEEPING_AT_CHECKOUT,150,,,,,,,,,,,,,,,
+"Chalet Mont Blanc",,,,,,,,,,,,,,,,,,,,,,,,"2024-12-01","2024-12-08","Ski Group","skiteam@email.com","+33601234567",8,"Group booking for ski week","CONFIRMED","MEDIUM"
+"Palazzo Venice Historic",Venice,8,6,16,"Canal Grande 789","Venice",45.4408,12.3155,PUBLISHED,Luxury,"palazzo,historic,canal,unique","High Season",2024-06-01,2024-09-30,900,5400,HOUSEKEEPING,300,BLOCKED,2024-07-01,2024-07-08,,,,,,,,,,,
+"Palazzo Venice Historic",,,,,,,,,,,,,,,,,,TENTATIVE,2024-08-15,2024-08-22,"Maria Rossi","maria.rossi@email.it",,,,,,,,,
+"Palazzo Venice Historic",,,,,,,,,,,,"Low Season",2024-11-01,2025-03-31,600,3600,LINEN_CHANGE,50,,,,,,,,,,,,,,,
+"Palazzo Venice Historic",,,,,,,,,,,,,,,,,,,,,,,,"2024-07-20","2024-07-27","Art Collectors","art@email.com","+39334567890",6,"Interested in Venice art tour package","REJECTED","LOW"
+"Modern Penthouse London",London,4,3,8,"Canary Wharf Tower 42","London",51.5074,-0.0278,PUBLISHED,Premium,"penthouse,modern,city,view","Year Round",2024-01-01,2024-12-31,400,2400,HOUSEKEEPING,180,CONTRACT,2024-03-01,2024-08-31,"Corporate Client","contracts@company.com",,,,,,,,,
+"Modern Penthouse London",,,,,,,,,,,,,,,,,,CONFIRMED,2024-09-15,2024-09-22,"John Smith","john.smith@email.com",,,,,,,,,
+"Modern Penthouse London",,,,,,,,,,,,,,,,,,,,,,,,"2024-10-01","2024-10-07","Tech Conference","tech@email.com","+44701234567",6,"Corporate booking for tech summit","PENDING","MEDIUM"
+"Beach House Malibu",Malibu,4,3,8,"Pacific Coast Highway 321","Malibu",34.0259,-118.7798,HIDDEN,Standard,"beach,modern,ocean","Peak Season",2024-06-15,2024-09-15,650,3900,HOUSEKEEPING,175,OWNER,2024-07-04,2024-07-11,"Owner Family","family@beachhouse.com",,,,,,,,,
+"Beach House Malibu",,,,,,,,,,,,,,,,,,BLOCKED,2024-08-01,2024-08-31,,,,,,,,,,,
+"Beach House Malibu",,,,,,,,,,,,,,,,,,,,,,,,"2024-09-20","2024-09-27","Celebrity Client","celeb@email.com","+13101234567",4,"Private oceanfront retreat needed","CONFIRMED","HIGH"
+"Countryside Villa Tuscany",Tuscany,7,5,14,"Via del Chianti 654","Siena",43.3188,11.3307,ONBOARDING,Luxury,"villa,countryside,wine,pool","Harvest Season",2024-09-01,2024-10-31,550,3300,OPERATIONAL_PACKAGE,220,MAINTENANCE,2024-08-15,2024-08-30,"Property Team","team@tuscany.com",,,,,,,,,
+"Countryside Villa Tuscany",,,,,,,,,,,,,,,,,,TENTATIVE,2024-09-10,2024-09-17,"Antonio Bianchi","antonio@email.it",,,,,,,,,
+"Countryside Villa Tuscany",,,,,,,,,,,,,,,,,,,,,,,,,,,"2024-10-05","2024-10-12","Wine Tour Group","winetour@email.com","+39347890123",10,"Tuscany wine harvest experience","PENDING","MEDIUM"
+"City Loft Barcelona",Barcelona,2,1,4,"Passeig de Gracia 987","Barcelona",41.3874,2.1686,PUBLISHED,Budget,"apartment,city,modern","Standard Rate",2024-01-01,2024-12-31,180,1080,HOUSEKEEPING,90,CONFIRMED,2024-05-20,2024-05-27,"Emma Wilson","emma.w@email.com",,,,,,,,,
+"City Loft Barcelona",,,,,,,,,,,,,,,,,,CONFIRMED,2024-06-10,2024-06-17,"Pierre Dubois","pierre@email.fr",,,,,,,,,
+"City Loft Barcelona",,,,,,,,,,,,,,,,,,,,,,,,,,,"2024-07-01","2024-07-08","Digital Nomads","nomads@email.com","+34689123456",3,"Remote work friendly location needed","CONFIRMED","LOW"
+"Mountain Retreat Aspen",Aspen,6,4,12,"Snowmass Village 147","Aspen",39.1911,-106.8175,PUBLISHED,Luxury,"chalet,ski,mountain,luxury","Winter Peak",2024-12-01,2025-02-28,800,4800,HOUSEKEEPING,250,OWNER_STAY,2024-12-25,2025-01-02,"VIP Owner","vip@aspen.com",,,,,,,,,
+"Mountain Retreat Aspen",,,,,,,,,,,,,,,,,,BLOCKED,2024-01-15,2024-01-31,,,,,,,,,,,
+"Mountain Retreat Aspen",,,,,,,,,,,,,,,,,,,,,,,,,,,"2025-02-01","2025-02-08","Luxury Family","luxury@email.com","+17203456789",10,"Exclusive mountain retreat for family reunion","PENDING","HIGH"
+"Island Villa Santorini",Santorini,5,4,10,"Oia Sunset 258","Oia",36.4618,25.3753,PUBLISHED,Premium,"villa,island,sunset,pool","Summer High",2024-05-01,2024-09-30,700,4200,LINEN_CHANGE,40,CONFIRMED,2024-06-05,2024-06-12,"Sophia Chen","sophia.chen@email.com",,,,,,,,,
+"Island Villa Santorini",,,,,,,,,,,,,,,,,,CONFIRMED,2024-07-20,2024-07-27,"Michael Brown","m.brown@email.com",,,,,,,,,
+"Island Villa Santorini",,,,,,,,,,,,,,,,,,,,,,,,,,,"2024-08-10","2024-08-17","Honeymoon Couple","honeymoon@email.com","+302101234567",2,"Romantic honeymoon with sunset views","REJECTED","LOW"
+"Lakefront Cabin Finland",Finnish Lapland,3,2,6,"Lake Inari 369","Inari",68.9073,27.0260,HIDDEN,Standard,"cabin,lake,nature,sauna","Aurora Season",2024-09-15,2025-03-31,320,1920,HOUSEKEEPING_AT_CHECKOUT,120,BLOCKED,2024-12-15,2025-01-15,,,,,,,,,,,
+"Lakefront Cabin Finland",,,,,,,,,,,,,,,,,,TENTATIVE,2024-10-10,2024-10-17,"Nordic Explorer","explorer@email.fi",,,,,,,,,
+"Lakefront Cabin Finland",,,,,,,,,,,,,,,,,,,,,,,,,,"2024-11-01","2024-11-08","Aurora Hunters","aurora@email.com","+358401234567",4,"Northern lights photography expedition","CONFIRMED","MEDIUM"
+"Safari Lodge Kenya",Masai Mara,8,6,16,"Mara Reserve 741","Masai Mara",-1.4061,35.0061,ONBOARDING,Luxury,"lodge,safari,wildlife,adventure","Migration Season",2024-07-01,2024-10-31,1200,7200,OPERATIONAL_PACKAGE,400,CONFIRMED,2024-08-01,2024-08-08,"David Thompson","david.t@email.com",,,,,,,,,
+"Safari Lodge Kenya",,,,,,,,,,,,,,,,,,MAINTENANCE,2024-11-01,2024-11-30,"Lodge Team","team@safari.com",,,,,,,,,
+"Safari Lodge Kenya",,,,,,,,,,,,,,,,,,,,,,,,,,,"2024-09-01","2024-09-10","Wildlife Photographers","wildlife@email.com","+254701234567",12,"Migration season photography tour","PENDING","HIGH"
+"Desert Resort Dubai",Dubai,10,8,20,"Palm Jumeirah 852","Dubai",25.1124,55.1390,PUBLISHED,Luxury,"resort,desert,luxury,spa","Winter Peak",2024-11-01,2025-03-31,1500,9000,HOUSEKEEPING,350,OWNER,2024-12-20,2025-01-10,"Resort Owner","owner@desert.com",,,,,,,,,
+"Desert Resort Dubai",,,,,,,,,,,,,,,,,,CONFIRMED,2024-02-14,2024-02-21,"Luxury Guest","luxury@email.com",,,,,,,,,
+"Desert Resort Dubai",,,,,,,,,,,,,,,,,,,,,,,,,,,"2025-01-15","2025-01-22","Royal Family","royal@email.com","+971501234567",16,"Private royal retreat with full services","CONFIRMED","HIGH"
+"Minimal Studio Tokyo",Tokyo,1,1,2,"Shibuya District 963","Tokyo",35.6586,139.7454,PUBLISHED,Budget,"studio,city,minimal,modern","Standard Rate",2024-01-01,2024-12-31,120,720,HOUSEKEEPING,60,CONTRACT,2024-04-01,2024-09-30,"Business Traveler","business@email.com",,,,,,,,,
+"Minimal Studio Tokyo",,,,,,,,,,,,,,,,,,CONFIRMED,2024-10-05,2024-10-12,"Yuki Tanaka","yuki@email.jp",,,,,,,,,
+"Minimal Studio Tokyo",,,,,,,,,,,,,,,,,,,,,,,,,,,"2024-11-01","2024-11-07","Tech Entrepreneur","startup@email.com","+81901234567",1,"Minimalist workspace for startup pitch","PENDING","LOW"
+"Wine Estate Bordeaux",Bordeaux,9,7,18,"Chateau Route 159","Bordeaux",44.8378,-0.5792,PUBLISHED,Luxury,"estate,wine,chateau,historic","Harvest Festival",2024-09-01,2024-10-31,850,5100,OPERATIONAL_PACKAGE,300,CONFIRMED,2024-09-15,2024-09-22,"Wine Enthusiast","wine@email.com",,,,,,,,,
+"Wine Estate Bordeaux",,,,,,,,,,,,,,,,,,BLOCKED,2024-10-01,2024-10-15,,,,,,,,,,,
+"Wine Estate Bordeaux",,,,,,,,,,,,,,,,,,,,,,,,,,,"2024-10-20","2024-10-27","Sommelier Society","sommelier@email.com","+33556789012",14,"Professional wine tasting event","REJECTED","MEDIUM"
+"Beachfront Bungalow Bali",Bali,3,2,6,"Seminyak Beach 753","Seminyak",-8.6918,115.1721,HIDDEN,Standard,"bungalow,beach,tropical,surf","Dry Season",2024-04-01,2024-10-31,280,1680,LINEN_CHANGE,25,OWNER_STAY,2024-06-01,2024-06-15,"Local Owner","owner@bali.com",,,,,,,,,
+"Beachfront Bungalow Bali",,,,,,,,,,,,,,,,,,TENTATIVE,2024-07-10,2024-07-17,"Surfer Group","surf@email.com",,,,,,,,,
+"Beachfront Bungalow Bali",,,,,,,,,,,,,,,,,,,,,,,,,,,"2024-08-01","2024-08-14","Yoga Retreat","yoga@email.com","+62812345678",6,"Beachfront yoga and meditation retreat","CONFIRMED","MEDIUM"
