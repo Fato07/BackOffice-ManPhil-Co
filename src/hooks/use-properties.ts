@@ -18,8 +18,8 @@ import { propertiesMapKeys } from "@/hooks/use-properties-map"
 export const propertyKeys = {
   all: ["properties"] as const,
   lists: () => [...propertyKeys.all, "list"] as const,
-  list: (filters?: PropertyFilters, page?: number) => 
-    [...propertyKeys.lists(), { filters, page }] as const,
+  list: (filters?: PropertyFilters, page?: number, pageSize?: number) => 
+    [...propertyKeys.lists(), { filters, page, pageSize }] as const,
   details: () => [...propertyKeys.all, "detail"] as const,
   detail: (id: string) => [...propertyKeys.details(), id] as const,
 }
@@ -43,7 +43,7 @@ export function useProperties(filters?: PropertyFilters, page = 1, pageSize = 20
   }
   
   return useQuery({
-    queryKey: propertyKeys.list(filters, page),
+    queryKey: propertyKeys.list(filters, page, pageSize),
     queryFn: async () => {
       const params: any = {
         page,
@@ -80,6 +80,7 @@ export function useProperties(filters?: PropertyFilters, page = 1, pageSize = 20
       
       return api.get<PaginatedResponse<PropertyListItem>>("/api/properties", { params })
     },
+    retry: 1,
   })
 }
 
