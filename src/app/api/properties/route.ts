@@ -61,21 +61,25 @@ export async function GET(req: NextRequest) {
     
     const params = propertySearchSchema.parse(processedParams)
 
-    // Build where clause
+    // Build where clause - collect all conditions first
     const where: any = {}
+    const andConditions: any[] = []
     
+    // Search filter - handle OR condition properly
     if (params.search) {
       // For better performance with trigram indexes, use raw SQL for similarity search
       // This leverages the GIN indexes we created
       const searchTerm = params.search.toLowerCase()
       
-      // Use OR conditions with trigram similarity for better fuzzy matching
-      where.OR = [
-        { name: { contains: params.search, mode: 'insensitive' } },
-        { address: { contains: params.search, mode: 'insensitive' } },
-        { city: { contains: params.search, mode: 'insensitive' } },
-        { originalName: { contains: params.search, mode: 'insensitive' } },
-      ]
+      // Add search as an AND condition containing OR
+      andConditions.push({
+        OR: [
+          { name: { contains: params.search, mode: 'insensitive' } },
+          { address: { contains: params.search, mode: 'insensitive' } },
+          { city: { contains: params.search, mode: 'insensitive' } },
+          { originalName: { contains: params.search, mode: 'insensitive' } },
+        ]
+      })
     }
     
     // Status filter
@@ -170,8 +174,7 @@ export async function GET(req: NextRequest) {
       })
       
       if (amenityConditions.length > 0) {
-        where.AND = where.AND || []
-        where.AND.push(...amenityConditions)
+        andConditions.push(...amenityConditions)
       }
     }
     
@@ -210,8 +213,7 @@ export async function GET(req: NextRequest) {
       })
       
       if (serviceConditions.length > 0) {
-        where.AND = where.AND || []
-        where.AND.push(...serviceConditions)
+        andConditions.push(...serviceConditions)
       }
     }
     
@@ -226,8 +228,7 @@ export async function GET(req: NextRequest) {
       })
       
       if (accessibilityConditions.length > 0) {
-        where.AND = where.AND || []
-        where.AND.push(...accessibilityConditions)
+        andConditions.push(...accessibilityConditions)
       }
     }
     
@@ -247,8 +248,7 @@ export async function GET(req: NextRequest) {
         where.policies = { path: ['smokingAllowed'], equals: params.smokingAllowed }
       } else {
         // If policies already has a condition, we need to use AND
-        where.AND = where.AND || []
-        where.AND.push({
+        andConditions.push({
           policies: { path: ['smokingAllowed'], equals: params.smokingAllowed }
         })
       }
@@ -277,17 +277,31 @@ export async function GET(req: NextRequest) {
     
     if (params.highlight !== undefined) {
       if (params.highlight) {
-        where.OR = [
-          { iconicCollection: true },
-          { exclusivity: true }
-        ]
+        andConditions.push({
+          OR: [
+            { iconicCollection: true },
+            { exclusivity: true }
+          ]
+        })
       } else {
-        where.AND = where.AND || []
-        where.AND.push(
+        andConditions.push(
           { iconicCollection: false },
           { exclusivity: false }
         )
       }
+    }
+
+    // Coordinate filter for map display
+    if (searchParams.hasCoordinates === 'true') {
+      andConditions.push({
+        latitude: { not: null },
+        longitude: { not: null }
+      })
+    }
+
+    // Apply all AND conditions to the where clause
+    if (andConditions.length > 0) {
+      where.AND = andConditions
     }
 
     // Build selective include object based on query parameters
@@ -376,6 +390,8 @@ export async function GET(req: NextRequest) {
       totalPages: Math.ceil(total / params.pageSize),
     })
   } catch (error) {
+    console.error("Properties API error:", error)
+    console.error("Error details:", error instanceof Error ? error.message : error)
     
     return NextResponse.json(
       { error: "Failed to fetch properties" },

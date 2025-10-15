@@ -50,6 +50,8 @@ export function CreateHouseDialog({ children }: CreateHouseDialogProps) {
       destinationId: "",
       numberOfRooms: 0,
       numberOfBathrooms: 0,
+      latitude: undefined,
+      longitude: undefined,
     },
   })
 
@@ -60,6 +62,8 @@ export function CreateHouseDialog({ children }: CreateHouseDialogProps) {
       destinationId: data.destinationId,
       numberOfRooms: data.numberOfRooms || 0,
       numberOfBathrooms: data.numberOfBathrooms || 0,
+      latitude: data.latitude || null,
+      longitude: data.longitude || null,
     }
     
     createProperty.mutate(submitData, {
@@ -220,6 +224,57 @@ export function CreateHouseDialog({ children }: CreateHouseDialogProps) {
                   </FormItem>
                 )}
               />
+            </div>
+
+            {/* Optional Location Coordinates */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-gray-700">Location Coordinates (Optional)</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="latitude"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Latitude</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.000001"
+                          placeholder="e.g. 48.8566"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="longitude"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Longitude</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.000001"
+                          placeholder="e.g. 2.3522"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <p className="text-xs text-gray-500">
+                Add coordinates to display the property on the map. You can also add them later via the property details page.
+              </p>
             </div>
 
             <div className="flex justify-end gap-4">

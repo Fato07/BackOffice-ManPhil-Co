@@ -1,0 +1,11 @@
+propertyName,destinationName,numberOfRooms,numberOfBathrooms,maxGuests,address,city,latitude,longitude,status,segment,categories,periodName,priceStartDate,priceEndDate,ownerNightlyRate,ownerWeeklyRate,costType,costEstimatedPrice,bookingType,bookingStartDate,bookingEndDate,guestName,guestEmail,requestStartDate,requestEndDate,requestGuestName,requestGuestEmail,requestGuestPhone,requestNumberOfGuests,requestMessage,requestStatus,requestUrgency
+"Villa Marina",Mallorca,5,4,10,"Calle del Mar 123","Palma de Mallorca",39.5696,2.6502,PUBLISHED,Premium,"villa,beachfront,pool",,,,,,,,,,,,,,,,,,,,,
+"Villa Marina",,,,,,,,,,,"Summer High Season",2024-06-01,2024-08-31,450,2700,,,,,,,,,,,,,,,,,,
+"Villa Marina",,,,,,,,,,,"Winter Low Season",2024-12-01,2025-01-31,280,1680,,,,,,,,,,,,,,,,,,
+"Villa Marina",,,,,,,,,,,,,,,,,HOUSEKEEPING,150,,,,,,,,,,,,,,,
+"Villa Marina",,,,,,,,,,,,,,,,,,,CONFIRMED,2024-07-15,2024-07-22,"John Smith","john@example.com",,,,,,,,,
+"Villa Marina",,,,,,,,,,,,,,,,,,,,,,,2024-09-01,2024-09-08,"Sarah Wilson","sarah.w@email.com","+1234567890",4,"Interested in September booking","PENDING",MEDIUM
+"Beach House Ibiza",Ibiza,3,2,6,"Playa den Bossa","Sant Josep",38.9067,1.2975,PUBLISHED,Standard,"villa,seaside","Summer 2024",2024-05-01,2024-09-30,320,1920,HOUSEKEEPING,120,,,,,,,,,,,,,
+"Mountain Chalet Alps","French Alps",4,3,8,"Route des Alpes 789","Chamonix",45.9237,6.8694,PUBLISHED,Premium,"chalet,ski,mountain","Winter Ski Season",2024-12-15,2025-03-15,380,2280,LINEN_CHANGE,35,OWNER_STAY,2024-12-20,2024-12-27,"Property Owner","owner@chalet.com",,,,,,,,,
+"City Apartment Barcelona",Barcelona,2,1,4,"Passeig de Gracia 456","Barcelona",41.3851,2.1734,PUBLISHED,Standard,"apartment,city,modern","Year Round",2024-01-01,2024-12-31,180,1080,HOUSEKEEPING,80,BLOCKED,2024-08-01,2024-08-08,,,2024-07-20,2024-07-27,"Maria Garcia","maria@example.com","+34123456789",3,"Family vacation in July","CONFIRMED",HIGH
+"Countryside Villa Tuscany",Tuscany,6,4,12,"Via del Chianti 321","Siena",43.3188,11.3307,PUBLISHED,Luxury,"villa,countryside,wine","Harvest Season",2024-09-01,2024-10-31,500,3000,OPERATIONAL_PACKAGE,200,,,,,,,,,,,,,

@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { PropertyStatus, LicenseType } from "@/generated/prisma"
+import { PropertyStatus } from "@/generated/prisma"
 
 export interface ValidationResult {
   valid: boolean
@@ -11,21 +11,22 @@ export interface ValidationError {
   row: number
   field: string
   message: string
-  value?: any
+  value?: unknown
 }
 
 export interface ValidationWarning {
   row: number
   field: string
   message: string
-  value?: any
+  value?: unknown
 }
 
-// Base property import schema
+// Simple property import schema - for legacy compatibility
 export const propertyImportSchema = z.object({
   // Required fields
   name: z.string().min(1, "Name is required"),
-  destinationId: z.string().optional(), // Will be validated separately
+  destinationId: z.string().optional(),
+  destinationName: z.string().min(1, "Destination is required").optional(),
   
   // Optional fields with proper types
   originalName: z.string().nullish(),
@@ -34,13 +35,10 @@ export const propertyImportSchema = z.object({
     .optional(),
   
   // Numbers
-  bathrooms: z.number().int().min(0, "Bathrooms cannot be negative").nullish(),
-  floorArea: z.number().min(0, "Floor area cannot be negative").nullish(),
-  plotSize: z.number().min(0, "Plot size cannot be negative").nullish(),
-  furnishedFloors: z.number().int().min(0, "Furnished floors cannot be negative").nullish(),
-  bedrooms: z.number().int().min(0, "Bedrooms cannot be negative").nullish(),
-  guestCapacity: z.number().int().min(0, "Guest capacity cannot be negative").nullish(),
-  adultCapacity: z.number().int().min(0, "Adult capacity cannot be negative").nullish(),
+  numberOfBathrooms: z.number().int().min(0, "Bathrooms cannot be negative").nullish(),
+  propertySize: z.number().min(0, "Property size cannot be negative").nullish(),
+  numberOfRooms: z.number().int().min(0, "Rooms cannot be negative").nullish(),
+  maxGuests: z.number().int().min(0, "Max guests cannot be negative").nullish(),
   eventDeposit: z.number().min(0, "Event deposit cannot be negative").nullish(),
   latitude: z.number().min(-90, "Invalid latitude").max(90, "Invalid latitude").nullish(),
   longitude: z.number().min(-180, "Invalid longitude").max(180, "Invalid longitude").nullish(),
@@ -56,11 +54,10 @@ export const propertyImportSchema = z.object({
   elevator: z.boolean().optional(),
   prmSuitability: z.boolean().optional(),
   liveInStaff: z.boolean().optional(),
-  suitableForEvents: z.boolean().optional(),
+  eventsAllowed: z.boolean().optional(),
   
   // Arrays
   categories: z.array(z.string()).optional(),
-  eventTypes: z.array(z.string()).optional(),
   
   // Strings
   licenseType: z.string().nullish(),
@@ -102,7 +99,7 @@ export type PropertyImportData = z.infer<typeof propertyImportSchema>
  * Validate a single property row
  */
 export function validatePropertyRow(
-  data: any,
+  data: Record<string, unknown>,
   rowIndex: number
 ): { data?: PropertyImportData; errors: ValidationError[] } {
   try {
@@ -113,9 +110,9 @@ export function validatePropertyRow(
       return {
         errors: error.issues.map((issue) => ({
           row: rowIndex,
-          field: issue.path.join("."),
+          field: String(issue.path[0] || 'unknown'),
           message: issue.message,
-          value: data[issue.path[0]],
+          value: data[String(issue.path[0] || '')],
         })),
       }
     }
@@ -133,7 +130,7 @@ export function validatePropertyRow(
  * Validate all property rows
  */
 export function validatePropertyData(
-  rows: any[],
+  rows: Record<string, unknown>[],
   existingPropertyNames?: string[]
 ): ValidationResult {
   const errors: ValidationError[] = []
@@ -171,31 +168,13 @@ export function validatePropertyData(
         })
       }
       
-      // Additional business rule validations
-      if (data.guestCapacity && data.adultCapacity && data.adultCapacity > data.guestCapacity) {
-        warnings.push({
-          row: rowNumber,
-          field: "adultCapacity",
-          message: "Adult capacity exceeds guest capacity",
-          value: data.adultCapacity,
-        })
-      }
-      
-      if (data.latitude && (data.latitude < -90 || data.latitude > 90)) {
+      // Validate destination requirement
+      if (!data.destinationId && !data.destinationName) {
         errors.push({
           row: rowNumber,
-          field: "latitude",
-          message: "Latitude must be between -90 and 90",
-          value: data.latitude,
-        })
-      }
-      
-      if (data.longitude && (data.longitude < -180 || data.longitude > 180)) {
-        errors.push({
-          row: rowNumber,
-          field: "longitude",
-          message: "Longitude must be between -180 and 180",
-          value: data.longitude,
+          field: "destination",
+          message: "Either destinationId or destinationName is required",
+          value: null,
         })
       }
     }

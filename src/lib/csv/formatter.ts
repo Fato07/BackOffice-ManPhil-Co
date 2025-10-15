@@ -37,8 +37,8 @@ export function flattenPropertyForExport(property: any): Record<string, any> {
     destinationId: property.destinationId,
     
     // Property Details
-    rooms: property.rooms?.length || 0,
-    bathrooms: property.bathrooms || 0,
+    numberOfRooms: property.numberOfRooms || 0,
+    numberOfBathrooms: property.numberOfBathrooms || 0,
     licenseType: property.licenseType || "",
     licenseNumber: property.licenseNumber || "",
     conciergeService: property.conciergeService ? "Yes" : "No",
@@ -59,8 +59,7 @@ export function flattenPropertyForExport(property: any): Record<string, any> {
     floorArea: property.floorArea || "",
     plotSize: property.plotSize || "",
     furnishedFloors: property.furnishedFloors || "",
-    bedrooms: property.bedrooms || "",
-    guestCapacity: property.guestCapacity || "",
+    maxGuests: property.maxGuests || "",
     adultCapacity: property.adultCapacity || "",
     adjoiningHouse: property.adjoiningHouse ? "Yes" : "No",
     
@@ -127,6 +126,19 @@ export function flattenPropertyForExport(property: any): Record<string, any> {
     
     // Resource Summary (if included)
     resourceCount: property.resources?.length || 0,
+    
+    // Pricing Data - Convert related records to CSV format
+    priceRanges: property.pricingPeriods?.map((period: any) => 
+      `${period.name}:${period.startDate}:${period.endDate}:${period.ownerNightlyRate}:${period.ownerWeeklyRate || ''}:${period.commissionRate}:${period.isValidated}:${period.notes || ''}`
+    ).join('|') || '',
+    
+    operationalCosts: property.operationalCosts?.map((cost: any) => 
+      `${cost.costType}:${cost.priceType}:${cost.estimatedPrice || ''}:${cost.publicPrice || ''}:${cost.paidBy || ''}:${cost.comment || ''}`
+    ).join('|') || '',
+    
+    minimumStayRules: property.minimumStayRules?.map((rule: any) => 
+      `${rule.bookingCondition}:${rule.minimumNights}:${rule.startDate}:${rule.endDate}`
+    ).join('|') || '',
   }
 }
 
@@ -139,61 +151,35 @@ export function generateCSVTemplate(): string {
     originalName: "Villa Ejemplo",
     status: "HIDDEN",
     destinationName: "Mallorca",
-    rooms: "5",
-    bathrooms: "3",
-    licenseType: "TYPE_1",
-    licenseNumber: "LIC12345",
-    conciergeService: "Yes",
+    numberOfRooms: "5",
+    numberOfBathrooms: "3",
+    maxGuests: "8",
     categories: "VILLA, LUXURY",
-    operatedByAgency: "Example Agency",
     address: "123 Example Street",
-    postcode: "07001",
+    postcode: "07001", 
     city: "Palma",
     additionalDetails: "Near the beach",
     latitude: "39.5696",
     longitude: "2.6502",
-    houseType: "Villa",
-    architecturalType: "Modern",
-    floorArea: "250",
-    plotSize: "1000",
-    furnishedFloors: "2",
-    bedrooms: "4",
-    guestCapacity: "8",
-    adultCapacity: "6",
-    adjoiningHouse: "No",
     exclusivity: "Yes",
-    position: "Beachfront",
     segment: "Luxury",
     iconicCollection: "No",
     onlineReservation: "Yes",
     flexibleCancellation: "Yes",
     onboardingFees: "No",
-    elevator: "No",
-    prmSuitability: "No",
-    accessibilityNotes: "",
-    childrenPolicy: "Allowed",
-    childrenAccessories: "High chair, Cot",
-    animalsPolicy: "Not allowed",
-    liveInStaff: "No",
-    heatingSystem: "Central heating",
-    heatingComments: "Available October-April",
-    acSystem: "Split AC",
-    acComments: "In all bedrooms",
-    suitableForEvents: "Yes",
-    eventTypes: "Wedding, Birthday",
-    eventNotes: "Maximum 50 guests",
-    eventRules: "No loud music after 11 PM",
-    eventLayoutLink: "",
-    eventTariffs: "€500 per event",
-    eventDeposit: "1000",
-    eventDriveLink: "",
-    transportServices: "Airport transfer available",
-    staffServices: "Daily cleaning included",
-    mealServices: "Chef on request",
     goodToKnow: "Beach is 5 minutes walk",
-    listingUrl: "https://example.com/villa",
-    marketingNotes: "Featured property",
-    reviews: "5 stars average",
+    
+    // Pricing Data - Multiple entries separated by pipe (|)
+    // Format: "PeriodName:StartDate:EndDate:OwnerNightlyRate:OwnerWeeklyRate:CommissionRate:IsValidated:Notes|..."
+    priceRanges: "Summer 2024:2024-06-01:2024-08-31:350:2100:25:false:Peak season|Winter 2024:2024-12-15:2025-01-15:450:2700:25:false:Holiday premium",
+    
+    // Operational Costs - Multiple entries separated by pipe (|)  
+    // Format: "CostType:PriceType:EstimatedPrice:PublicPrice:PaidBy:Comment|..."
+    operationalCosts: "HOUSEKEEPING:PER_STAY:100:120:Guest:Final cleaning|LINEN_CHANGE:PER_DAY:25:30:ManPhil & Co:Fresh linens",
+    
+    // Minimum Stay Rules - Multiple entries separated by pipe (|)
+    // Format: "BookingCondition:MinimumNights:StartDate:EndDate|..."
+    minimumStayRules: "GENERAL:3:2024-06-01:2024-08-31|HOLIDAY:7:2024-12-15:2025-01-15",
   }]
 
   return formatDataForCSV(templateData)
